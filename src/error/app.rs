@@ -20,6 +20,9 @@ pub enum ApiError {
 
     #[error("Custom error: {0} ({1})")]
     Custom(String, u32),
+
+    #[error("Database error: {0}")]
+    Database(String),
 }
 
 impl ApiError {
@@ -37,6 +40,13 @@ impl ApiError {
 impl From<anyhow::Error> for ApiError {
     fn from(_: anyhow::Error) -> Self {
         ApiError::Internal
+    }
+}
+
+// 修改 From 实现
+impl From<sea_orm::DbErr> for ApiError {
+    fn from(err: sea_orm::DbErr) -> Self {
+        ApiError::Database(err.to_string()) // 将 DbErr 转换为字符串
     }
 }
 

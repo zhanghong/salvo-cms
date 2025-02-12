@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-salvo = { version = "0", features = ["anyhow", "oapi"] }
-tokio = { version = "1", features = ["macros"] }
+salvo = { version = "0", features = ["anyhow", "oapi", "affix-state", "serve-static"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 # error handling
 anyhow = "1"
@@ -22,3 +22,8 @@ serde_json = "1.0"
 # env
 dotenvy = "0.15"
 envy = "0.4"
+
+# database
+chrono = { version = "0.4", features = ["serde"] }
+sea-orm = { version = "1", features = ["sqlx-mysql", "runtime-tokio-native-tls", "debug-print", "with-chrono", "macros", "with-json", "with-uuid", "with-rust_decimal"] }
+uuid = { version = "1.10", features = ["serde", "v4"] }
