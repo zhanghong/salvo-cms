@@ -9,4 +9,9 @@ pub fn init_router(state: AppState) -> Router {
         .get(handler::checker::health)
         .push(Router::with_path("/checker/health").get(handler::checker::health))
         .push(Router::with_path("/checker/database").get(handler::checker::database))
+        .push(
+            Router::with_path("/user/manage/users")
+                .get(handler::user::manager_paginate)
+                .post(handler::user::manager_create),
+        )
 }

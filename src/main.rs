@@ -7,9 +7,11 @@ use sea_orm::{ConnectOptions, Database};
 
 mod config;
 mod domain;
+pub mod enums;
 mod error;
 pub mod handler;
 mod route;
+pub mod utils;
 
 use config::{AppState, DbConfig, WebConfig};
 
