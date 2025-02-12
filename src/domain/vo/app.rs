@@ -4,7 +4,7 @@ use salvo::prelude::*;
 use serde::Serialize;
 
 // 统一响应结构
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct ApiResponse<T: Serialize> {
     /// 状态码
     code: u32,

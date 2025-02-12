@@ -4,12 +4,12 @@ use tracing::Level;
 
 #[derive(Deserialize, Debug)]
 pub struct WebConfig {
-    pub name: Option<String>,
-    pub host: Option<String>,
-    pub port: Option<u16>,
-    pub api_prefix: Option<String>,
-    pub version: Option<String>,
-    pub log_level: Option<String>,
+    name: Option<String>,
+    host: Option<String>,
+    port: Option<u16>,
+    api_prefix: Option<String>,
+    version: Option<String>,
+    log_level: Option<String>,
     description: Option<String>,
     swagger_path: Option<String>,
     openapi_path: Option<String>,
@@ -33,6 +33,13 @@ impl WebConfig {
         format!(
             "{}",
             self.name.as_ref().unwrap_or(&String::from("Simple CMS"))
+        )
+    }
+
+    pub fn app_version(&self) -> String {
+        format!(
+            "{}",
+            self.version.as_ref().unwrap_or(&String::from("0.0.1"))
         )
     }
 
