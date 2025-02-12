@@ -6,8 +6,15 @@ use serde::Serialize;
 // 统一响应结构
 #[derive(Debug, Serialize)]
 pub struct ApiResponse<T: Serialize> {
+    /// 状态码
     code: u32,
+
+    /// 错误信息
+    #[serde(skip_serializing_if = "Option::is_none")]
     message: Option<String>,
+
+    /// 返回数据
+    #[serde(skip_serializing_if = "Option::is_none")]
     data: Option<T>,
 }
 

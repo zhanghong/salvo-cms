@@ -2,7 +2,8 @@ use salvo::prelude::*;
 
 mod domain;
 mod error;
-mod handler;
+pub mod handler;
+mod route;
 
 use domain::vo::{ApiResponse, ApiResult};
 
@@ -22,7 +23,7 @@ async fn main() {
     tracing_subscriber::fmt().init();
 
     let acceptor = TcpListener::new("0.0.0.0:5800").bind().await;
-    let router = Router::new().get(handler::checker::health);
+    let router = route::init_router();
     println!("{:?}", router);
     Server::new(acceptor).serve(router).await;
 }
