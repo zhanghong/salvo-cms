@@ -1,6 +1,21 @@
 use salvo::prelude::*;
 
+mod domain;
+mod error;
 mod handler;
+
+use domain::vo::{ApiResponse, ApiResult};
+
+// 使用示例
+#[handler]
+async fn get_user() -> ApiResult<String> {
+    Ok(ApiResponse::success("oK".to_string()))
+}
+
+#[handler]
+async fn create_user() -> ApiResult<String> {
+    Ok(ApiResponse::success("oK".to_string()))
+}
 
 #[tokio::main]
 async fn main() {
