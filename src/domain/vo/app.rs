@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 
+use salvo::http::{StatusCode, StatusError};
+use salvo::oapi::{self, EndpointOutRegister, ToSchema};
 use salvo::prelude::*;
 use serde::Serialize;
 
@@ -47,5 +49,18 @@ where
         let json_string = serde_json::to_string(&self).unwrap_or_default();
         depot.insert("res_v", json_string);
         res.render(Json(&self));
+    }
+}
+
+impl<T> EndpointOutRegister for ApiResponse<T>
+where
+    T: Serialize + ToSchema + 'static,
+{
+    fn register(components: &mut oapi::Components, operation: &mut oapi::Operation) {
+        operation.responses.insert(
+            StatusCode::OK.as_str(),
+            oapi::Response::new("success")
+                .add_content("application/json", Self::to_schema(components)),
+        )
     }
 }

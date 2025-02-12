@@ -1,11 +1,11 @@
 use salvo::prelude::*;
 
-use crate::domain::vo::{result_ok, ApiResponse};
+use crate::domain::vo::{result_ok, ApiResult};
 
 /// Health check
 ///
 /// Handles the health check endpoint.
-#[endpoint]
-pub async fn health() -> String {
-    "data".to_string()
+#[endpoint(status_codes(200, 500))]
+pub async fn health() -> ApiResult<String> {
+    result_ok("oK".to_string())
 }

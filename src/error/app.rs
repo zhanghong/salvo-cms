@@ -1,10 +1,13 @@
+use salvo::http::{StatusCode, StatusError};
+use salvo::oapi::{self, EndpointOutRegister, ToSchema};
 use salvo::prelude::*;
+use serde::Serialize;
 use thiserror::Error;
 
 use crate::domain::vo::ApiResponse;
 
 // 自定义错误类型
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Serialize)]
 pub enum ApiError {
     #[error("Internal server error")]
     Internal,
@@ -47,5 +50,25 @@ impl Writer for ApiError {
             self.status_code(),
             &self.to_string(),
         )));
+    }
+}
+
+impl EndpointOutRegister for ApiError {
+    fn register(components: &mut oapi::Components, operation: &mut oapi::Operation) {
+        operation.responses.insert(
+            StatusCode::INTERNAL_SERVER_ERROR.as_str(),
+            oapi::Response::new("Internal server error")
+                .add_content("application/json", StatusError::to_schema(components)),
+        );
+        operation.responses.insert(
+            StatusCode::NOT_FOUND.as_str(),
+            oapi::Response::new("Not found")
+                .add_content("application/json", StatusError::to_schema(components)),
+        );
+        operation.responses.insert(
+            StatusCode::BAD_REQUEST.as_str(),
+            oapi::Response::new("Bad request")
+                .add_content("application/json", StatusError::to_schema(components)),
+        );
     }
 }
