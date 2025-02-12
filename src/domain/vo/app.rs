@@ -7,7 +7,7 @@ use serde::Serialize;
 #[derive(Debug, Serialize)]
 pub struct ApiResponse<T: Serialize> {
     code: u32,
-    message: String,
+    message: Option<String>,
     data: Option<T>,
 }
 
@@ -16,16 +16,7 @@ impl<T: Serialize> ApiResponse<T> {
     pub fn success(data: T) -> Self {
         Self {
             code: 200,
-            message: "success".to_string(),
-            data: Some(data),
-        }
-    }
-
-    // 带数据的成功响应（自定义消息）
-    pub fn success_with_message(data: T, message: &str) -> Self {
-        Self {
-            code: 200,
-            message: message.to_string(),
+            message: None,
             data: Some(data),
         }
     }
@@ -34,7 +25,7 @@ impl<T: Serialize> ApiResponse<T> {
     pub fn error(code: u32, message: &str) -> Self {
         Self {
             code,
-            message: message.to_string(),
+            message: Some(message.to_string()),
             data: None,
         }
     }
