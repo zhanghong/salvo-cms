@@ -613,23 +613,17 @@ dependencies = [
 name = "cms-server"
 version = "0.1.0"
 dependencies = [
- "anyhow",
- "chrono",
  "cms-core",
  "cms-user",
  "dotenvy",
  "envy",
- "regex",
  "salvo",
  "sea-orm",
  "serde",
  "serde_json",
- "thiserror 2.0.11",
  "tokio",
  "tracing",
  "tracing-subscriber",
- "uuid",
- "validator",
 ]
 
 [[package]]
@@ -639,8 +633,6 @@ dependencies = [
  "anyhow",
  "chrono",
  "cms-core",
- "dotenvy",
- "envy",
  "regex",
  "salvo",
  "sea-orm",
@@ -648,8 +640,6 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.11",
  "tokio",
- "tracing",
- "tracing-subscriber",
  "uuid",
  "validator",
 ]

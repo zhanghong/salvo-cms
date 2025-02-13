@@ -77,7 +77,7 @@ pub async fn open_paginate(query: UserPaginateQueryDTO) -> AppResult<String> {
 ///
 /// 管理端创建用户
 #[endpoint(
-    tags("用户模块/用户模块/用户端"),
+    tags("用户模块/用户端/用户管理"),
     responses(
         (status_code = 200, description = "success response")
     )

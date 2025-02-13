@@ -7,6 +7,6 @@ use cms_user::route::init_router as user_router;
 pub fn init_router(state: AppState) -> Router {
     Router::new()
         .hoop(affix_state::inject(state))
-        .push(core_router())
-        .push(user_router())
+        .push(Router::with_path("/core").push(core_router()))
+        .push(Router::with_path("/user").push(user_router()))
 }
