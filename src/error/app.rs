@@ -1,8 +1,11 @@
+use std::collections::HashMap;
+
 use salvo::http::{StatusCode, StatusError};
 use salvo::oapi::{self, EndpointOutRegister, ToSchema};
 use salvo::prelude::*;
 use serde::Serialize;
 use thiserror::Error;
+use validator::ValidationErrors;
 
 use crate::domain::vo::ApiResponse;
 
@@ -18,11 +21,11 @@ pub enum ApiError {
     #[error("Unauthorized")]
     Unauthorized,
 
-    #[error("Custom error: {0} ({1})")]
-    Custom(String, u32),
-
     #[error("Database error: {0}")]
     Database(String),
+
+    #[error(transparent)]
+    Validation(#[from] ValidationErrors),
 }
 
 impl ApiError {
@@ -30,7 +33,6 @@ impl ApiError {
         match self {
             ApiError::BadRequest(_) => 400,
             ApiError::Unauthorized => 401,
-            ApiError::Custom(_, code) => *code,
             _ => 500,
         }
     }
@@ -50,16 +52,45 @@ impl From<sea_orm::DbErr> for ApiError {
     }
 }
 
+// impl From<ValidationErrors> for ApiError {
+//     fn from(err: ValidationErrors) -> Self {
+//         ApiError::Validation(err.to_string())
+//     }
+// }
+
 // 为自定义错误实现 Salvo 的 Writer
 #[async_trait]
 impl Writer for ApiError {
     // 实现Writer trait的write方法
     async fn write(mut self, _req: &mut Request, _depot: &mut Depot, res: &mut Response) {
+        let mut code = 500;
+        let mut message = String::from("Internal Server Error");
+        let mut data: Option<HashMap<String, String>> = None;
+        match self {
+            ApiError::BadRequest(msg) => {
+                code = 400;
+                message = msg;
+            }
+            ApiError::Unauthorized => {
+                code = 401;
+                message = String::from("Unauthorized");
+            }
+            ApiError::Validation(err) => {
+                code = 400;
+                message = String::from("Validation failed");
+                let mut map = HashMap::new();
+                for (field, messages) in err.field_errors() {
+                    if let Some(msg) = messages.first() {
+                        map.insert(field.to_string(), msg.to_string());
+                    }
+                }
+                data = Some(map);
+            }
+            _ => {}
+        }
+        let response = ApiResponse::new(code, Some(message), data);
         // 将错误信息渲染为Json格式
-        res.render(Json(ApiResponse::<()>::error(
-            self.status_code(),
-            &self.to_string(),
-        )));
+        res.render(Json(response));
     }
 }
 

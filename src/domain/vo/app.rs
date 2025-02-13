@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt::Debug;
 
 use salvo::http::StatusCode;
@@ -23,19 +24,20 @@ pub struct ApiResponse<T: Serialize> {
 impl<T: Serialize> ApiResponse<T> {
     // 成功响应
     pub fn success(data: T) -> Self {
-        Self {
-            code: 200,
-            message: None,
-            data: Some(data),
-        }
+        Self::new(200, None, Some(data))
     }
 
     // 错误响应
     pub fn error(code: u32, message: &str) -> Self {
+        Self::new(code, Some(message.to_string()), None)
+    }
+
+    // 错误响应
+    pub fn new(code: u32, message: Option<String>, data: Option<T>) -> Self {
         Self {
             code,
-            message: Some(message.to_string()),
-            data: None,
+            message,
+            data,
         }
     }
 }

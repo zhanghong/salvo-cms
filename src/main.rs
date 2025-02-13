@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Duration};
+use std::time::Duration;
 
 use dotenvy::dotenv;
 use salvo::oapi::OpenApi;
@@ -77,7 +77,11 @@ async fn main() {
                 .title("RapiDoc Api")
                 .into_router("rapi-doc"),
         )
-        .push(ReDoc::new(openapi_url).title("ReDoc Api").into_router("redoc"));
+        .push(
+            ReDoc::new(openapi_url)
+                .title("ReDoc Api")
+                .into_router("redoc"),
+        );
 
     Server::new(acceptor).serve(router).await;
 }
