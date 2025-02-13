@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fmt::Debug;
 
 use salvo::http::StatusCode;
@@ -8,7 +7,7 @@ use serde::Serialize;
 
 // 统一响应结构
 #[derive(Debug, Serialize, ToSchema)]
-pub struct ApiResponse<T: Serialize> {
+pub struct AppResponse<T: Serialize> {
     /// 状态码
     code: u32,
 
@@ -21,7 +20,7 @@ pub struct ApiResponse<T: Serialize> {
     data: Option<T>,
 }
 
-impl<T: Serialize> ApiResponse<T> {
+impl<T: Serialize> AppResponse<T> {
     // 成功响应
     pub fn success(data: T) -> Self {
         Self::new(200, None, Some(data))
@@ -43,7 +42,7 @@ impl<T: Serialize> ApiResponse<T> {
 }
 
 #[async_trait]
-impl<T> Writer for ApiResponse<T>
+impl<T> Writer for AppResponse<T>
 where
     T: Serialize + Send + Sync + Debug + 'static,
 {
@@ -54,7 +53,7 @@ where
     }
 }
 
-impl<T> EndpointOutRegister for ApiResponse<T>
+impl<T> EndpointOutRegister for AppResponse<T>
 where
     T: Serialize + ToSchema + 'static,
 {

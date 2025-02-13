@@ -2,8 +2,7 @@ use salvo::oapi::{ToParameters, ToSchema};
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
 
-use crate::enums::PlatformEnum;
-use crate::utils::validate;
+use cms_core::{enums::PlatformEnum, utils::validate};
 
 // // ------------------------------------
 // // 字段验证方法

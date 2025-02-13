@@ -2,9 +2,12 @@ use salvo::oapi::extract::*;
 use salvo::prelude::*;
 use validator::Validate;
 
-use crate::config::AppState;
+use cms_core::{
+    config::AppState,
+    domain::{result_ok, AppResult},
+};
+
 use crate::domain::dto::{UserCreateDTO, UserPaginateQueryDTO};
-use crate::domain::vo::{result_ok, ApiResult};
 
 /// 用户列表
 ///
@@ -16,7 +19,7 @@ use crate::domain::vo::{result_ok, ApiResult};
         (status_code = 200, description = "success response")
     )
 )]
-pub async fn manager_paginate(query: UserPaginateQueryDTO) -> ApiResult<String> {
+pub async fn manager_paginate(query: UserPaginateQueryDTO) -> AppResult<String> {
     println!("query: {:?}", query);
     result_ok("oK".to_string())
 }
@@ -30,7 +33,7 @@ pub async fn manager_paginate(query: UserPaginateQueryDTO) -> ApiResult<String> 
         (status_code = 200, description = "success response")
     )
 )]
-pub async fn manager_create(depot: &mut Depot, form: JsonBody<UserCreateDTO>) -> ApiResult<String> {
+pub async fn manager_create(depot: &mut Depot, form: JsonBody<UserCreateDTO>) -> AppResult<String> {
     println!("form: {:?}", form);
     let a = form.into_inner();
     a.validate()?;
@@ -48,7 +51,7 @@ pub async fn manager_create(depot: &mut Depot, form: JsonBody<UserCreateDTO>) ->
         (status_code = 200, description = "success response")
     )
 )]
-pub async fn manager_logs(depot: &mut Depot, form: JsonBody<UserCreateDTO>) -> ApiResult<String> {
+pub async fn manager_logs(depot: &mut Depot, form: JsonBody<UserCreateDTO>) -> AppResult<String> {
     println!("form: {:?}", form);
     let state = depot.obtain::<AppState>().unwrap();
     let _ = &state.db.ping().await?;
@@ -65,7 +68,7 @@ pub async fn manager_logs(depot: &mut Depot, form: JsonBody<UserCreateDTO>) -> A
         (status_code = 200, description = "success response")
     )
 )]
-pub async fn open_paginate(query: UserPaginateQueryDTO) -> ApiResult<String> {
+pub async fn open_paginate(query: UserPaginateQueryDTO) -> AppResult<String> {
     println!("query: {:?}", query);
     result_ok("oK".to_string())
 }
@@ -79,7 +82,7 @@ pub async fn open_paginate(query: UserPaginateQueryDTO) -> ApiResult<String> {
         (status_code = 200, description = "success response")
     )
 )]
-pub async fn open_create(depot: &mut Depot, form: FormBody<UserCreateDTO>) -> ApiResult<String> {
+pub async fn open_create(depot: &mut Depot, form: FormBody<UserCreateDTO>) -> AppResult<String> {
     println!("form: {:?}", form);
     let state = depot.obtain::<AppState>().unwrap();
     let _ = &state.db.ping().await?;
