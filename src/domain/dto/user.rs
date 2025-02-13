@@ -1,3 +1,4 @@
+use salvo::oapi::{ToParameters, ToSchema};
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
 
@@ -71,9 +72,27 @@ fn validate_field_current_password(ptr: &&String) -> Result<(), ValidationError>
 // 创建/更新用户
 // ------------------------------------
 // Service 层创建/更新用户使用的结构体
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
+#[salvo(schema(example = json!({
+    "avatar_path": "http://demo.avatar.com/10.png", 
+    "confirm_password": 123456,
+    "data_source_id": 1,
+    "email": "test@demo.com",
+    "gender": 0,
+    "is_authed": true,
+    "is_enabled": true,
+    "is_test": false,
+    "name": "zhanghong",
+    "nickname": "laifuzi",
+    "no": "1234567890",
+    "password": 123456,
+    "phone": "13800138000",
+    "realname": "real name",
+    "user_type": "member"
+})))]
 pub struct UserCreateDTO {
     /// 操作来源
+    #[salvo(skip_deserializing)]
     pub platform_enum: Option<PlatformEnum>,
 
     /// 头像URL
@@ -136,12 +155,14 @@ pub struct UserCreateDTO {
 // 创建/更新用户
 // ------------------------------------
 // Service 层创建/更新用户使用的结构体
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
+#[salvo(schema(example = json!({"page": 1, "page_size": 10})))]
 pub struct UserUpdateDTO {
     /// 主键
     pub id: Option<i64>,
 
     /// 操作来源
+    #[salvo(skip_deserialize)]
     pub platform_enum: Option<PlatformEnum>,
 
     /// 头像URL
@@ -193,7 +214,7 @@ pub struct UserUpdateDTO {
 // 创建/更新用户
 // ------------------------------------
 // Service 层创建/更新用户使用的结构体
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
 pub struct UserUpdatePasswordDTO {
     /// 主键
     pub id: Option<i64>,
@@ -220,8 +241,13 @@ pub struct UserUpdatePasswordDTO {
 // ------------------------------------
 // 分页查询用户
 // ------------------------------------
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToParameters)]
 pub struct UserPaginateQueryDTO {
+    /// 页码
+    #[salvo(parameter(required = false, nullable = true, value_type =u32, default = 1, minimum = 1))]
     pub page: Option<i64>,
+
+    /// 每页数量
+    #[salvo(parameter(required = false, nullable = true, value_type =u32, default = 10, minimum = 1, maximum = 100))]
     pub page_size: Option<i64>,
 }

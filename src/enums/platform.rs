@@ -1,6 +1,7 @@
+use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, ToSchema)]
 pub enum PlatformEnum {
     User,
     Manager,

@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use salvo::http::{StatusCode, StatusError};
+use salvo::http::StatusCode;
 use salvo::oapi::{self, EndpointOutRegister, ToSchema};
 use salvo::prelude::*;
 use serde::Serialize;

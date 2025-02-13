@@ -14,4 +14,10 @@ pub fn init_router(state: AppState) -> Router {
                 .get(handler::user::manager_paginate)
                 .post(handler::user::manager_create),
         )
+        .push(Router::with_path("/user/manage/logs").get(handler::user::manager_logs))
+        .push(
+            Router::with_path("/user/open/users")
+                .get(handler::user::open_paginate)
+                .post(handler::user::open_create),
+        )
 }

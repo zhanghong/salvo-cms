@@ -64,10 +64,20 @@ async fn main() {
     .merge_router(&router);
 
     let openapi_url = "/api-doc/openapi.json";
-    let swagger_url = "swagger-ui";
     let router = router
         .push(doc.into_router(openapi_url))
-        .push(SwaggerUi::new(openapi_url).into_router(swagger_url));
+        .push(SwaggerUi::new(openapi_url).into_router("swagger-ui"))
+        .push(
+            Scalar::new(openapi_url)
+                .title("Scalar Api")
+                .into_router("scalar"),
+        )
+        .push(
+            RapiDoc::new(openapi_url)
+                .title("RapiDoc Api")
+                .into_router("rapi-doc"),
+        )
+        .push(ReDoc::new(openapi_url).title("ReDoc Api").into_router("redoc"));
 
     Server::new(acceptor).serve(router).await;
 }
