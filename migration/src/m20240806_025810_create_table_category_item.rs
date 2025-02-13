@@ -13,7 +13,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(
                         ColumnDef::new(CategoryItem::Id)
-                            .big_unsigned()
+                            .big_integer()
                             .primary_key()
                             .auto_increment()
                             .comment("ID"),
@@ -27,7 +27,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(CategoryItem::EditorId)
-                            .big_unsigned()
+                            .big_integer()
                             .not_null()
                             .default(0)
                             .comment("编辑ID"),
@@ -88,7 +88,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(CategoryItem::ParentId)
-                            .big_unsigned()
+                            .big_integer()
                             .not_null()
                             .default(0)
                             .comment("父级ID"),
@@ -102,7 +102,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(CategoryItem::Level)
-                            .tiny_unsigned()
+                            .tiny_integer()
                             .not_null()
                             .default(0)
                             .comment("层级"),
@@ -121,7 +121,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(CategoryItem::Sort)
-                            .small_unsigned()
+                            .small_integer()
                             .not_null()
                             .default(99)
                             .comment("排序编号"),
@@ -164,7 +164,7 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("idx-by-type")
+                    .name("cate-by-type")
                     .table(CategoryItem::Table)
                     .col(CategoryItem::ItemType)
                     .to_owned(),

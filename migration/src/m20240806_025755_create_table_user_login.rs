@@ -13,14 +13,14 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(
                         ColumnDef::new(UserLogin::Id)
-                            .big_unsigned()
+                            .big_integer()
                             .primary_key()
                             .auto_increment()
                             .comment("ID"),
                     )
                     .col(
                         ColumnDef::new(UserLogin::UserId)
-                            .big_unsigned()
+                            .big_integer()
                             .not_null()
                             .default(0)
                             .comment("用户ID"),
@@ -52,7 +52,7 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("idx-by-user-id")
+                    .name("login-by-user-id")
                     .table(UserLogin::Table)
                     .col(UserLogin::UserId)
                     .to_owned(),

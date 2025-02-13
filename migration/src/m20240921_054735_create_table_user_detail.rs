@@ -13,7 +13,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(
                         ColumnDef::new(UserDetail::Id)
-                            .big_unsigned()
+                            .big_integer()
                             .primary_key()
                             .auto_increment()
                             .comment("ID"),
@@ -27,14 +27,14 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(UserDetail::EditorId)
-                            .big_unsigned()
+                            .big_integer()
                             .not_null()
                             .default(0)
                             .comment("编辑ID"),
                     )
                     .col(
                         ColumnDef::new(UserDetail::UserId)
-                            .big_unsigned()
+                            .big_integer()
                             .not_null()
                             .default(0)
                             .unique_key()
@@ -49,21 +49,21 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(UserDetail::ProvinceID)
-                            .big_unsigned()
+                            .big_integer()
                             .not_null()
                             .default(0)
                             .comment("所在省份ID"),
                     )
                     .col(
                         ColumnDef::new(UserDetail::CityID)
-                            .big_unsigned()
+                            .big_integer()
                             .not_null()
                             .default(0)
                             .comment("所在城市ID"),
                     )
                     .col(
                         ColumnDef::new(UserDetail::DistrictID)
-                            .big_unsigned()
+                            .big_integer()
                             .not_null()
                             .default(0)
                             .comment("所在区县ID"),

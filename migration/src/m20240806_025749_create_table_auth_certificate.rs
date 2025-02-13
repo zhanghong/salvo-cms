@@ -21,7 +21,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(AuthCertificate::UserId)
-                            .big_unsigned()
+                            .big_integer()
                             .not_null()
                             .default(0)
                             .comment("用户ID"),
@@ -71,7 +71,7 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("idx-by-user-id")
+                    .name("cret-by-user-id")
                     .table(AuthCertificate::Table)
                     .col(AuthCertificate::UserId)
                     .to_owned(),

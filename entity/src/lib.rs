@@ -2,6 +2,8 @@
 
 pub mod prelude;
 
+pub mod auth_certificate;
+pub mod category_item;
 pub mod user;
 pub mod user_detail;
 pub mod user_login;

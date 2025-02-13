@@ -13,7 +13,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(
                         ColumnDef::new(User::Id)
-                            .big_unsigned()
+                            .big_integer()
                             .primary_key()
                             .auto_increment()
                             .comment("ID"),
@@ -27,7 +27,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(User::EditorId)
-                            .big_unsigned()
+                            .big_integer()
                             .not_null()
                             .default(0)
                             .comment("编辑ID"),
@@ -69,7 +69,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(User::Gender)
-                            .tiny_unsigned()
+                            .tiny_integer()
                             .not_null()
                             .default(0)
                             .comment("性别"),
@@ -97,7 +97,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(User::DataSourceId)
-                            .big_unsigned()
+                            .big_integer()
                             .not_null()
                             .default(0)
                             .comment("注册来源"),
@@ -118,7 +118,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(User::Salt)
-                            .char_len(5)
+                            .string_len(5)
                             .not_null()
                             .default("")
                             .comment("Salt"),
@@ -130,7 +130,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(User::AttemptedTimes)
-                            .tiny_unsigned()
+                            .tiny_integer()
                             .not_null()
                             .default(0)
                             .comment("登录失败次数"),
@@ -142,7 +142,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(User::LastLoginId)
-                            .big_unsigned()
+                            .big_integer()
                             .not_null()
                             .default(0)
                             .comment("最近一次登录ID"),
