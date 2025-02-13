@@ -38,6 +38,7 @@ impl From<anyhow::Error> for AppError {
 // 修改 From 实现
 impl From<sea_orm::DbErr> for AppError {
     fn from(err: sea_orm::DbErr) -> Self {
+        println!("Database error: {:?}", err);
         AppError::Database(err.to_string()) // 将 DbErr 转换为字符串
     }
 }

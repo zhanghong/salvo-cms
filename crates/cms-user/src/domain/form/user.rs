@@ -2,7 +2,7 @@ use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
 
-use cms_core::{enums::PlatformEnum, utils::validate};
+use cms_core::utils::validate;
 
 // // ------------------------------------
 // // 字段验证方法
@@ -90,10 +90,6 @@ fn validate_field_current_password(ptr: &&String) -> Result<(), ValidationError>
     "user_type": "member"
 })))]
 pub struct UserCreateForm {
-    /// 操作来源
-    #[salvo(skip_deserializing)]
-    pub platform_enum: Option<PlatformEnum>,
-
     /// 头像URL
     #[validate(custom(function = "validate_field_avatar_path", message = "头像URL无效"))]
     pub avatar_path: Option<String>,
@@ -160,10 +156,6 @@ pub struct UserUpdateForm {
     /// 主键
     pub id: Option<i64>,
 
-    /// 操作来源
-    #[salvo(skip_deserialize)]
-    pub platform_enum: Option<PlatformEnum>,
-
     /// 头像URL
     #[validate(custom(function = "validate_field_avatar_path", message = "头像URL无效"))]
     pub avatar_path: Option<String>,
@@ -217,9 +209,6 @@ pub struct UserUpdateForm {
 pub struct UserUpdatePasswordForm {
     /// 主键
     pub id: Option<i64>,
-
-    /// 操作来源
-    pub platform_enum: Option<PlatformEnum>,
 
     /// 当前密码
     #[validate(custom(

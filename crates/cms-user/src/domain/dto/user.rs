@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use cms_core::enums::PlatformEnum;
-
 use crate::domain::form::{UserCreateForm, UserUpdateForm, UserUpdatePasswordForm};
 
 // ------------------------------------
@@ -13,23 +11,41 @@ pub struct UserStoreDTO {
     /// 主键
     pub id: Option<i64>,
 
-    /// 操作来源
-    pub platform_enum: Option<PlatformEnum>,
+    /// NO
+    pub no: Option<String>,
+
+    /// 登录名
+    pub name: Option<String>,
+
+    /// 真实姓名
+    pub realname: Option<String>,
+
+    /// 昵称
+    pub nickname: Option<String>,
+
+    /// 角色类型
+    pub user_type: Option<String>,
+
+    /// 性别
+    pub gender: Option<i16>,
+
+    /// 手机号码
+    pub phone: Option<String>,
 
     /// 头像URL
     pub avatar_path: Option<String>,
 
-    /// 确认密码
-    pub confirm_password: Option<String>,
+    /// 邮箱
+    pub email: Option<String>,
 
     /// 注册来源
     pub data_source_id: Option<i64>,
 
-    /// 邮箱
-    pub email: Option<String>,
+    /// 登录密码
+    pub password: Option<String>,
 
-    /// 性别
-    pub gender: Option<i16>,
+    /// 确认密码
+    pub confirm_password: Option<String>,
 
     /// 是否认证
     pub is_authed: Option<bool>,
@@ -39,70 +55,47 @@ pub struct UserStoreDTO {
 
     /// 是否测试账号
     pub is_test: Option<bool>,
-
-    /// 登录名
-    pub name: Option<String>,
-
-    /// 昵称
-    pub nickname: Option<String>,
-
-    /// NO
-    pub no: Option<String>,
-
-    /// 登录密码
-    pub password: Option<String>,
-
-    /// 手机号码
-    pub phone: Option<String>,
-
-    /// 真实姓名
-    pub realname: Option<String>,
-
-    /// 角色类型
-    pub user_type: Option<String>,
 }
 
 impl From<UserCreateForm> for UserStoreDTO {
-    fn from(dto: UserCreateForm) -> Self {
+    fn from(model: UserCreateForm) -> Self {
         Self {
-            platform_enum: dto.platform_enum,
-            avatar_path: dto.avatar_path,
-            confirm_password: dto.confirm_password,
-            data_source_id: dto.data_source_id,
-            email: dto.email,
-            gender: dto.gender,
-            is_authed: dto.is_authed,
-            is_enabled: dto.is_enabled,
-            is_test: dto.is_test,
-            name: dto.name,
-            nickname: dto.nickname,
-            no: dto.no,
-            password: dto.password,
-            phone: dto.phone,
-            realname: dto.realname,
-            user_type: dto.user_type,
+            avatar_path: model.avatar_path,
+            confirm_password: model.confirm_password,
+            data_source_id: model.data_source_id,
+            email: model.email,
+            gender: model.gender,
+            is_authed: model.is_authed,
+            is_enabled: model.is_enabled,
+            is_test: model.is_test,
+            name: model.name,
+            nickname: model.nickname,
+            no: model.no,
+            password: model.password,
+            phone: model.phone,
+            realname: model.realname,
+            user_type: model.user_type,
             ..Default::default()
         }
     }
 }
 
 impl From<UserUpdateForm> for UserStoreDTO {
-    fn from(dto: UserUpdateForm) -> Self {
+    fn from(model: UserUpdateForm) -> Self {
         Self {
-            id: dto.id,
-            platform_enum: dto.platform_enum,
-            avatar_path: dto.avatar_path,
-            email: dto.email,
-            gender: dto.gender,
-            is_authed: dto.is_authed,
-            is_enabled: dto.is_enabled,
-            is_test: dto.is_test,
-            name: dto.name,
-            nickname: dto.nickname,
-            no: dto.no,
-            phone: dto.phone,
-            realname: dto.realname,
-            user_type: dto.user_type,
+            id: model.id,
+            avatar_path: model.avatar_path,
+            email: model.email,
+            gender: model.gender,
+            is_authed: model.is_authed,
+            is_enabled: model.is_enabled,
+            is_test: model.is_test,
+            name: model.name,
+            nickname: model.nickname,
+            no: model.no,
+            phone: model.phone,
+            realname: model.realname,
+            user_type: model.user_type,
             ..Default::default()
         }
     }
@@ -115,10 +108,7 @@ impl From<UserUpdateForm> for UserStoreDTO {
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct UserUpdatePasswordDTO {
     /// 主键
-    pub id: i64,
-
-    /// 操作来源
-    pub platform_enum: Option<PlatformEnum>,
+    pub id: Option<i64>,
 
     /// 当前密码
     pub current_password: Option<String>,
@@ -131,13 +121,12 @@ pub struct UserUpdatePasswordDTO {
 }
 
 impl From<UserUpdatePasswordForm> for UserUpdatePasswordDTO {
-    fn from(dto: UserUpdatePasswordForm) -> Self {
+    fn from(model: UserUpdatePasswordForm) -> Self {
         Self {
-            id: dto.id.unwrap(),
-            platform_enum: dto.platform_enum,
-            current_password: dto.current_password,
-            confirm_password: dto.confirm_password.unwrap(),
-            new_password: dto.new_password.unwrap(),
+            id: model.id,
+            current_password: model.current_password,
+            confirm_password: model.confirm_password.unwrap(),
+            new_password: model.new_password.unwrap(),
         }
     }
 }

@@ -9,9 +9,13 @@ cms-core = { version = "0.1.0", path = "../cms-core" }
 salvo = { workspace = true }
 tokio = { workspace = true }
 
-# error handling
-anyhow = { workspace = true }
-thiserror = { workspace = true }
+# logging
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# env
+dotenvy = { workspace = true }
+envy = { workspace = true }
 
 # serde
 serde = { workspace = true }

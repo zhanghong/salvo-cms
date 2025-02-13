@@ -5,9 +5,13 @@ use validator::Validate;
 use cms_core::{
     config::AppState,
     domain::{result_ok, AppResult},
+    enums::PlatformEnum,
 };
 
-use crate::domain::{form::UserCreateForm, query::UserPaginateQuery};
+use crate::{
+    domain::{form::UserCreateForm, query::UserPaginateQuery},
+    service::UserService,
+};
 
 /// 用户列表
 ///
@@ -35,13 +39,13 @@ pub async fn manager_paginate(query: UserPaginateQuery) -> AppResult<String> {
 )]
 pub async fn manager_create(
     depot: &mut Depot,
-    form: JsonBody<UserCreateForm>,
+    json: JsonBody<UserCreateForm>,
 ) -> AppResult<String> {
-    println!("form: {:?}", form);
-    let a = form.into_inner();
-    a.validate()?;
+    let form = json.into_inner();
+    form.validate()?;
     let state = depot.obtain::<AppState>().unwrap();
-    let _ = &state.db.ping().await?;
+    let dto = form.into();
+    UserService::create(PlatformEnum::Manager, &dto, &state.db).await?;
     result_ok("oK".to_string())
 }
 
