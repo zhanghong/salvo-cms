@@ -31,7 +31,7 @@ fn validate_field_nickname(ptr: &&String) -> Result<(), ValidationError> {
     validate::string_length(str, true, 2, 30)
 }
 
-fn validate_field_gender(num: u8) -> Result<(), ValidationError> {
+fn validate_field_gender(num: i16) -> Result<(), ValidationError> {
     validate::numeric_range(Some(num), true, 0, 2)
 }
 
@@ -103,7 +103,7 @@ pub struct UserCreateForm {
     pub confirm_password: Option<String>,
 
     /// 注册来源
-    pub data_source_id: Option<u64>,
+    pub data_source_id: Option<i64>,
 
     /// 邮箱
     #[validate(custom(function = "validate_field_email", message = "邮箱格式不正确"))]
@@ -111,7 +111,7 @@ pub struct UserCreateForm {
 
     /// 性别
     #[validate(custom(function = "validate_field_gender", message = "用户性别不正确"))]
-    pub gender: Option<u8>,
+    pub gender: Option<i16>,
 
     /// 是否认证
     pub is_authed: Option<bool>,
@@ -174,7 +174,7 @@ pub struct UserUpdateForm {
 
     /// 性别
     #[validate(custom(function = "validate_field_gender", message = "用户性别不正确"))]
-    pub gender: Option<u8>,
+    pub gender: Option<i16>,
 
     /// 是否认证
     pub is_authed: Option<bool>,
