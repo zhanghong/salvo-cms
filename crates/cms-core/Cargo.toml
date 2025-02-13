@@ -31,3 +31,6 @@ uuid = { workspace = true }
 # validator
 regex = { workspace = true }
 validator = { workspace = true }
+
+rand = { workspace = true }
+md5 = { workspace = true }

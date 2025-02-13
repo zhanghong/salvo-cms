@@ -34,3 +34,6 @@ uuid = { version = "1.10", features = ["serde", "v4"] }
 # validator
 regex = { version = "1.11" }
 validator = { version = "0.20", features = ["derive"] }
+
+rand = "0.9"
+md5 = "*"
