@@ -11,6 +11,7 @@ use crate::domain::dto::UserStoreDTO;
 use crate::domain::entity::user::{
     ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity, Model as UserModel,
 };
+use crate::domain::vo::UserFormOptionVO;
 use crate::enums::{GenderEnum, UserTypeEnum};
 
 pub struct UserService {}
@@ -211,5 +212,18 @@ impl UserService {
             .await?;
 
         handle_ok(count > 0)
+    }
+
+    /// 表单选项
+    pub fn form_options() -> HandleResult<UserFormOptionVO> {
+        let genders = GenderEnum::to_option_list();
+        let types = UserTypeEnum::to_option_list();
+
+        let vo = UserFormOptionVO {
+            genders: Some(genders),
+            types: Some(types),
+        };
+
+        handle_ok(vo)
     }
 }

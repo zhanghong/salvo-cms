@@ -13,6 +13,7 @@ use crate::{
         dto::UserStoreDTO,
         form::{UserCreateForm, UserUpdateForm},
         query::UserPaginateQuery,
+        vo::UserFormOptionVO,
     },
     service::UserService,
 };
@@ -90,6 +91,20 @@ pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<
     let id = id.into_inner();
     println!("delete user id: {}", id);
     result_ok("oK".to_string())
+}
+
+/// 表单选项
+///
+/// 管理端表单选项
+#[endpoint(
+    tags("用户模块/管理端/用户管理"),
+    responses(
+        (status_code = 200, description = "success response")
+    )
+)]
+pub fn manager_form() -> AppResult<UserFormOptionVO> {
+    let vo = UserService::form_options()?;
+    result_ok(vo)
 }
 
 /// 日志列表

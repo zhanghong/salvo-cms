@@ -1,6 +1,8 @@
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
+use cms_core::domain::{SelectOptionItem, SelectValueEnum};
+
 // 性别枚举
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
 pub enum GenderEnum {
@@ -36,6 +38,15 @@ impl GenderEnum {
         };
         str.to_string()
     }
+
+    /// 将枚举转换为选项列表
+    pub fn to_option_list() -> Vec<SelectOptionItem> {
+        vec![
+            GenderEnum::Unknown.into(),
+            GenderEnum::Male.into(),
+            GenderEnum::Female.into(),
+        ]
+    }
 }
 
 // 自定义反序列化实现
@@ -68,5 +79,17 @@ impl<'de> Deserialize<'de> for GenderEnum {
                 _ => GenderEnum::None,
             },
         })
+    }
+}
+
+/// 转成 SelectOptionItem
+impl Into<SelectOptionItem> for GenderEnum {
+    fn into(self) -> SelectOptionItem {
+        let value = self.as_value();
+        SelectOptionItem {
+            label: self.as_title(),
+            value: SelectValueEnum::SmallNum(value),
+            ..Default::default()
+        }
     }
 }

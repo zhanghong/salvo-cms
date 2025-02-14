@@ -2,6 +2,6 @@
 
 pub mod prelude;
 
+pub mod detail;
+pub mod login;
 pub mod user;
-pub mod user_detail;
-pub mod user_login;

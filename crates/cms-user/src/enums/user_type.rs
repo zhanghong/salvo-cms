@@ -1,6 +1,8 @@
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
+use cms_core::domain::{SelectOptionItem, SelectValueEnum};
+
 // 会员类型
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
 pub enum UserTypeEnum {
@@ -36,6 +38,15 @@ impl UserTypeEnum {
             _ => "异常",
         };
         str.to_string()
+    }
+
+    /// 将枚举转换为选项列表
+    pub fn to_option_list() -> Vec<SelectOptionItem> {
+        vec![
+            UserTypeEnum::Admin.into(),
+            UserTypeEnum::Member.into(),
+            UserTypeEnum::Guest.into(),
+        ]
     }
 
     /// 将逗号分隔的字符串转换为 UserTypeEnum 向量
@@ -76,6 +87,18 @@ impl<'de> Deserialize<'de> for UserTypeEnum {
             "member" => Ok(UserTypeEnum::Member),
             "guest" => Ok(UserTypeEnum::Guest),
             _ => Ok(UserTypeEnum::None),
+        }
+    }
+}
+
+/// 转成 SelectOptionItem
+impl Into<SelectOptionItem> for UserTypeEnum {
+    fn into(self) -> SelectOptionItem {
+        let value = self.as_value();
+        SelectOptionItem {
+            label: self.as_title(),
+            value: SelectValueEnum::String(value),
+            ..Default::default()
         }
     }
 }

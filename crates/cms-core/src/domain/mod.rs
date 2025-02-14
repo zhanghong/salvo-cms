@@ -3,7 +3,10 @@ use serde::Serialize;
 
 use crate::error::AppError;
 
+mod option;
 mod response;
+
+pub use option::{SelectOptionItem, SelectValueEnum};
 pub use response::AppResponse;
 
 pub type HandleResult<T> = AnyResult<T, AppError>;
