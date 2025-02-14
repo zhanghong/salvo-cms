@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     domain::form::{UserCreateForm, UserUpdateForm, UserUpdatePasswordForm},
-    enums::GenderEnum,
+    enums::{GenderEnum, UserTypeEnum},
 };
 
 // ------------------------------------
@@ -27,7 +27,7 @@ pub struct UserStoreDTO {
     pub nickname: Option<String>,
 
     /// 角色类型
-    pub user_type: Option<String>,
+    pub types_list: Option<Vec<UserTypeEnum>>,
 
     /// 性别
     pub gender: Option<GenderEnum>,
@@ -60,6 +60,22 @@ pub struct UserStoreDTO {
     pub is_test: Option<bool>,
 }
 
+impl UserStoreDTO {
+    fn str_to_type_vec(opt: &Option<String>) -> Option<Vec<UserTypeEnum>> {
+        if opt.is_none() {
+            return None;
+        }
+
+        let str = opt.clone().unwrap();
+        let list = UserTypeEnum::from_comma_str(str.as_str());
+        if list.is_empty() {
+            None
+        } else {
+            Some(list)
+        }
+    }
+}
+
 impl From<UserCreateForm> for UserStoreDTO {
     fn from(model: UserCreateForm) -> Self {
         Self {
@@ -77,7 +93,7 @@ impl From<UserCreateForm> for UserStoreDTO {
             password: model.password,
             phone: model.phone,
             realname: model.realname,
-            user_type: model.user_type,
+            types_list: Self::str_to_type_vec(&model.user_type),
             ..Default::default()
         }
     }
@@ -98,7 +114,7 @@ impl From<UserUpdateForm> for UserStoreDTO {
             no: model.no,
             phone: model.phone,
             realname: model.realname,
-            user_type: model.user_type,
+            types_list: Self::str_to_type_vec(&model.user_type),
             ..Default::default()
         }
     }

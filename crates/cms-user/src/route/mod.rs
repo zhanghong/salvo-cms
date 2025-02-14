@@ -11,6 +11,7 @@ pub fn init_router() -> Router {
                         .get(user::manager_paginate)
                         .post(user::manager_create),
                 )
+                .push(Router::with_path("/users/{id}").patch(user::manager_update))
                 .push(Router::with_path("/logs").get(user::manager_logs)),
         )
         .push(

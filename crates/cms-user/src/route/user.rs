@@ -9,7 +9,11 @@ use cms_core::{
 };
 
 use crate::{
-    domain::{form::UserCreateForm, query::UserPaginateQuery},
+    domain::{
+        dto::UserStoreDTO,
+        form::{UserCreateForm, UserUpdateForm},
+        query::UserPaginateQuery,
+    },
     service::UserService,
 };
 
@@ -44,9 +48,47 @@ pub async fn manager_create(
     let form = json.into_inner();
     form.validate()?;
     let state = depot.obtain::<AppState>().unwrap();
-    println!("form: {:?}", form);
     let dto = form.into();
-    UserService::create(PlatformEnum::Manager, &dto, &state.db).await?;
+    UserService::store(PlatformEnum::Manager, &dto, &state.db).await?;
+    result_ok("oK".to_string())
+}
+
+/// 更新用户
+///
+/// 管理端更新用户
+#[endpoint(
+    tags("用户模块/管理端/用户管理"),
+    responses(
+        (status_code = 200, description = "success response")
+    )
+)]
+pub async fn manager_update(
+    depot: &mut Depot,
+    id: PathParam<i64>,
+    json: JsonBody<UserUpdateForm>,
+) -> AppResult<String> {
+    let form = json.into_inner();
+    form.validate()?;
+    let state = depot.obtain::<AppState>().unwrap();
+    let mut dto: UserStoreDTO = form.into();
+    dto.id = Some(id.into_inner());
+    UserService::store(PlatformEnum::Manager, &dto, &state.db).await?;
+    result_ok("oK".to_string())
+}
+
+/// 删除用户
+///
+/// 管理端删除用户
+#[endpoint(
+    tags("用户模块/管理端/用户管理"),
+    responses(
+        (status_code = 200, description = "success response")
+    )
+)]
+pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<String> {
+    let state = depot.obtain::<AppState>().unwrap();
+    let id = id.into_inner();
+    println!("delete user id: {}", id);
     result_ok("oK".to_string())
 }
 

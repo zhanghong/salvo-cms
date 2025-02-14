@@ -19,25 +19,25 @@ const RAND_SALT_LENGTH: usize = 5;
 const RAND_NO_LENGTH: usize = 10;
 
 impl UserService {
-    pub async fn create(
+    pub async fn store(
         platform: PlatformEnum,
         dto: &UserStoreDTO,
         db: &DatabaseConnection,
     ) -> HandleResult<UserModel> {
-        let mut model = UserActiveModel {
-            ..Default::default()
-        };
-
-        let id: u64 = 0;
-        let no = dto.no.clone();
-        let no = match no {
-            Some(str) => str,
-            None => {
-                let rand_str = random::alpha_string(RAND_NO_LENGTH);
-                format!("U{}", rand_str)
+        let mut id: i64 = 0;
+        let mut is_create = true;
+        if dto.id.is_some() {
+            id = dto.id.unwrap();
+            is_create = false;
+        }
+        let mut model = if is_create {
+            UserActiveModel {
+                ..Default::default()
             }
+        } else {
+            let entity = UserEntity::find_by_id(id).one(db).await?.unwrap();
+            entity.into()
         };
-        model.no = Set(no);
 
         let name = dto.name.clone();
         if name.is_some() {
@@ -66,16 +66,17 @@ impl UserService {
             model.nickname = Set(nickname.unwrap());
         }
 
-        let user_type = dto.user_type.clone();
+        let user_type = dto.types_list.clone();
         if user_type.is_some() {
-            let user_type = user_type.unwrap();
+            let list: Vec<UserTypeEnum> = user_type.unwrap();
             match platform {
                 PlatformEnum::Open => {
-                    let type_name = UserTypeEnum::Member.to_string();
+                    let type_name = UserTypeEnum::Member.as_value();
                     model.user_type = Set(type_name);
                 }
                 _ => {
-                    model.user_type = Set(user_type);
+                    let type_names = UserTypeEnum::to_comma_str(&list);
+                    model.user_type = Set(type_names);
                 }
             };
         }
@@ -129,33 +130,6 @@ impl UserService {
             model.email = Set(email);
         }
 
-        let password = dto.password.clone();
-        if password.is_some() {
-            let password = password.unwrap();
-            let password_str = password.as_str();
-            let confirm_password = dto.confirm_password.clone();
-            if confirm_password.is_none() {
-                let err = AppError::BadRequest(String::from("确认密码不能为空"));
-                return Err(err);
-            } else if !confirm_password.unwrap().eq(password_str) {
-                let err = AppError::BadRequest(String::from("两次输入的密码不一致"));
-                return Err(err);
-            }
-
-            let salt = random::alpha_string(RAND_SALT_LENGTH);
-            let password = encrypt_password(salt.as_str(), password_str);
-            println!("password str: {}", password_str);
-            println!("password: {}", password);
-            model.salt = Set(salt);
-            model.password = Set(password);
-        }
-
-        let data_source_id = match dto.data_source_id {
-            Some(id) => id,
-            None => 0,
-        };
-        model.data_source_id = Set(data_source_id);
-
         let is_authed = match dto.is_authed {
             Some(flag) => flag,
             None => false,
@@ -175,8 +149,48 @@ impl UserService {
         model.is_test = Set(is_test);
 
         let time = Local::now();
-        model.created_at = Set(time);
         model.updated_at = Set(time);
+
+        if is_create {
+            model.created_at = Set(time);
+
+            let no = dto.no.clone();
+            let no = match no {
+                Some(str) => str,
+                None => {
+                    let rand_str = random::alpha_string(RAND_NO_LENGTH);
+                    format!("U{}", rand_str)
+                }
+            };
+            model.no = Set(no);
+
+            let password = dto.password.clone();
+            if password.is_some() {
+                let password = password.unwrap();
+                let password_str = password.as_str();
+                let confirm_password = dto.confirm_password.clone();
+                if confirm_password.is_none() {
+                    let err = AppError::BadRequest(String::from("确认密码不能为空"));
+                    return Err(err);
+                } else if !confirm_password.unwrap().eq(password_str) {
+                    let err = AppError::BadRequest(String::from("两次输入的密码不一致"));
+                    return Err(err);
+                }
+
+                let salt = random::alpha_string(RAND_SALT_LENGTH);
+                let password = encrypt_password(salt.as_str(), password_str);
+                println!("password str: {}", password_str);
+                println!("password: {}", password);
+                model.salt = Set(salt);
+                model.password = Set(password);
+            }
+
+            let data_source_id = match dto.data_source_id {
+                Some(id) => id,
+                None => 0,
+            };
+            model.data_source_id = Set(data_source_id);
+        }
 
         let model = model.save(db).await?;
         let model = model.try_into_model()?;
@@ -185,7 +199,7 @@ impl UserService {
     }
 
     async fn is_column_exist(
-        id: u64,
+        id: i64,
         column: UserColumn,
         value: sea_orm::Value,
         db: &DatabaseConnection,
