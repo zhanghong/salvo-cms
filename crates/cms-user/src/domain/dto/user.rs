@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::domain::form::{UserCreateForm, UserUpdateForm, UserUpdatePasswordForm};
+use crate::{
+    domain::form::{UserCreateForm, UserUpdateForm, UserUpdatePasswordForm},
+    enums::GenderEnum,
+};
 
 // ------------------------------------
 // 创建/更新用户
@@ -27,7 +30,7 @@ pub struct UserStoreDTO {
     pub user_type: Option<String>,
 
     /// 性别
-    pub gender: Option<i16>,
+    pub gender: Option<GenderEnum>,
 
     /// 手机号码
     pub phone: Option<String>,

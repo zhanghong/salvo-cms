@@ -11,6 +11,7 @@ use crate::domain::dto::UserStoreDTO;
 use crate::domain::entity::user::{
     ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity, Model as UserModel,
 };
+use crate::enums::{GenderEnum, UserTypeEnum};
 
 pub struct UserService {}
 
@@ -19,7 +20,7 @@ const RAND_NO_LENGTH: usize = 10;
 
 impl UserService {
     pub async fn create(
-        _platform: PlatformEnum,
+        platform: PlatformEnum,
         dto: &UserStoreDTO,
         db: &DatabaseConnection,
     ) -> HandleResult<UserModel> {
@@ -41,9 +42,13 @@ impl UserService {
         let name = dto.name.clone();
         if name.is_some() {
             let name = name.unwrap();
-            let is_exists =
-                Self::is_column_exist(id, UserColumn::Name, sea_orm::Value::from(name.clone()), db)
-                    .await?;
+            let is_exists = Self::is_column_exist(
+                id,
+                UserColumn::Name,
+                sea_orm::Value::from(name.to_owned()),
+                db,
+            )
+            .await?;
             if is_exists {
                 let err = AppError::BadRequest(String::from("用户名已存在"));
                 return Err(err);
@@ -63,14 +68,27 @@ impl UserService {
 
         let user_type = dto.user_type.clone();
         if user_type.is_some() {
-            model.user_type = Set(user_type.unwrap());
+            let user_type = user_type.unwrap();
+            match platform {
+                PlatformEnum::Open => {
+                    let type_name = UserTypeEnum::Member.to_string();
+                    model.user_type = Set(type_name);
+                }
+                _ => {
+                    model.user_type = Set(user_type);
+                }
+            };
         }
 
-        let gender = match dto.gender {
-            Some(id) => id,
-            None => 0,
-        };
-        model.gender = Set(gender);
+        if dto.gender.is_some() {
+            let gender = dto.gender.clone().unwrap();
+            match gender {
+                GenderEnum::None => {}
+                _ => {
+                    model.gender = Set(gender.as_value());
+                }
+            }
+        }
 
         let phone = dto.phone.clone();
         if phone.is_some() {
@@ -78,7 +96,7 @@ impl UserService {
             let is_exists = Self::is_column_exist(
                 id,
                 UserColumn::Phone,
-                sea_orm::Value::from(phone.clone()),
+                sea_orm::Value::from(phone.to_owned()),
                 db,
             )
             .await?;
@@ -100,7 +118,7 @@ impl UserService {
             let is_exists = Self::is_column_exist(
                 id,
                 UserColumn::Email,
-                sea_orm::Value::from(email.clone()),
+                sea_orm::Value::from(email.to_owned()),
                 db,
             )
             .await?;

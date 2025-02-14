@@ -8,6 +8,7 @@ use sea_orm::{ConnectOptions, Database};
 use cms_core::config::{AppState, DbConfig, WebConfig};
 
 mod domain;
+mod enums;
 mod route;
 mod service;
 

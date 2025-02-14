@@ -76,3 +76,11 @@ pub fn email_address(str: &str, required: bool) -> Result<(), ValidationError> {
         Err(ValidationError::new("phone_invalid"))
     }
 }
+
+pub fn is_allow_enum_value(flag: bool) -> Result<(), ValidationError> {
+    if flag {
+        Ok(())
+    } else {
+        Err(ValidationError::new("invalid_enum_value"))
+    }
+}

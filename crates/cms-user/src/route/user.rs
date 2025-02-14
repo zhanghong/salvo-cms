@@ -44,6 +44,7 @@ pub async fn manager_create(
     let form = json.into_inner();
     form.validate()?;
     let state = depot.obtain::<AppState>().unwrap();
+    println!("form: {:?}", form);
     let dto = form.into();
     UserService::create(PlatformEnum::Manager, &dto, &state.db).await?;
     result_ok("oK".to_string())

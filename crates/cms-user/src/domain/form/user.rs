@@ -4,6 +4,8 @@ use validator::{Validate, ValidationError};
 
 use cms_core::utils::validate;
 
+use crate::enums::GenderEnum;
+
 // // ------------------------------------
 // // 字段验证方法
 // // ------------------------------------
@@ -31,8 +33,15 @@ fn validate_field_nickname(ptr: &&String) -> Result<(), ValidationError> {
     validate::string_length(str, true, 2, 30)
 }
 
-fn validate_field_gender(num: i16) -> Result<(), ValidationError> {
-    validate::numeric_range(Some(num), true, 0, 2)
+fn validate_field_gender(ptr: &&GenderEnum) -> Result<(), ValidationError> {
+    let item = (*ptr).clone();
+    let flag = match item {
+        GenderEnum::Male => true,
+        GenderEnum::Female => true,
+        GenderEnum::Unknown => true,
+        _ => false,
+    };
+    validate::is_allow_enum_value(flag)
 }
 
 fn validate_field_phone(ptr: &&String) -> Result<(), ValidationError> {
@@ -107,7 +116,7 @@ pub struct UserCreateForm {
 
     /// 性别
     #[validate(custom(function = "validate_field_gender", message = "用户性别不正确"))]
-    pub gender: Option<i16>,
+    pub gender: Option<GenderEnum>,
 
     /// 是否认证
     pub is_authed: Option<bool>,
@@ -166,7 +175,7 @@ pub struct UserUpdateForm {
 
     /// 性别
     #[validate(custom(function = "validate_field_gender", message = "用户性别不正确"))]
-    pub gender: Option<i16>,
+    pub gender: Option<GenderEnum>,
 
     /// 是否认证
     pub is_authed: Option<bool>,
