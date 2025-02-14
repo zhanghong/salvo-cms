@@ -4,7 +4,7 @@ use validator::Validate;
 
 use cms_core::{
     config::AppState,
-    domain::{result_ok, AppResult},
+    domain::{form::FieldValueUniqueForm, result_ok, AppResult},
     enums::PlatformEnum,
 };
 
@@ -105,6 +105,26 @@ pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<
 pub fn manager_form() -> AppResult<UserFormOptionVO> {
     let vo = UserService::form_options()?;
     result_ok(vo)
+}
+
+/// 唯一性校验
+///
+/// 管理端字段值唯一性校验
+#[endpoint(
+    tags("用户模块/管理端/用户管理"),
+    responses(
+        (status_code = 200, description = "success response")
+    )
+)]
+pub async fn manager_unique(
+    depot: &mut Depot,
+    json: JsonBody<FieldValueUniqueForm>,
+) -> AppResult<bool> {
+    let form = json.into_inner();
+    form.validate()?;
+    let state = depot.obtain::<AppState>().unwrap();
+    let value = UserService::field_unique(&form, &state.db).await?;
+    result_ok(value)
 }
 
 /// 日志列表

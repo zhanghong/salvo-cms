@@ -2,7 +2,7 @@ use chrono::Local;
 use cms_core::error::AppError;
 use sea_orm::*;
 
-use cms_core::domain::{handle_ok, HandleResult};
+use cms_core::domain::{form::FieldValueUniqueForm, handle_ok, HandleResult};
 use cms_core::enums::PlatformEnum;
 use cms_core::utils::{encrypt::encrypt_password, random};
 use sea_orm::DatabaseConnection;
@@ -206,6 +206,8 @@ impl UserService {
         db: &DatabaseConnection,
     ) -> HandleResult<bool> {
         let count = UserEntity::find()
+            .select_only()
+            .column(UserColumn::Id)
             .filter(column.eq(value))
             .filter(UserColumn::Id.ne(id))
             .count(db)
@@ -225,5 +227,30 @@ impl UserService {
         };
 
         handle_ok(vo)
+    }
+
+    /// 检查字段值是否唯一
+    pub async fn field_unique(
+        form: &FieldValueUniqueForm,
+        db: &DatabaseConnection,
+    ) -> HandleResult<bool> {
+        let id = form.skip_id.unwrap_or(0);
+
+        let name = form.field_name.clone().unwrap();
+        let column = match name.to_lowercase().as_str() {
+            "name" | "username" => UserColumn::Name,
+            "email" => UserColumn::Email,
+            "mobile" | "phone" => UserColumn::Phone,
+            _ => {
+                let err = AppError::BadRequest(String::from("无效的字段"));
+                return Err(err);
+            }
+        };
+
+        let value = form.field_value.clone().unwrap();
+        let value = sea_orm::Value::from(value);
+
+        let exist = Self::is_column_exist(id, column, value, db).await?;
+        handle_ok(exist != true)
     }
 }

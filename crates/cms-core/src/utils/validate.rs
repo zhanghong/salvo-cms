@@ -3,6 +3,16 @@ use std::fmt::Debug;
 use regex::Regex;
 use validator::ValidationError;
 
+pub fn string_present(str: &str) -> Result<(), ValidationError> {
+    let len = if str.is_empty() { 0 } else { str.len() };
+
+    if len == 0 {
+        return Err(ValidationError::new("length_invalid"));
+    }
+
+    Ok(())
+}
+
 pub fn string_length(
     str: &str,
     required: bool,
