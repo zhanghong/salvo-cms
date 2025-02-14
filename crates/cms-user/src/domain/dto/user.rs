@@ -5,6 +5,8 @@ use crate::{
     enums::{GenderEnum, UserTypeEnum},
 };
 
+use super::DetailStoreDTO;
+
 // ------------------------------------
 // 创建/更新用户
 // ------------------------------------
@@ -58,6 +60,9 @@ pub struct UserStoreDTO {
 
     /// 是否测试账号
     pub is_test: Option<bool>,
+
+    /// 详情信息
+    pub detail: Option<DetailStoreDTO>,
 }
 
 impl UserStoreDTO {
@@ -78,6 +83,10 @@ impl UserStoreDTO {
 
 impl From<UserCreateForm> for UserStoreDTO {
     fn from(model: UserCreateForm) -> Self {
+        let mut detail_dto: Option<DetailStoreDTO> = None;
+        if model.detail.is_some() {
+            detail_dto = Some(model.detail.clone().unwrap().into());
+        }
         Self {
             avatar_path: model.avatar_path,
             confirm_password: model.confirm_password,
@@ -93,6 +102,7 @@ impl From<UserCreateForm> for UserStoreDTO {
             password: model.password,
             phone: model.phone,
             realname: model.realname,
+            detail: detail_dto,
             types_list: Self::str_to_type_vec(&model.user_type),
             ..Default::default()
         }
@@ -101,6 +111,10 @@ impl From<UserCreateForm> for UserStoreDTO {
 
 impl From<UserUpdateForm> for UserStoreDTO {
     fn from(model: UserUpdateForm) -> Self {
+        let mut detail_dto: Option<DetailStoreDTO> = None;
+        if model.detail.is_some() {
+            detail_dto = Some(model.detail.clone().unwrap().into());
+        }
         Self {
             id: model.id,
             avatar_path: model.avatar_path,
@@ -114,6 +128,7 @@ impl From<UserUpdateForm> for UserStoreDTO {
             no: model.no,
             phone: model.phone,
             realname: model.realname,
+            detail: detail_dto,
             types_list: Self::str_to_type_vec(&model.user_type),
             ..Default::default()
         }

@@ -1,3 +1,5 @@
+use std::ffi::NulError;
+
 use chrono::Local;
 use cms_core::error::AppError;
 use sea_orm::*;
@@ -7,7 +9,11 @@ use cms_core::enums::PlatformEnum;
 use cms_core::utils::{encrypt::encrypt_password, random};
 use sea_orm::DatabaseConnection;
 
-use crate::domain::dto::UserStoreDTO;
+use crate::domain::dto::{DetailStoreDTO, UserStoreDTO};
+use crate::domain::entity::detail::{
+    ActiveModel as DetailActiveModel, Column as DetailColumn, Entity as DetailEntity,
+    Model as DetailModel,
+};
 use crate::domain::entity::user::{
     ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity, Model as UserModel,
 };
@@ -196,9 +202,93 @@ impl UserService {
         let model = model.save(db).await?;
         let model = model.try_into_model()?;
 
+        let opt_detail_origin = dto.detail.clone();
+        let mut opt_detail: Option<DetailStoreDTO> = None;
+        if opt_detail_origin.is_some() {
+            let mut dto = opt_detail_origin.unwrap().clone();
+            dto.user_id = Some(model.id);
+            opt_detail = Some(dto);
+        } else if is_create {
+            opt_detail = Some(DetailStoreDTO {
+                user_id: Some(model.id),
+                ..Default::default()
+            });
+        }
+        if let Some(dto) = opt_detail {
+            Self::store_detail(&dto, db).await?;
+        }
+
         handle_ok(model)
     }
 
+    async fn store_detail(dto: &DetailStoreDTO, db: &DatabaseConnection) -> HandleResult<bool> {
+        let user_id = dto.user_id.clone().unwrap_or(0);
+        if user_id < 1 {
+            return handle_ok(true);
+        }
+        let model = DetailEntity::find()
+            .filter(DetailColumn::UserId.eq(user_id))
+            .one(db)
+            .await?;
+        let mut model: DetailActiveModel = match model {
+            Some(model) => model.into(),
+            None => DetailActiveModel {
+                user_id: Set(user_id),
+                ..Default::default()
+            },
+        };
+
+        if dto.identity_no.is_some() {
+            let identity_no = dto.identity_no.clone().unwrap();
+            model.identity_no = Set(identity_no);
+        }
+
+        if dto.address.is_some() {
+            let address = dto.address.clone().unwrap();
+            model.address = Set(address);
+        }
+
+        if dto.emotional.is_some() {
+            let emotional = dto.emotional.clone().unwrap();
+            model.emotional = Set(emotional);
+        }
+
+        if dto.graduated_from.is_some() {
+            let graduated_from = dto.graduated_from.clone().unwrap();
+            model.graduated_from = Set(graduated_from);
+        }
+
+        if dto.company_name.is_some() {
+            let company_name = dto.company_name.clone().unwrap();
+            model.company_name = Set(company_name);
+        }
+
+        if dto.staff_title.is_some() {
+            let staff_title = dto.staff_title.clone().unwrap();
+            model.staff_title = Set(staff_title);
+        }
+
+        if dto.introduction.is_some() {
+            let introduction = dto.introduction.clone().unwrap();
+            model.introduction = Set(introduction);
+        }
+
+        if dto.honor.is_some() {
+            let honor = dto.honor.clone().unwrap();
+            model.honor = Set(honor);
+        }
+
+        if dto.expertises.is_some() {
+            let expertises = dto.expertises.clone().unwrap();
+            model.expertises = Set(expertises);
+        }
+
+        let _ = model.save(db).await?;
+
+        handle_ok(true)
+    }
+
+    /// 检查字段值是否唯一
     async fn is_column_exist(
         id: i64,
         column: UserColumn,

@@ -13,6 +13,26 @@ pub fn string_present(str: &str) -> Result<(), ValidationError> {
     Ok(())
 }
 
+pub fn string_min_length(str: &str, min: usize) -> Result<(), ValidationError> {
+    let len = if str.is_empty() { 0 } else { str.len() };
+
+    if len < min {
+        return Err(ValidationError::new("length_invalid"));
+    }
+
+    Ok(())
+}
+
+pub fn string_max_length(str: &str, max: usize) -> Result<(), ValidationError> {
+    let len = if str.is_empty() { 0 } else { str.len() };
+
+    if len > max {
+        return Err(ValidationError::new("length_invalid"));
+    }
+
+    Ok(())
+}
+
 pub fn string_length(
     str: &str,
     required: bool,
@@ -26,6 +46,38 @@ pub fn string_length(
     }
     if (min > 0 && len < min) || (max > 0 && len > max) {
         return Err(ValidationError::new("length_invalid"));
+    }
+
+    Ok(())
+}
+
+pub fn numeric_equal_or_greater_than<T: Copy + PartialOrd + Debug>(
+    opt: Option<T>,
+    min: T,
+) -> Result<(), ValidationError> {
+    if opt.is_none() {
+        return Err(ValidationError::new("range_required"));
+    }
+
+    let num = opt.unwrap();
+    if num < min {
+        return Err(ValidationError::new("range_invalid"));
+    }
+
+    Ok(())
+}
+
+pub fn numeric_equal_or_less_than<T: Copy + PartialOrd + Debug>(
+    opt: Option<T>,
+    max: T,
+) -> Result<(), ValidationError> {
+    if opt.is_none() {
+        return Err(ValidationError::new("range_required"));
+    }
+
+    let num = opt.unwrap();
+    if num > max {
+        return Err(ValidationError::new("range_invalid"));
     }
 
     Ok(())

@@ -4,6 +4,7 @@ use validator::{Validate, ValidationError};
 
 use cms_core::utils::validate;
 
+use super::DetailStoreForm;
 use crate::enums::GenderEnum;
 
 // // ------------------------------------
@@ -153,6 +154,9 @@ pub struct UserCreateForm {
 
     /// 角色类型
     pub user_type: Option<String>,
+
+    // 详情信息
+    pub detail: Option<DetailStoreForm>,
 }
 
 // ------------------------------------
@@ -208,6 +212,9 @@ pub struct UserUpdateForm {
 
     /// 角色类型
     pub user_type: Option<String>,
+
+    // 详情信息
+    pub detail: Option<DetailStoreForm>,
 }
 
 // ------------------------------------
