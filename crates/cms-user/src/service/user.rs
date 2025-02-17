@@ -5,7 +5,7 @@ use cms_core::enums::PlatformEnum;
 use cms_core::error::AppError;
 use cms_core::utils::{encrypt::encrypt_password, random, time};
 
-use crate::domain::dto::{DetailStoreDTO, UserStoreDTO};
+use crate::domain::dto::{DetailStoreDTO, UserStoreDTO, UserUpdatePasswordDTO};
 use crate::domain::entity::detail::{
     ActiveModel as DetailActiveModel, Column as DetailColumn, Entity as DetailEntity,
 };
@@ -181,8 +181,6 @@ impl UserService {
 
                 let salt = random::alpha_string(RAND_SALT_LENGTH);
                 let password = encrypt_password(salt.as_str(), password_str);
-                println!("password str: {}", password_str);
-                println!("password: {}", password);
                 model.salt = Set(salt);
                 model.password = Set(password);
             }
@@ -194,7 +192,9 @@ impl UserService {
             model.data_source_id = Set(data_source_id);
         }
 
-        let model = model.save(db).await?;
+        let txn = db.begin().await?;
+
+        let model = model.save(&txn).await?;
         let model = model.try_into_model()?;
 
         let opt_detail_origin = dto.detail.clone();
@@ -210,13 +210,20 @@ impl UserService {
             });
         }
         if let Some(dto) = opt_detail {
-            Self::store_detail(&dto, db).await?;
+            Self::store_detail(&dto, db, &txn).await?;
         }
+
+        // 提交事务
+        txn.commit().await?;
 
         handle_ok(model)
     }
 
-    async fn store_detail(dto: &DetailStoreDTO, db: &DatabaseConnection) -> HandleResult<bool> {
+    async fn store_detail(
+        dto: &DetailStoreDTO,
+        db: &DatabaseConnection,
+        txn: &DatabaseTransaction,
+    ) -> HandleResult<bool> {
         let user_id = dto.user_id.clone().unwrap_or(0);
         if user_id < 1 {
             return handle_ok(true);
@@ -296,8 +303,7 @@ impl UserService {
 
         let _ = model.save(db).await?;
 
-        let detail = DetailEntity::find_by_id(1).one(db).await?;
-        println!("detail: {:#?}", detail);
+        let detail = DetailEntity::find_by_id(1).one(txn).await?;
 
         handle_ok(true)
     }
@@ -356,5 +362,54 @@ impl UserService {
 
         let exist = Self::is_column_exist(id, column, value, db).await?;
         handle_ok(exist != true)
+    }
+
+    /// 修改登录密码
+    pub async fn update_password(
+        dto: &UserUpdatePasswordDTO,
+        db: &DatabaseConnection,
+    ) -> HandleResult<bool> {
+        let id = dto.id;
+        if id < 1 {
+            let err = AppError::BadRequest(String::from("无效的用户ID"));
+            return Err(err);
+        }
+
+        let model = UserEntity::find_by_id(id)
+            .one(db)
+            .await?
+            .ok_or_else(|| AppError::BadRequest(String::from("无效的用户ID")))?;
+
+        if dto.current_password.is_some() {
+            let current_password = dto.current_password.clone().unwrap();
+            let salt = model.salt.clone();
+            let md5_password = encrypt_password(salt.as_str(), &current_password.as_str());
+            if md5_password.ne(model.password.as_str()) {
+                let err = AppError::BadRequest(String::from("当前密码不正确"));
+                return Err(err);
+            }
+        }
+
+        let new_password = dto.new_password.clone();
+        let confirm_password = dto.confirm_password.clone();
+        if confirm_password.ne(new_password.as_str()) {
+            let err = AppError::BadRequest(String::from("两次输入的密码不一致"));
+            return Err(err);
+        }
+
+        let salt = random::alpha_string(RAND_SALT_LENGTH);
+        let password = encrypt_password(salt.as_str(), new_password.as_str());
+        // if password.eq(model.password.as_str()) {
+        //     let err = AppError::BadRequest(String::from("新密码不能与旧密码相同"));
+        //     return Err(err);
+        // }
+
+        let mut active: UserActiveModel = model.into();
+        active.password = Set(password.to_owned());
+        active.salt = Set(salt.to_owned());
+        active.updated_at = Set(time::current_time());
+        let _ = active.update(db).await?;
+
+        handle_ok(true)
     }
 }

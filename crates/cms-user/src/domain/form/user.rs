@@ -223,9 +223,6 @@ pub struct UserUpdateForm {
 // Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
 pub struct UserUpdatePasswordForm {
-    /// 主键
-    pub id: Option<i64>,
-
     /// 当前密码
     #[validate(custom(
         function = "validate_field_current_password",

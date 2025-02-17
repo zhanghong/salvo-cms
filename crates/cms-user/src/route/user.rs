@@ -10,8 +10,8 @@ use cms_core::{
 
 use crate::{
     domain::{
-        dto::UserStoreDTO,
-        form::{UserCreateForm, UserUpdateForm},
+        dto::{UserStoreDTO, UserUpdatePasswordDTO},
+        form::{UserCreateForm, UserUpdateForm, UserUpdatePasswordForm},
         query::UserPaginateQuery,
         vo::UserFormOptionVO,
     },
@@ -124,6 +124,29 @@ pub async fn manager_unique(
     form.validate()?;
     let state = depot.obtain::<AppState>().unwrap();
     let value = UserService::field_unique(&form, &state.db).await?;
+    result_ok(value)
+}
+
+/// 修改密码
+///
+/// 管理端修改密码
+#[endpoint(
+    tags("用户模块/管理端/用户管理"),
+    responses(
+        (status_code = 200, description = "success response")
+    )
+)]
+pub async fn manager_update_password(
+    depot: &mut Depot,
+    id: PathParam<i64>,
+    json: JsonBody<UserUpdatePasswordForm>,
+) -> AppResult<bool> {
+    let form = json.into_inner();
+    form.validate()?;
+    let mut dto: UserUpdatePasswordDTO = form.into();
+    dto.id = id.into_inner();
+    let state = depot.obtain::<AppState>().unwrap();
+    let value = UserService::update_password(&dto, &state.db).await?;
     result_ok(value)
 }
 
