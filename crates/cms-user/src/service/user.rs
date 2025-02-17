@@ -230,12 +230,16 @@ impl UserService {
             .filter(DetailColumn::UserId.eq(user_id))
             .one(db)
             .await?;
+        let mut is_create = false;
         let mut model: DetailActiveModel = match model {
             Some(model) => model.into(),
-            None => DetailActiveModel {
-                user_id: Set(user_id),
-                ..Default::default()
-            },
+            None => {
+                is_create = true;
+                DetailActiveModel {
+                    user_id: Set(user_id),
+                    ..Default::default()
+                }
+            }
         };
 
         if dto.identity_no.is_some() {
@@ -282,6 +286,13 @@ impl UserService {
             let expertises = dto.expertises.clone().unwrap();
             model.expertises = Set(expertises);
         }
+
+        println!("========================================");
+        let now = Local::now();
+        if is_create {
+            model.created_at = Set(now);
+        }
+        model.updated_at = Set(now);
 
         let _ = model.save(db).await?;
 
