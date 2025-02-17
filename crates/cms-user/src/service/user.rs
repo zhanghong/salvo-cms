@@ -5,7 +5,7 @@ use cms_core::enums::PlatformEnum;
 use cms_core::error::AppError;
 use cms_core::utils::{encrypt::encrypt_password, random, time};
 
-use crate::domain::dto::{DetailStoreDTO, UserStoreDTO, UserUpdatePasswordDTO};
+use crate::domain::dto::{DetailStoreDTO, UserStoreDTO, UserUpdatePasswordDTO, UserViewDTO};
 use crate::domain::entity::detail::{
     ActiveModel as DetailActiveModel, Column as DetailColumn, Entity as DetailEntity,
 };
@@ -301,9 +301,7 @@ impl UserService {
         }
         model.updated_at = Set(now);
 
-        let _ = model.save(db).await?;
-
-        let detail = DetailEntity::find_by_id(1).one(txn).await?;
+        let _ = model.save(txn).await?;
 
         handle_ok(true)
     }
@@ -411,5 +409,20 @@ impl UserService {
         let _ = active.update(db).await?;
 
         handle_ok(true)
+    }
+
+    pub async fn view(dto: &UserViewDTO, db: &DatabaseConnection) -> HandleResult<UserModel> {
+        let id = dto.id;
+        if id < 1 {
+            let err = AppError::BadRequest(String::from("无效的用户ID"));
+            return Err(err);
+        }
+
+        let model: UserModel = UserEntity::find_by_id(id)
+            .one(db)
+            .await?
+            .ok_or_else(|| AppError::BadRequest(String::from("无效的用户ID")))?;
+
+        handle_ok(model)
     }
 }

@@ -1,3 +1,5 @@
+mod detail;
 mod user;
 
-pub use user::UserFormOptionVO;
+pub use detail::DetailVO;
+pub use user::{UserFormOptionVO, UserItemVO};

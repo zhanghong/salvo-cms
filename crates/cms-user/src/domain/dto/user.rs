@@ -164,3 +164,19 @@ impl From<UserUpdatePasswordForm> for UserUpdatePasswordDTO {
         }
     }
 }
+
+// ------------------------------------
+// 查看用户
+// ------------------------------------
+// Service 层查看用户使用的结构体
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
+pub struct UserViewDTO {
+    /// 主键
+    pub id: i64,
+
+    /// 当前密码
+    pub user_type: Option<UserTypeEnum>,
+
+    /// 确认密码
+    pub enabled: Option<bool>,
+}

@@ -10,10 +10,10 @@ use cms_core::{
 
 use crate::{
     domain::{
-        dto::{UserStoreDTO, UserUpdatePasswordDTO},
+        dto::{UserStoreDTO, UserUpdatePasswordDTO, UserViewDTO},
         form::{UserCreateForm, UserUpdateForm, UserUpdatePasswordForm},
         query::UserPaginateQuery,
-        vo::UserFormOptionVO,
+        vo::{UserFormOptionVO, UserItemVO},
     },
     service::UserService,
 };
@@ -148,6 +148,26 @@ pub async fn manager_update_password(
     let state = depot.obtain::<AppState>().unwrap();
     let value = UserService::update_password(&dto, &state.db).await?;
     result_ok(value)
+}
+
+/// 查看详情
+///
+/// 管理端查看用户详情
+#[endpoint(
+    tags("用户模块/管理端/用户管理"),
+    responses(
+        (status_code = 200, description = "success response")
+    )
+)]
+pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<UserItemVO> {
+    let dto = UserViewDTO {
+        id: id.into_inner(),
+        ..Default::default()
+    };
+    let state = depot.obtain::<AppState>().unwrap();
+    let model = UserService::view(&dto, &state.db).await?;
+    println!("view user: {:#?}", model);
+    result_ok(model.into())
 }
 
 /// 日志列表
