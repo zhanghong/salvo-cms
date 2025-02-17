@@ -1,18 +1,13 @@
-use std::ffi::NulError;
-
-use chrono::Local;
-use cms_core::error::AppError;
 use sea_orm::*;
 
 use cms_core::domain::{form::FieldValueUniqueForm, handle_ok, HandleResult};
 use cms_core::enums::PlatformEnum;
-use cms_core::utils::{encrypt::encrypt_password, random};
-use sea_orm::DatabaseConnection;
+use cms_core::error::AppError;
+use cms_core::utils::{encrypt::encrypt_password, random, time};
 
 use crate::domain::dto::{DetailStoreDTO, UserStoreDTO};
 use crate::domain::entity::detail::{
     ActiveModel as DetailActiveModel, Column as DetailColumn, Entity as DetailEntity,
-    Model as DetailModel,
 };
 use crate::domain::entity::user::{
     ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity, Model as UserModel,
@@ -155,7 +150,7 @@ impl UserService {
         };
         model.is_test = Set(is_test);
 
-        let time = Local::now();
+        let time = time::current_time();
         model.updated_at = Set(time);
 
         if is_create {
@@ -287,14 +282,16 @@ impl UserService {
             model.expertises = Set(expertises);
         }
 
-        println!("========================================");
-        let now = Local::now();
+        let now = time::current_time();
         if is_create {
             model.created_at = Set(now);
         }
         model.updated_at = Set(now);
 
         let _ = model.save(db).await?;
+
+        let detail = DetailEntity::find_by_id(1).one(db).await?;
+        println!("detail: {:#?}", detail);
 
         handle_ok(true)
     }
