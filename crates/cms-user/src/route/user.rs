@@ -167,7 +167,7 @@ pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<Us
     let state = depot.obtain::<AppState>().unwrap();
     let model = UserService::view(&dto, &state.db).await?;
     println!("view user: {:#?}", model);
-    result_ok(model.into())
+    result_ok(model)
 }
 
 /// 日志列表

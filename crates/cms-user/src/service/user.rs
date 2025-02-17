@@ -8,11 +8,12 @@ use cms_core::utils::{encrypt::encrypt_password, random, time};
 use crate::domain::dto::{DetailStoreDTO, UserStoreDTO, UserUpdatePasswordDTO, UserViewDTO};
 use crate::domain::entity::detail::{
     ActiveModel as DetailActiveModel, Column as DetailColumn, Entity as DetailEntity,
+    Model as DetailModel,
 };
 use crate::domain::entity::user::{
     ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity, Model as UserModel,
 };
-use crate::domain::vo::UserFormOptionVO;
+use crate::domain::vo::{UserFormOptionVO, UserItemVO};
 use crate::enums::{GenderEnum, UserTypeEnum};
 
 pub struct UserService {}
@@ -411,7 +412,7 @@ impl UserService {
         handle_ok(true)
     }
 
-    pub async fn view(dto: &UserViewDTO, db: &DatabaseConnection) -> HandleResult<UserModel> {
+    pub async fn view(dto: &UserViewDTO, db: &DatabaseConnection) -> HandleResult<UserItemVO> {
         let id = dto.id;
         if id < 1 {
             let err = AppError::BadRequest(String::from("无效的用户ID"));
@@ -423,6 +424,18 @@ impl UserService {
             .await?
             .ok_or_else(|| AppError::BadRequest(String::from("无效的用户ID")))?;
 
-        handle_ok(model)
+        let mut vo: UserItemVO = model.into();
+
+        let detail = DetailEntity::find()
+            .filter(DetailColumn::UserId.eq(id))
+            .one(db)
+            .await?;
+
+        if detail.is_some() {
+            // let detail: DetailModel = detail.unwrap();
+            vo.detail = Some(detail.unwrap().into());
+        }
+
+        handle_ok(vo)
     }
 }
