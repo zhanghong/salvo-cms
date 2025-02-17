@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
 use crate::domain::form::DetailStoreForm;
@@ -25,6 +26,9 @@ pub struct DetailStoreDTO {
 
     /// 详情地址
     pub address: Option<String>,
+
+    /// 出生日期
+    pub born_on: Option<NaiveDate>,
 
     /// 情感状态
     pub emotional: Option<String>,
@@ -56,6 +60,7 @@ impl From<DetailStoreForm> for DetailStoreDTO {
             city_id: form.city_id,
             district_id: form.district_id,
             address: form.address,
+            born_on: form.born_on,
             emotional: form.emotional,
             graduated_from: form.graduated_from,
             company_name: form.company_name,

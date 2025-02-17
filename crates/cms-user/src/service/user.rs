@@ -247,6 +247,12 @@ impl UserService {
             model.address = Set(address);
         }
 
+        if dto.born_on.is_some() {
+            model.born_on = Set(dto.born_on.clone());
+        } else {
+            model.born_on = Set(None);
+        }
+
         if dto.emotional.is_some() {
             let emotional = dto.emotional.clone().unwrap();
             model.emotional = Set(emotional);

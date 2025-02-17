@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
@@ -78,6 +79,9 @@ pub struct DetailStoreForm {
     /// 详情地址
     #[validate(custom(function = "validate_field_address", message = "不能超过150个字符"))]
     pub address: Option<String>,
+
+    /// 出生日期
+    pub born_on: Option<NaiveDate>,
 
     /// 情感状态
     #[validate(custom(function = "validate_field_emotional", message = "不能超过50个字符"))]
