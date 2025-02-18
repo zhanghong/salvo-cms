@@ -9,14 +9,12 @@ use cms_core::domain::{dto::FieldValueUniqueDTO, handle_ok, HandleResult};
 use cms_core::enums::PlatformEnum;
 use cms_core::error::AppError;
 use cms_core::utils::{encrypt::encrypt_password, random, time};
-use validator::ValidateLength;
 
 use crate::domain::dto::{
     DetailStoreDTO, UserQueryDTO, UserStoreDTO, UserUpdatePasswordDTO, UserViewDTO,
 };
 use crate::domain::entity::detail::{
     ActiveModel as DetailActiveModel, Column as DetailColumn, Entity as DetailEntity,
-    Model as DetailModel,
 };
 use crate::domain::entity::user::{
     ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity, Model as UserModel,
@@ -46,8 +44,8 @@ impl UserService {
                 ..Default::default()
             }
         } else {
-            let entity = UserEntity::find_by_id(id).one(db).await?.unwrap();
-            entity.into()
+            let model = Self::fetch_by_id(id, db).await?;
+            model.into()
         };
 
         let name = dto.name.clone();
@@ -322,7 +320,7 @@ impl UserService {
         value: sea_orm::Value,
         db: &DatabaseConnection,
     ) -> HandleResult<bool> {
-        let count = UserEntity::find()
+        let count = Self::scope_active_query()
             .select_only()
             .column(UserColumn::Id)
             .filter(column.eq(value))
@@ -412,11 +410,7 @@ impl UserService {
             return Err(err);
         }
 
-        let model = UserEntity::find_by_id(id)
-            .one(db)
-            .await?
-            .ok_or_else(|| AppError::BadRequest(String::from("无效的用户ID")))?;
-
+        let model = Self::fetch_by_id(id, db).await?;
         if dto.current_password.is_some() {
             let current_password = dto.current_password.clone().unwrap();
             let salt = model.salt.clone();
@@ -457,21 +451,30 @@ impl UserService {
             return Err(err);
         }
 
-        let model: UserModel = UserEntity::find_by_id(id)
-            .one(db)
-            .await?
-            .ok_or_else(|| AppError::BadRequest(String::from("无效的用户ID")))?;
+        let model = Self::fetch_by_id(id, db).await?;
 
         let mut vo: UserItemVO = model.into();
-
-        let detail = DetailEntity::find()
-            .filter(DetailColumn::UserId.eq(id))
-            .one(db)
-            .await?;
-
-        if detail.is_some() {
-            // let detail: DetailModel = detail.unwrap();
-            vo.detail = Some(detail.unwrap().into());
+        if let Some(load_models) = dto.load_models.clone() {
+            for enums in load_models {
+                match enums {
+                    UserLoadEnum::Editor => {
+                        let opt = Self::fetch_by_id(vo.editor_id, db).await;
+                        if let Ok(editor) = opt {
+                            vo.editor = Some(editor.into());
+                        }
+                    }
+                    UserLoadEnum::Detail => {
+                        let detail = DetailEntity::find()
+                            .filter(DetailColumn::UserId.eq(id))
+                            .one(db)
+                            .await?;
+                        if let Some(detail) = detail {
+                            vo.detail = Some(detail.into());
+                        }
+                    }
+                    _ => {}
+                }
+            }
         }
 
         handle_ok(vo)
@@ -546,7 +549,7 @@ impl UserService {
             return handle_ok(HashMap::<i64, EditorVO>::new());
         }
 
-        let models = UserEntity::find()
+        let models = Self::scope_active_query()
             .filter(UserColumn::Id.is_in(editor_ids))
             .all(db)
             .await?;
@@ -563,9 +566,8 @@ impl UserService {
         platform: &PlatformEnum,
         dto: &UserQueryDTO,
     ) -> HandleResult<Select<UserEntity>> {
-        let mut query: Select<UserEntity> = UserEntity::find()
-            .filter(UserColumn::IsDeleted.eq(false))
-            .order_by_desc(UserColumn::Id);
+        let mut query = Self::scope_active_query();
+        query = query.order_by_desc(UserColumn::Id);
 
         match platform {
             PlatformEnum::Open => {
@@ -632,5 +634,19 @@ impl UserService {
         }
 
         handle_ok(query)
+    }
+
+    fn scope_active_query() -> Select<UserEntity> {
+        UserEntity::find().filter(UserColumn::IsDeleted.eq(false))
+    }
+
+    async fn fetch_by_id(id: i64, db: &DatabaseConnection) -> HandleResult<UserModel> {
+        let model = Self::scope_active_query()
+            .filter(UserColumn::Id.eq(id))
+            .one(db)
+            .await?
+            .ok_or_else(|| AppError::BadRequest(String::from("无效的用户ID")))?;
+
+        handle_ok(model)
     }
 }

@@ -183,6 +183,9 @@ pub struct UserViewDTO {
 
     /// 确认密码
     pub enabled: Option<bool>,
+
+    /// 加载关联数据
+    pub load_models: Option<Vec<UserLoadEnum>>,
 }
 
 // ------------------------------------

@@ -5,7 +5,7 @@ use validator::Validate;
 use cms_core::{
     config::AppState,
     domain::{
-        dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO},
+        dto::FieldBoolUpdateDTO,
         form::{FieldBoolUpdateForm, FieldValueUniqueForm},
         result_ok,
         vo::PaginateResultVO,
@@ -157,6 +157,7 @@ pub async fn update_bool_field(
 ) -> AppResult<bool> {
     let form = json.into_inner();
     form.validate()?;
+    // 因为设置 id 所以必须指定 dto 类型
     let mut dto: FieldBoolUpdateDTO = form.into();
     dto.id = id.into_inner();
     let state = depot.obtain::<AppState>().unwrap();
@@ -197,8 +198,10 @@ pub async fn manager_update_password(
     )
 )]
 pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<UserItemVO> {
+    let load_models: Vec<UserLoadEnum> = vec![UserLoadEnum::Editor, UserLoadEnum::Detail];
     let dto = UserViewDTO {
         id: id.into_inner(),
+        load_models: Some(load_models),
         ..Default::default()
     };
     let state = depot.obtain::<AppState>().unwrap();
