@@ -1,0 +1,31 @@
+[package]
+name = "cms-auth"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cms-core = { version = "0.1.0", path = "../cms-core" }
+
+salvo = { workspace = true }
+tokio = { workspace = true }
+
+# logging
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# env
+dotenvy = { workspace = true }
+envy = { workspace = true }
+
+# serde
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# database
+chrono = { workspace = true }
+sea-orm = { workspace = true }
+uuid = { workspace = true }
+
+# validator
+regex = { workspace = true }
+validator = { workspace = true }
