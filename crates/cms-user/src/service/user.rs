@@ -22,7 +22,7 @@ use crate::domain::entity::user::{
     ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity, Model as UserModel,
 };
 use crate::domain::vo::{UserFormOptionVO, UserItemVO};
-use crate::enums::{GenderEnum, UserTypeEnum};
+use crate::enums::{GenderEnum, UserLoadEnum, UserTypeEnum};
 
 pub struct UserService {}
 
@@ -507,10 +507,10 @@ impl UserService {
             list.push(vo);
         }
 
-        if let Some(load_names) = dto.load_names.clone() {
-            for name in load_names {
-                match name.as_str() {
-                    "editor" => {
+        if let Some(load_models) = dto.load_models.clone() {
+            for enums in load_models {
+                match enums {
+                    UserLoadEnum::Editor => {
                         let map = Self::query_load_editors(&editor_ids, db).await?;
                         for vo in list.iter_mut() {
                             let editor = map.get(&vo.editor_id).cloned();

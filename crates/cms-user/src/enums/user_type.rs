@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 

@@ -21,6 +21,7 @@ use crate::{
         query::UserPaginateQuery,
         vo::{UserFormOptionVO, UserItemVO},
     },
+    enums::UserLoadEnum,
     service::UserService,
 };
 
@@ -40,7 +41,7 @@ pub async fn manager_paginate(
 ) -> AppResult<PaginateResultVO<UserItemVO>> {
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: UserQueryDTO = query.into();
-    dto.load_names = Some(vec!["editor".to_string()]);
+    dto.load_models = Some(vec![UserLoadEnum::Editor]);
     let vo = UserService::paginage(&PlatformEnum::Manager, &dto, &state.db).await?;
     result_ok(vo)
 }

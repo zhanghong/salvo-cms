@@ -6,7 +6,7 @@ use crate::{
         form::{UserCreateForm, UserUpdateForm, UserUpdatePasswordForm},
         query::UserPaginateQuery,
     },
-    enums::{GenderEnum, UserTypeEnum},
+    enums::{GenderEnum, UserLoadEnum, UserTypeEnum},
 };
 
 use super::DetailStoreDTO;
@@ -234,7 +234,7 @@ pub struct UserQueryDTO {
     pub created_end_time: Option<NaiveDateTime>,
 
     /// 加载关联数据
-    pub load_names: Option<Vec<String>>
+    pub load_models: Option<Vec<UserLoadEnum>>,
 }
 
 impl From<UserPaginateQuery> for UserQueryDTO {
