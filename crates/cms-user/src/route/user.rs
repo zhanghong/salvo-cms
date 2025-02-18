@@ -39,7 +39,8 @@ pub async fn manager_paginate(
     query: UserPaginateQuery,
 ) -> AppResult<PaginateResultVO<UserItemVO>> {
     let state = depot.obtain::<AppState>().unwrap();
-    let dto: UserQueryDTO = query.into();
+    let mut dto: UserQueryDTO = query.into();
+    dto.load_names = Some(vec!["editor".to_string()]);
     let vo = UserService::paginage(&PlatformEnum::Manager, &dto, &state.db).await?;
     result_ok(vo)
 }

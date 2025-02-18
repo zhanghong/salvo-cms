@@ -1,5 +1,7 @@
+use std::collections::HashMap;
+
 use cms_core::domain::dto::FieldBoolUpdateDTO;
-use cms_core::domain::vo::PaginateResultVO;
+use cms_core::domain::vo::{EditorVO, PaginateResultVO};
 use sea_orm::prelude::Expr;
 use sea_orm::*;
 
@@ -7,6 +9,7 @@ use cms_core::domain::{dto::FieldValueUniqueDTO, handle_ok, HandleResult};
 use cms_core::enums::PlatformEnum;
 use cms_core::error::AppError;
 use cms_core::utils::{encrypt::encrypt_password, random, time};
+use validator::ValidateLength;
 
 use crate::domain::dto::{
     DetailStoreDTO, UserQueryDTO, UserStoreDTO, UserUpdatePasswordDTO, UserViewDTO,
@@ -495,14 +498,65 @@ impl UserService {
         let paginator = query.paginate(db, page_size);
         let total = paginator.num_items_and_pages().await?;
         let models = paginator.fetch_page(page - 1).await?;
-        let list = models.into_iter().map(|model| model.into()).collect();
+        let len = models.len();
+        let mut list: Vec<UserItemVO> = Vec::with_capacity(len);
+        let mut editor_ids: Vec<i64> = Vec::with_capacity(len);
+        for model in models.iter() {
+            editor_ids.push(model.editor_id);
+            let vo: UserItemVO = model.into();
+            list.push(vo);
+        }
+
+        if let Some(load_names) = dto.load_names.clone() {
+            for name in load_names {
+                match name.as_str() {
+                    "editor" => {
+                        let map = Self::query_load_editors(&editor_ids, db).await?;
+                        for vo in list.iter_mut() {
+                            let editor = map.get(&vo.editor_id).cloned();
+                            vo.editor = editor;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        println!("lenth: {}", editor_ids.len());
         let vo = PaginateResultVO {
             page_size,
             current_page: page,
             total: total.number_of_items,
             list: list,
         };
+
+        // let editor_ids = models
+        //     .into_iter()
+        //     .map(|model| model.editor_id)
+        //     .collect::<Vec<i64>>();
         handle_ok(vo)
+    }
+
+    pub async fn query_load_editors(
+        ids: &Vec<i64>,
+        db: &DatabaseConnection,
+    ) -> HandleResult<HashMap<i64, EditorVO>> {
+        let editor_ids: Vec<i64> = ids.into_iter().filter(|&&id| id > 0).cloned().collect();
+        if editor_ids.is_empty() {
+            return handle_ok(HashMap::<i64, EditorVO>::new());
+        }
+
+        let models = UserEntity::find()
+            .filter(UserColumn::Id.is_in(editor_ids))
+            .all(db)
+            .await?;
+
+        let map: HashMap<i64, EditorVO> = models
+            .into_iter()
+            .map(|model| (model.id, model.into()))
+            .collect();
+
+        handle_ok(map)
     }
 
     async fn query_builder(

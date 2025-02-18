@@ -232,6 +232,9 @@ pub struct UserQueryDTO {
 
     /// 创建结束时间
     pub created_end_time: Option<NaiveDateTime>,
+
+    /// 加载关联数据
+    pub load_names: Option<Vec<String>>
 }
 
 impl From<UserPaginateQuery> for UserQueryDTO {

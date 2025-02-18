@@ -1,3 +1,4 @@
+use cms_core::domain::vo::EditorVO;
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
@@ -28,6 +29,14 @@ pub struct UserFormOptionVO {
 pub struct UserItemVO {
     /// 主键
     pub id: i64,
+
+    /// 编辑用户类型
+    #[serde(skip_serializing)]
+    pub editor_type: String,
+
+    /// 编辑用户ID
+    #[serde(skip_serializing)]
+    pub editor_id: i64,
 
     /// NO
     pub no: String,
@@ -91,31 +100,50 @@ pub struct UserItemVO {
 
     /// 详情信息
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub editor: Option<EditorVO>,
+
+    /// 详情信息
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub detail: Option<DetailVO>,
 }
 
-impl From<Model> for UserItemVO {
-    fn from(model: Model) -> Self {
+impl UserItemVO {
+    fn from_model_inner(model: &Model) -> Self {
         let avatar_url = model.avatar_url();
         let created_time = model.created_time();
         let updated_time = model.updated_time();
+
         Self {
             id: model.id,
-            no: model.no,
-            name: model.name,
+            editor_type: model.editor_type.to_owned(),
+            editor_id: model.editor_id,
+            no: model.no.to_owned(),
+            name: model.name.to_owned(),
             realname: Some(model.realname.to_owned()),
             nickname: Some(model.nickname.to_owned()),
             gender: Some(model.gender),
             phone: Some(model.phone.to_owned()),
-            avatar_url: avatar_url,
+            avatar_url,
             email: Some(model.email.to_owned()),
             data_source_id: Some(model.data_source_id),
             is_authed: Some(model.is_authed),
             is_enabled: Some(model.is_enabled),
             is_test: Some(model.is_test),
-            created_time: created_time,
-            updated_time: updated_time,
+            created_time,
+            updated_time,
             ..Default::default()
         }
+    }
+}
+
+impl From<Model> for UserItemVO {
+    fn from(model: Model) -> Self {
+        Self::from_model_inner(&model)
+    }
+}
+
+impl From<&Model> for UserItemVO {
+    fn from(model: &Model) -> Self {
+        Self::from_model_inner(model)
     }
 }

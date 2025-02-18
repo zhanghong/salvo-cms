@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
@@ -66,12 +68,17 @@ impl UserTypeEnum {
 
     /// 将 UserTypeEnum 向量转换为逗号分隔的字符串，过滤掉 None 值
     pub fn to_comma_str(types: &[Self]) -> String {
-        types
+        let str = types
             .iter()
             .filter(|&t| *t != UserTypeEnum::None) // 过滤掉 None 值
             .map(|t| t.as_value()) // 转换为字符串值
             .collect::<Vec<_>>()
-            .join(",")
+            .join(",");
+        if str.is_empty() {
+            str
+        } else {
+            format!(",{},", str)
+        }
     }
 }
 
