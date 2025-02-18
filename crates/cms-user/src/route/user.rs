@@ -7,14 +7,16 @@ use cms_core::{
     domain::{
         dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO},
         form::{FieldBoolUpdateForm, FieldValueUniqueForm},
-        result_ok, AppResult,
+        result_ok,
+        vo::PaginateResultVO,
+        AppResult,
     },
     enums::PlatformEnum,
 };
 
 use crate::{
     domain::{
-        dto::{UserStoreDTO, UserUpdatePasswordDTO, UserViewDTO},
+        dto::{UserQueryDTO, UserStoreDTO, UserUpdatePasswordDTO, UserViewDTO},
         form::{UserCreateForm, UserUpdateForm, UserUpdatePasswordForm},
         query::UserPaginateQuery,
         vo::{UserFormOptionVO, UserItemVO},
@@ -22,7 +24,7 @@ use crate::{
     service::UserService,
 };
 
-/// 用户列表
+/// 分页列表
 ///
 /// 管理端分页查询
 #[endpoint(
@@ -32,9 +34,14 @@ use crate::{
         (status_code = 200, description = "success response")
     )
 )]
-pub async fn manager_paginate(query: UserPaginateQuery) -> AppResult<String> {
-    println!("query: {:?}", query);
-    result_ok("oK".to_string())
+pub async fn manager_paginate(
+    depot: &mut Depot,
+    query: UserPaginateQuery,
+) -> AppResult<PaginateResultVO<UserItemVO>> {
+    let state = depot.obtain::<AppState>().unwrap();
+    let dto: UserQueryDTO = query.into();
+    let vo = UserService::paginage(&PlatformEnum::Manager, &dto, &state.db).await?;
+    result_ok(vo)
 }
 
 /// 创建用户
@@ -54,7 +61,7 @@ pub async fn manager_create(
     form.validate()?;
     let state = depot.obtain::<AppState>().unwrap();
     let dto = form.into();
-    UserService::store(PlatformEnum::Manager, &dto, &state.db).await?;
+    UserService::store(&PlatformEnum::Manager, &dto, &state.db).await?;
     result_ok("oK".to_string())
 }
 
@@ -77,7 +84,7 @@ pub async fn manager_update(
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: UserStoreDTO = form.into();
     dto.id = Some(id.into_inner());
-    UserService::store(PlatformEnum::Manager, &dto, &state.db).await?;
+    UserService::store(&PlatformEnum::Manager, &dto, &state.db).await?;
     result_ok("oK".to_string())
 }
 

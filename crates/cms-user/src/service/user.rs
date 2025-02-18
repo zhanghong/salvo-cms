@@ -1,4 +1,5 @@
 use cms_core::domain::dto::FieldBoolUpdateDTO;
+use cms_core::domain::vo::PaginateResultVO;
 use sea_orm::prelude::Expr;
 use sea_orm::*;
 
@@ -7,7 +8,9 @@ use cms_core::enums::PlatformEnum;
 use cms_core::error::AppError;
 use cms_core::utils::{encrypt::encrypt_password, random, time};
 
-use crate::domain::dto::{DetailStoreDTO, UserStoreDTO, UserUpdatePasswordDTO, UserViewDTO};
+use crate::domain::dto::{
+    DetailStoreDTO, UserQueryDTO, UserStoreDTO, UserUpdatePasswordDTO, UserViewDTO,
+};
 use crate::domain::entity::detail::{
     ActiveModel as DetailActiveModel, Column as DetailColumn, Entity as DetailEntity,
     Model as DetailModel,
@@ -25,7 +28,7 @@ const RAND_NO_LENGTH: usize = 10;
 
 impl UserService {
     pub async fn store(
-        platform: PlatformEnum,
+        platform: &PlatformEnum,
         dto: &UserStoreDTO,
         db: &DatabaseConnection,
     ) -> HandleResult<UserModel> {
@@ -469,5 +472,111 @@ impl UserService {
         }
 
         handle_ok(vo)
+    }
+
+    /// 分页查询
+    pub async fn paginage(
+        platform: &PlatformEnum,
+        dto: &UserQueryDTO,
+        db: &DatabaseConnection,
+    ) -> HandleResult<PaginateResultVO<UserItemVO>> {
+        let mut page = dto.page.unwrap_or(1);
+        if page < 1 {
+            page = 1;
+        }
+
+        let mut page_size = dto.page_size.unwrap_or(20);
+        if page_size < 1 {
+            page_size = 20;
+        } else if page_size > 50 {
+            page_size = 50;
+        }
+        let query = Self::query_builder(platform, dto).await?;
+        let paginator = query.paginate(db, page_size);
+        let total = paginator.num_items_and_pages().await?;
+        let models = paginator.fetch_page(page - 1).await?;
+        let list = models.into_iter().map(|model| model.into()).collect();
+        let vo = PaginateResultVO {
+            page_size,
+            current_page: page,
+            total: total.number_of_items,
+            list: list,
+        };
+        handle_ok(vo)
+    }
+
+    async fn query_builder(
+        platform: &PlatformEnum,
+        dto: &UserQueryDTO,
+    ) -> HandleResult<Select<UserEntity>> {
+        let mut query: Select<UserEntity> = UserEntity::find()
+            .filter(UserColumn::IsDeleted.eq(false))
+            .order_by_desc(UserColumn::Id);
+
+        match platform {
+            PlatformEnum::Open => {
+                query = query.filter(UserColumn::IsTest.eq(false));
+            }
+            _ => {
+                query = query.filter(UserColumn::IsTest.eq(false));
+            }
+        }
+
+        if let Some(keyword) = dto.keyword.clone() {
+            let condition = Condition::any()
+                .add(UserColumn::Name.contains(&keyword))
+                .add(UserColumn::Nickname.contains(&keyword))
+                .add(UserColumn::Phone.contains(&keyword))
+                .add(UserColumn::Email.contains(&keyword));
+            query = query.filter(condition);
+        } else {
+            if let Some(phone) = dto.phone.clone() {
+                query = query.filter(UserColumn::Phone.eq(phone));
+            }
+
+            if let Some(email) = dto.email.clone() {
+                query = query.filter(UserColumn::Email.eq(email));
+            }
+        }
+
+        if let Some(enabled) = dto.is_enabled {
+            query = query.filter(UserColumn::IsEnabled.eq(enabled));
+        }
+
+        if let Some(authed) = dto.is_authed {
+            query = query.filter(UserColumn::IsAuthed.eq(authed));
+        }
+
+        if let Some(test) = dto.is_test {
+            query = query.filter(UserColumn::IsTest.eq(test));
+        }
+
+        if let Some(gender) = dto.gender.clone() {
+            match gender {
+                GenderEnum::Male | GenderEnum::Female | GenderEnum::Unknown => {
+                    let value = gender.as_value();
+                    query = query.filter(UserColumn::Gender.eq(value));
+                }
+                _ => {}
+            }
+        }
+
+        if let Some(time) = dto.login_start_time.clone() {
+            query = query.filter(UserColumn::LastLoginAt.gte(time));
+        }
+
+        if let Some(time) = dto.login_end_time.clone() {
+            query = query.filter(UserColumn::LastLoginAt.lte(time));
+        }
+
+        if let Some(time) = dto.created_start_time.clone() {
+            query = query.filter(UserColumn::CreatedAt.gte(time));
+        }
+
+        if let Some(time) = dto.created_end_time.clone() {
+            query = query.filter(UserColumn::CreatedAt.lte(time));
+        }
+
+        handle_ok(query)
     }
 }

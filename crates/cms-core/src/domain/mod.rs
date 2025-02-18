@@ -5,6 +5,8 @@ use crate::error::AppError;
 
 pub mod dto;
 pub mod form;
+pub mod vo;
+
 mod option;
 mod response;
 
@@ -18,6 +20,6 @@ pub fn result_ok<T: Serialize>(data: T) -> AppResult<T> {
     Ok(AppResponse::success(data))
 }
 
-pub fn handle_ok<T: Serialize>(data: T) -> HandleResult<T> {
+pub fn handle_ok<T>(data: T) -> HandleResult<T> {
     Ok(data)
 }
