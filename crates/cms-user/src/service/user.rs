@@ -1,6 +1,8 @@
+use cms_core::domain::dto::FieldBoolUpdateDTO;
+use sea_orm::prelude::Expr;
 use sea_orm::*;
 
-use cms_core::domain::{form::FieldValueUniqueForm, handle_ok, HandleResult};
+use cms_core::domain::{dto::FieldValueUniqueDTO, handle_ok, HandleResult};
 use cms_core::enums::PlatformEnum;
 use cms_core::error::AppError;
 use cms_core::utils::{encrypt::encrypt_password, random, time};
@@ -340,13 +342,13 @@ impl UserService {
 
     /// 检查字段值是否唯一
     pub async fn field_unique(
-        form: &FieldValueUniqueForm,
+        dto: &FieldValueUniqueDTO,
         db: &DatabaseConnection,
     ) -> HandleResult<bool> {
-        let id = form.skip_id.unwrap_or(0);
+        let id = dto.skip_id;
 
-        let name = form.field_name.clone().unwrap();
-        let column = match name.to_lowercase().as_str() {
+        let field_name = dto.field_name.to_owned();
+        let column = match field_name.to_lowercase().as_str() {
             "name" | "username" => UserColumn::Name,
             "email" => UserColumn::Email,
             "mobile" | "phone" => UserColumn::Phone,
@@ -356,11 +358,41 @@ impl UserService {
             }
         };
 
-        let value = form.field_value.clone().unwrap();
-        let value = sea_orm::Value::from(value);
+        let field_value = dto.field_value.to_owned();
+        let value = sea_orm::Value::from(field_value);
 
         let exist = Self::is_column_exist(id, column, value, db).await?;
         handle_ok(exist != true)
+    }
+
+    /// 修改布尔值字段
+    pub async fn update_bool_field(
+        dto: &FieldBoolUpdateDTO,
+        db: &DatabaseConnection,
+    ) -> HandleResult<bool> {
+        let id = dto.id;
+        if id < 1 {
+            let err = AppError::BadRequest(String::from("无效的用户ID"));
+            return Err(err);
+        }
+        let field_name = dto.field_name.to_owned();
+        let column = match field_name.to_lowercase().as_str() {
+            "is_enabled" => UserColumn::IsEnabled,
+            "is_authed" => UserColumn::IsAuthed,
+            "is_test" => UserColumn::IsTest,
+            _ => {
+                let err = AppError::BadRequest(String::from("无效的字段"));
+                return Err(err);
+            }
+        };
+
+        let _update_rows_count = UserEntity::update_many()
+            .col_expr(column, Expr::value(dto.field_value))
+            .filter(UserColumn::Id.eq(id))
+            .exec(db)
+            .await?;
+
+        handle_ok(true)
     }
 
     /// 修改登录密码

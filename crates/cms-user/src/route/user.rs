@@ -4,7 +4,11 @@ use validator::Validate;
 
 use cms_core::{
     config::AppState,
-    domain::{form::FieldValueUniqueForm, result_ok, AppResult},
+    domain::{
+        dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO},
+        form::{FieldBoolUpdateForm, FieldValueUniqueForm},
+        result_ok, AppResult,
+    },
     enums::PlatformEnum,
 };
 
@@ -116,14 +120,38 @@ pub fn manager_form() -> AppResult<UserFormOptionVO> {
         (status_code = 200, description = "success response")
     )
 )]
-pub async fn manager_unique(
+pub async fn check_field_unique(
     depot: &mut Depot,
     json: JsonBody<FieldValueUniqueForm>,
 ) -> AppResult<bool> {
     let form = json.into_inner();
     form.validate()?;
+    let dto = form.into();
     let state = depot.obtain::<AppState>().unwrap();
-    let value = UserService::field_unique(&form, &state.db).await?;
+    let value = UserService::field_unique(&dto, &state.db).await?;
+    result_ok(value)
+}
+
+/// 更新Bool字段值
+///
+/// 管理端更新Bool字段值
+#[endpoint(
+    tags("用户模块/管理端/用户管理"),
+    responses(
+        (status_code = 200, description = "success response")
+    )
+)]
+pub async fn update_bool_field(
+    depot: &mut Depot,
+    id: PathParam<i64>,
+    json: JsonBody<FieldBoolUpdateForm>,
+) -> AppResult<bool> {
+    let form = json.into_inner();
+    form.validate()?;
+    let mut dto: FieldBoolUpdateDTO = form.into();
+    dto.id = id.into_inner();
+    let state = depot.obtain::<AppState>().unwrap();
+    let value = UserService::update_bool_field(&dto, &state.db).await?;
     result_ok(value)
 }
 

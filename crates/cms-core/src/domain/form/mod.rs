@@ -1,3 +1,3 @@
-mod unique;
+mod field;
 
-pub use unique::FieldValueUniqueForm;
+pub use field::{FieldBoolUpdateForm, FieldValueUniqueForm};

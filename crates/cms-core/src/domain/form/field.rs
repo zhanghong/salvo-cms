@@ -6,7 +6,7 @@ use validator::Validate;
 use crate::utils::validate::string_present;
 
 // ------------------------------------
-// 创建/更新用户
+// 验证字段值是否唯一
 // ------------------------------------
 // Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
@@ -21,4 +21,19 @@ pub struct FieldValueUniqueForm {
 
     /// Model id
     pub skip_id: Option<i64>,
+}
+
+// ------------------------------------
+// 创建/更新用户
+// ------------------------------------
+// Service 层创建/更新用户使用的结构体
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
+pub struct FieldBoolUpdateForm {
+    /// 字段名
+    #[validate(custom(function = "string_present", message = "字段名不能为空"))]
+    pub field_name: Option<String>,
+
+    /// 字段值
+    #[validate(required(message = "字段值不能为空"))]
+    pub field_value: Option<bool>,
 }

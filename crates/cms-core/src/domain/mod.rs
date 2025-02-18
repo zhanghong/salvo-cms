@@ -3,6 +3,7 @@ use serde::Serialize;
 
 use crate::error::AppError;
 
+pub mod dto;
 pub mod form;
 mod option;
 mod response;

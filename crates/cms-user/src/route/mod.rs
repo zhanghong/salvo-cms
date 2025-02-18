@@ -12,7 +12,8 @@ pub fn init_router() -> Router {
                         .post(user::manager_create),
                 )
                 .push(Router::with_path("users/form").get(user::manager_form))
-                .push(Router::with_path("/users/unique").post(user::manager_unique))
+                .push(Router::with_path("/users/unique").post(user::check_field_unique))
+                .push(Router::with_path("/users/{id}/bool").post(user::update_bool_field))
                 .push(
                     Router::with_path("/users/{id}")
                         .get(user::manager_view)
