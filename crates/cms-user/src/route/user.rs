@@ -99,11 +99,11 @@ pub async fn manager_update(
         (status_code = 200, description = "success response")
     )
 )]
-pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<String> {
+pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<bool> {
     let state = depot.obtain::<AppState>().unwrap();
     let id = id.into_inner();
-    println!("delete user id: {}", id);
-    result_ok("oK".to_string())
+    UserService::destroy(id, &state.db).await?;
+    result_ok(true)
 }
 
 /// 表单选项
@@ -206,7 +206,6 @@ pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<Us
     };
     let state = depot.obtain::<AppState>().unwrap();
     let model = UserService::view(&dto, &state.db).await?;
-    println!("view user: {:#?}", model);
     result_ok(model)
 }
 

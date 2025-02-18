@@ -17,7 +17,8 @@ pub fn init_router() -> Router {
                 .push(
                     Router::with_path("/users/{id}")
                         .get(user::manager_view)
-                        .patch(user::manager_update),
+                        .patch(user::manager_update)
+                        .delete(user::manager_delete),
                 )
                 .push(Router::with_path("/users/{id}/password").post(user::manager_update_password))
                 .push(Router::with_path("/logs").get(user::manager_logs)),

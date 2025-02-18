@@ -649,4 +649,22 @@ impl UserService {
 
         handle_ok(model)
     }
+
+    /// 软删除记录
+    pub async fn destroy(id: i64, db: &DatabaseConnection) -> HandleResult<()> {
+        if id < 1 {
+            return handle_ok(());
+        }
+
+        let result = Self::fetch_by_id(id, db).await;
+        if let Ok(model) = result {
+            let mut model: UserActiveModel = model.into();
+            model.is_deleted = Set(true);
+            let now = time::current_time();
+            model.deleted_at = Set(Some(now));
+            let _ = model.save(db).await?;
+        }
+
+        handle_ok(())
+    }
 }
