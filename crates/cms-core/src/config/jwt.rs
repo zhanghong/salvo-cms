@@ -19,7 +19,7 @@ impl JwtConfig {
         let str = self
             .access_secret
             .clone()
-            .unwrap_or("YOUR SECRET_KEY".to_string());
+            .unwrap_or("Cms Access Token Secret".to_string());
         str.into_bytes()
     }
 
@@ -27,7 +27,7 @@ impl JwtConfig {
         let str = self
             .refresh_secret
             .clone()
-            .unwrap_or("YOUR SECRET_KEY".to_string());
+            .unwrap_or("Cms Refresh Token Secret".to_string());
         str.into_bytes()
     }
 

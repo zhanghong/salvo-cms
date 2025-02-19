@@ -42,17 +42,13 @@ impl AuthService {
                 match token_type {
                     TokenTypeEnum::AccessToken => {}
                     _ => {
-                        let err = AppError::BadRequest("Invalid token".to_string());
+                        let err = AppError::Unauthorized;
                         return Err(err);
                     }
                 }
             }
-            JwtAuthState::Unauthorized => {
+            _ => {
                 let err = AppError::Unauthorized;
-                return Err(err);
-            }
-            JwtAuthState::Forbidden => {
-                let err = AppError::Forbidden;
                 return Err(err);
             }
         };
