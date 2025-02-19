@@ -1,10 +1,8 @@
 use dotenvy::dotenv;
 use salvo::oapi::OpenApi;
 use salvo::prelude::*;
-use sea_orm::{ConnectOptions, Database};
-use std::time::Duration;
 
-use cms_core::config::{AppState, DbConfig, WebConfig};
+use cms_core::config::{AppState, DbConfig, JwtConfig, WebConfig};
 
 mod domain;
 mod enums;
@@ -16,6 +14,7 @@ async fn main() {
     dotenv().ok();
 
     let web_config = WebConfig::from_env().expect("Failed to load web config");
+    let jwt_config = JwtConfig::from_env().expect("Failed to load jwt config");
     let db_config = DbConfig::from_env().expect("Failed to load db config");
 
     tracing_subscriber::fmt()
@@ -23,24 +22,15 @@ async fn main() {
         .with_test_writer()
         .init();
 
-    let mut opt = ConnectOptions::new(db_config.url());
-    opt.max_connections(db_config.max_connections.unwrap_or(10))
-        .min_connections(db_config.min_connections.unwrap_or(10))
-        .connect_timeout(Duration::from_secs(
-            db_config.connect_timeout.unwrap_or(10) as u64
-        ))
-        .acquire_timeout(Duration::from_secs(
-            db_config.acquire_timeout.unwrap_or(10) as u64
-        ))
-        .idle_timeout(Duration::from_secs(
-            db_config.idle_timeout.unwrap_or(10) as u64
-        ))
-        .max_lifetime(Duration::from_secs(
-            db_config.max_lifetime.unwrap_or(10) as u64
-        ))
-        .sqlx_logging(db_config.sqlx_logging.clone().unwrap_or(true));
-    let db = Database::connect(opt).await.unwrap();
-    let state = AppState { db };
+    let db_result = db_config.build_connection().await;
+    if db_result.is_err() {
+        panic!("Failed to connect to database");
+    }
+
+    let state = AppState {
+        db: db_result.unwrap().clone(),
+        jwt: jwt_config.clone(),
+    };
 
     let addr = web_config.address();
     let acceptor = TcpListener::new(&addr).bind().await;

@@ -1,5 +1,9 @@
 use dotenvy::dotenv;
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use serde::Deserialize;
+use std::time::Duration;
+
+use crate::domain::{handle_ok, HandleResult};
 
 #[derive(Deserialize, Debug)]
 pub struct DbConfig {
@@ -50,5 +54,23 @@ impl DbConfig {
                 self.name
             )
         }
+    }
+
+    pub async fn build_connection(&self) -> HandleResult<DatabaseConnection> {
+        let mut opt = ConnectOptions::new(self.url());
+        opt.max_connections(self.max_connections.unwrap_or(10))
+            .min_connections(self.min_connections.unwrap_or(10))
+            .connect_timeout(Duration::from_secs(
+                self.connect_timeout.unwrap_or(10) as u64
+            ))
+            .acquire_timeout(Duration::from_secs(
+                self.acquire_timeout.unwrap_or(10) as u64
+            ))
+            .idle_timeout(Duration::from_secs(self.idle_timeout.unwrap_or(10) as u64))
+            .max_lifetime(Duration::from_secs(self.max_lifetime.unwrap_or(10) as u64))
+            .sqlx_logging(self.sqlx_logging.clone().unwrap_or(true));
+        let db = Database::connect(opt).await.unwrap();
+
+        handle_ok(db)
     }
 }
