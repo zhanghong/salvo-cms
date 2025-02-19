@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 cms-core = { version = "0.1.0", path = "../cms-core" }
 
-salvo = { workspace = true }
+salvo = { workspace = true, features = ["anyhow", "jwt-auth", "oapi", "affix-state"] }
 tokio = { workspace = true }
 
 # logging
@@ -29,3 +29,8 @@ uuid = { workspace = true }
 # validator
 regex = { workspace = true }
 validator = { workspace = true }
+
+# JWT
+jsonwebtoken = { workspace = true }
+
+anyhow = { workspace = true }

@@ -1,9 +1,8 @@
-use std::time::Duration;
-
 use dotenvy::dotenv;
 use salvo::oapi::OpenApi;
 use salvo::prelude::*;
 use sea_orm::{ConnectOptions, Database};
+use std::time::Duration;
 
 use cms_core::config::{AppState, DbConfig, WebConfig};
 

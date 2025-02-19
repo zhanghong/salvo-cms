@@ -37,3 +37,6 @@ validator = { version = "0.20", features = ["derive"] }
 
 rand = "0.9"
 md5 = "*"
+
+# JWT
+jsonwebtoken = { version = "9" }
