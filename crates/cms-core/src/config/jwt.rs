@@ -3,8 +3,10 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct JwtConfig {
-    secret_key: Option<String>,
-    expire_days: Option<u16>,
+    access_secret: Option<String>,
+    refresh_secret: Option<String>,
+    access_expire_days: Option<i64>,
+    refresh_expire_days: Option<i64>,
 }
 
 impl JwtConfig {
@@ -13,12 +15,27 @@ impl JwtConfig {
         envy::prefixed("JWT_").from_env::<JwtConfig>()
     }
 
-    pub fn secret_bytes(&self) -> Vec<u8> {
-        let str = self.secret_key.clone().unwrap_or("FoxCms".to_string());
+    pub fn access_secret_bytes(&self) -> Vec<u8> {
+        let str = self
+            .access_secret
+            .clone()
+            .unwrap_or("YOUR SECRET_KEY".to_string());
         str.into_bytes()
     }
 
-    pub fn expired_days(&self) -> u16 {
-        self.expire_days.unwrap_or(7)
+    pub fn refresh_secret_bytes(&self) -> Vec<u8> {
+        let str = self
+            .refresh_secret
+            .clone()
+            .unwrap_or("YOUR SECRET_KEY".to_string());
+        str.into_bytes()
+    }
+
+    pub fn get_access_expire_days(&self) -> i64 {
+        self.access_expire_days.unwrap_or(7)
+    }
+
+    pub fn get_refresh_expire_days(&self) -> i64 {
+        self.refresh_expire_days.unwrap_or(365)
     }
 }

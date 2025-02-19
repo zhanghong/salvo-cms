@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 cms-core = { version = "0.1.0", path = "../cms-core" }
 
-salvo = { workspace = true, features = ["anyhow", "jwt-auth", "oapi", "affix-state"] }
+salvo = { workspace = true }
 tokio = { workspace = true }
 
 # logging

@@ -7,7 +7,7 @@ edition = "2021"
 members = [".", "crates/*", "migration"]
 
 [workspace.dependencies]
-salvo = { version = "0", features = ["anyhow", "oapi", "affix-state", "serve-static"] }
+salvo = { version = "0", features = ["anyhow", "jwt-auth", "oapi", "affix-state", "serve-static"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 # error handling

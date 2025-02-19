@@ -25,3 +25,8 @@ envy = { workspace = true }
 
 # database
 sea-orm = { workspace = true }
+
+# JWT
+jsonwebtoken = { workspace = true }
+
+anyhow = { workspace = true }

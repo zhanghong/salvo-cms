@@ -4,4 +4,5 @@ pub mod enums;
 pub mod error;
 pub mod hoop;
 pub mod route;
+pub mod service;
 pub mod utils;
