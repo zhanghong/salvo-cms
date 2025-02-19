@@ -2,7 +2,7 @@ use dotenvy::dotenv;
 use salvo::oapi::OpenApi;
 use salvo::prelude::*;
 
-use cms_core::config::{AppState, DbConfig, JwtConfig, WebConfig};
+use cms_core::config::{AppState, DbConfig, WebConfig};
 
 mod domain;
 mod route;
@@ -13,7 +13,6 @@ async fn main() {
     dotenv().ok();
 
     let web_config = WebConfig::from_env().expect("Failed to load web config");
-    let jwt_config = JwtConfig::from_env().expect("Failed to load jwt config");
     let db_config = DbConfig::from_env().expect("Failed to load db config");
 
     tracing_subscriber::fmt()
@@ -28,7 +27,6 @@ async fn main() {
 
     let state = AppState {
         db: db_result.unwrap().clone(),
-        jwt: jwt_config.clone(),
     };
 
     let addr = web_config.address();

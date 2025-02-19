@@ -36,6 +36,7 @@ impl JwtService {
         let valid = match depot.jwt_auth_state() {
             JwtAuthState::Authorized => {
                 let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
+                println!("data: {:#?}", data.claims);
                 let token_type = TokenTypeEnum::form_string(data.claims.token_type.to_owned());
                 match token_type {
                     TokenTypeEnum::AccessToken => true,
