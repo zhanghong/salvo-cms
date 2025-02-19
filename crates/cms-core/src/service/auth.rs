@@ -55,4 +55,48 @@ impl AuthService {
 
         handle_ok(())
     }
+
+    pub fn generate_refresh_token(user_id: i64, user_type: &str) -> HandleResult<String> {
+        let cfg = JwtConfig::from_env().expect("Failed to load jwt config");
+        let secret_bytes = cfg.refresh_secret_bytes();
+        let days = cfg.get_refresh_expire_days();
+        let now = time::current_time();
+        let expired = (now + Duration::days(days)).and_utc().timestamp();
+
+        let claims = JwtClaimsDTO {
+            user_id: user_id,
+            user_type: user_type.to_owned(),
+            token_type: TokenTypeEnum::RefreshToken.as_value(),
+            exp: expired,
+        };
+
+        let header = jsonwebtoken::Header::default();
+        let encode_key = EncodingKey::from_secret(&secret_bytes);
+        let token = jsonwebtoken::encode(&header, &claims, &encode_key).unwrap();
+        println!("refresh token: {}", token);
+        handle_ok(token)
+    }
+
+    pub fn verify_fresh_token(depot: &Depot) -> HandleResult<()> {
+        match depot.jwt_auth_state() {
+            JwtAuthState::Authorized => {
+                let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
+                println!("data: {:#?}", data.claims);
+                let token_type = TokenTypeEnum::form_string(data.claims.token_type.to_owned());
+                match token_type {
+                    TokenTypeEnum::RefreshToken => {}
+                    _ => {
+                        let err = AppError::Unauthorized;
+                        return Err(err);
+                    }
+                }
+            }
+            _ => {
+                let err = AppError::Unauthorized;
+                return Err(err);
+            }
+        };
+
+        handle_ok(())
+    }
 }

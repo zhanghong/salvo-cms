@@ -22,4 +22,5 @@ pub fn init_router() -> Router {
                 Router::with_path("/token/verify_access_token").get(token::verify_access_token),
             ),
         ))
+        .push(Router::with_path("/token/update").get(token::update))
 }
