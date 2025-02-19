@@ -7,11 +7,12 @@ use crate::config::JwtConfig;
 use crate::domain::dto::JwtClaimsDTO;
 use crate::domain::{handle_ok, HandleResult};
 use crate::enums::TokenTypeEnum;
+use crate::error::AppError;
 use crate::utils::time;
 
-pub struct JwtService {}
+pub struct AuthService {}
 
-impl JwtService {
+impl AuthService {
     pub fn generate_access_token(user_id: i64, user_type: &str) -> HandleResult<String> {
         let cfg = JwtConfig::from_env().expect("Failed to load jwt config");
         let secret_bytes = cfg.access_secret_bytes();
@@ -32,20 +33,30 @@ impl JwtService {
         handle_ok(token)
     }
 
-    pub fn verify_access_token(depot: &Depot) -> HandleResult<bool> {
-        let valid = match depot.jwt_auth_state() {
+    pub fn verify_access_token(depot: &Depot) -> HandleResult<()> {
+        match depot.jwt_auth_state() {
             JwtAuthState::Authorized => {
                 let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
                 println!("data: {:#?}", data.claims);
                 let token_type = TokenTypeEnum::form_string(data.claims.token_type.to_owned());
                 match token_type {
-                    TokenTypeEnum::AccessToken => true,
-                    _ => false,
+                    TokenTypeEnum::AccessToken => {}
+                    _ => {
+                        let err = AppError::BadRequest("Invalid token".to_string());
+                        return Err(err);
+                    }
                 }
             }
-            _ => false,
+            JwtAuthState::Unauthorized => {
+                let err = AppError::Unauthorized;
+                return Err(err);
+            }
+            JwtAuthState::Forbidden => {
+                let err = AppError::Forbidden;
+                return Err(err);
+            }
         };
 
-        handle_ok(valid)
+        handle_ok(())
     }
 }

@@ -1,21 +1,24 @@
-use salvo::jwt_auth::{ConstDecoder, QueryFinder};
+use salvo::jwt_auth::{ConstDecoder, HeaderFinder};
 use salvo::prelude::*;
 
 use crate::config::JwtConfig;
-use crate::domain::dto::JwtClaimsDTO;
+use crate::domain::{dto::JwtClaimsDTO, handle_ok, HandleResult};
 
-pub fn jwt_authorizor() -> JwtAuth<JwtClaimsDTO, ConstDecoder> {
+pub fn jwt_authorizor_init() -> JwtAuth<JwtClaimsDTO, ConstDecoder> {
     let cfg = JwtConfig::from_env().expect("Failed to load jwt config");
     let secret_bytes = cfg.access_secret_bytes();
-    let token = QueryFinder::new("jwt_token");
     let auth: JwtAuth<JwtClaimsDTO, ConstDecoder> =
         JwtAuth::new(ConstDecoder::from_secret(&secret_bytes))
-            .finders(vec![
-                // Box::new(HeaderFinder::new()),
-                Box::new(token),
-                // Box::new(CookieFinder::new("jwt_token")),
-            ])
+            .finders(vec![Box::new(HeaderFinder::new())])
             .force_passed(true);
+    println!("in jwt_authorizor");
+    println!("in jwt_authorizor");
 
     auth
+}
+
+#[handler]
+pub async fn jwt_authorizor_check(_depot: &mut Depot) -> HandleResult<()> {
+    println!("check jwt auth");
+    handle_ok(())
 }

@@ -3,7 +3,7 @@ use sea_orm::DatabaseConnection;
 use cms_core::{
     domain::{handle_ok, HandleResult},
     enums::PlatformEnum,
-    service::JwtService,
+    service::AuthService,
 };
 
 use crate::domain::dto::LoginStoreDTO;
@@ -17,7 +17,7 @@ impl LoginService {
         _db: &DatabaseConnection,
     ) -> HandleResult<bool> {
         println!("dto: {:?}", dto);
-        let res = JwtService::generate_access_token(1, "admin")?;
+        let res = AuthService::generate_access_token(1, "admin")?;
         println!("res: {:?}", res);
         handle_ok(true)
     }

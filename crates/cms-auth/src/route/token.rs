@@ -1,7 +1,7 @@
 use salvo::prelude::*;
 
 use cms_core::domain::{result_ok, AppResult};
-use cms_core::service::JwtService;
+use cms_core::service::AuthService;
 
 /// 验证AccessToken
 ///
@@ -13,7 +13,7 @@ use cms_core::service::JwtService;
   )
 )]
 pub async fn verify_access_token(depot: &Depot) -> AppResult<bool> {
-    let result = JwtService::verify_access_token(depot)?;
+    AuthService::verify_access_token(depot)?;
 
-    result_ok(result)
+    result_ok(true)
 }
