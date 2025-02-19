@@ -1,13 +1,13 @@
 use salvo::prelude::*;
 
-use crate::config::AppState;
-use crate::domain::{result_ok, AppResult};
+use cms_core::config::AppState;
+use cms_core::domain::{result_ok, AppResult};
 
 /// 服务状态
 ///
 /// 检查服务健康状态
 #[endpoint(
-    tags("Core/Checker"),
+    tags("权鉴模块/Checker"),
     responses(
         (status_code = 200, description = "success response")
     )
@@ -20,7 +20,7 @@ pub async fn health() -> AppResult<String> {
 ///
 ///  检查数据库连接
 #[endpoint(
-    tags("Core/Checker"),
+    tags("权鉴模块/Checker"),
     responses(
         (status_code = 200, description = "success response")
     )

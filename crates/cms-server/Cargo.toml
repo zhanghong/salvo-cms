@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+cms-auth = { version = "0.1.0", path = "../cms-auth" }
 cms-core = { version = "0.1.0", path = "../cms-core" }
 cms-user = { version = "0.1.0", path = "../cms-user" }
 

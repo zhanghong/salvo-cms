@@ -1,17 +1,23 @@
 use salvo::prelude::*;
 
+mod checker;
 mod user;
 
 pub fn init_router() -> Router {
     Router::new()
         .push(
-            Router::with_path("manage")
+            Router::with_path("/checker")
+                .push(Router::with_path("/health").get(checker::health))
+                .push(Router::with_path("/database").get(checker::database)),
+        )
+        .push(
+            Router::with_path("/manage")
                 .push(
                     Router::with_path("/users")
                         .get(user::manager_paginate)
                         .post(user::manager_create),
                 )
-                .push(Router::with_path("users/form").get(user::manager_form))
+                .push(Router::with_path("/users/form").get(user::manager_form))
                 .push(Router::with_path("/users/unique").post(user::check_field_unique))
                 .push(Router::with_path("/users/{id}/bool").post(user::update_bool_field))
                 .push(
