@@ -11,7 +11,11 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(AuthCertificate::Table)
                     .if_not_exists()
-                    .col(ColumnDef::new(AuthCertificate::Uuid).uuid().primary_key())
+                    .col(
+                        ColumnDef::new(AuthCertificate::Uuid)
+                            .string_len(36)
+                            .primary_key(),
+                    )
                     .col(
                         ColumnDef::new(AuthCertificate::UserType)
                             .string_len(10)
