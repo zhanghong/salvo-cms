@@ -37,3 +37,6 @@ md5 = { workspace = true }
 
 # JWT
 jsonwebtoken = { workspace = true }
+
+# Redis
+redis = { workspace = true }
