@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use cms_core::config::AppState;
 use cms_core::domain::dto::FieldBoolUpdateDTO;
 use cms_core::domain::vo::{EditorVO, PaginateResultVO};
 use sea_orm::prelude::Expr;
@@ -31,7 +32,7 @@ impl UserService {
     pub async fn store(
         platform: &PlatformEnum,
         dto: &UserStoreDTO,
-        db: &DatabaseConnection,
+        state: &AppState,
     ) -> HandleResult<UserModel> {
         let mut id: i64 = 0;
         let mut is_create = true;
@@ -44,9 +45,10 @@ impl UserService {
                 ..Default::default()
             }
         } else {
-            let model = Self::fetch_by_id(id, db).await?;
+            let model = Self::fetch_by_id(id, state).await?;
             model.into()
         };
+        let db = &state.db;
 
         let name = dto.name.clone();
         if name.is_some() {
@@ -217,7 +219,7 @@ impl UserService {
             });
         }
         if let Some(dto) = opt_detail {
-            Self::store_detail(&dto, db, &txn).await?;
+            Self::store_detail(&dto, state, &txn).await?;
         }
 
         // 提交事务
@@ -228,13 +230,14 @@ impl UserService {
 
     async fn store_detail(
         dto: &DetailStoreDTO,
-        db: &DatabaseConnection,
+        state: &AppState,
         txn: &DatabaseTransaction,
     ) -> HandleResult<bool> {
         let user_id = dto.user_id.clone().unwrap_or(0);
         if user_id < 1 {
             return handle_ok(true);
         }
+        let db = &state.db;
         let model = DetailEntity::find()
             .filter(DetailColumn::UserId.eq(user_id))
             .one(db)
@@ -345,11 +348,9 @@ impl UserService {
     }
 
     /// 检查字段值是否唯一
-    pub async fn field_unique(
-        dto: &FieldValueUniqueDTO,
-        db: &DatabaseConnection,
-    ) -> HandleResult<bool> {
+    pub async fn field_unique(dto: &FieldValueUniqueDTO, state: &AppState) -> HandleResult<bool> {
         let id = dto.skip_id;
+        let db = &state.db;
 
         let field_name = dto.field_name.to_owned();
         let column = match field_name.to_lowercase().as_str() {
@@ -372,13 +373,15 @@ impl UserService {
     /// 修改布尔值字段
     pub async fn update_bool_field(
         dto: &FieldBoolUpdateDTO,
-        db: &DatabaseConnection,
+        state: &AppState,
     ) -> HandleResult<bool> {
         let id = dto.id;
         if id < 1 {
             let err = AppError::BadRequest(String::from("无效的用户ID"));
             return Err(err);
         }
+        let db = &state.db;
+
         let field_name = dto.field_name.to_owned();
         let column = match field_name.to_lowercase().as_str() {
             "is_enabled" => UserColumn::IsEnabled,
@@ -402,7 +405,7 @@ impl UserService {
     /// 修改登录密码
     pub async fn update_password(
         dto: &UserUpdatePasswordDTO,
-        db: &DatabaseConnection,
+        state: &AppState,
     ) -> HandleResult<bool> {
         let id = dto.id;
         if id < 1 {
@@ -410,7 +413,8 @@ impl UserService {
             return Err(err);
         }
 
-        let model = Self::fetch_by_id(id, db).await?;
+        let db = &state.db;
+        let model = Self::fetch_by_id(id, state).await?;
         if dto.current_password.is_some() {
             let current_password = dto.current_password.clone().unwrap();
             let salt = model.salt.clone();
@@ -444,21 +448,22 @@ impl UserService {
         handle_ok(true)
     }
 
-    pub async fn view(dto: &UserViewDTO, db: &DatabaseConnection) -> HandleResult<UserItemVO> {
+    pub async fn view(dto: &UserViewDTO, state: &AppState) -> HandleResult<UserItemVO> {
         let id = dto.id;
         if id < 1 {
             let err = AppError::BadRequest(String::from("无效的用户ID"));
             return Err(err);
         }
 
-        let model = Self::fetch_by_id(id, db).await?;
+        let db = &state.db;
+        let model = Self::fetch_by_id(id, state).await?;
 
         let mut vo: UserItemVO = model.into();
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
                     UserLoadEnum::Editor => {
-                        let opt = Self::fetch_by_id(vo.editor_id, db).await;
+                        let opt = Self::fetch_by_id(vo.editor_id, state).await;
                         if let Ok(editor) = opt {
                             vo.editor = Some(editor.into());
                         }
@@ -484,8 +489,9 @@ impl UserService {
     pub async fn paginage(
         platform: &PlatformEnum,
         dto: &UserQueryDTO,
-        db: &DatabaseConnection,
+        state: &AppState,
     ) -> HandleResult<PaginateResultVO<UserItemVO>> {
+        let db = &state.db;
         let mut page = dto.page.unwrap_or(1);
         if page < 1 {
             page = 1;
@@ -514,7 +520,7 @@ impl UserService {
             for enums in load_models {
                 match enums {
                     UserLoadEnum::Editor => {
-                        let map = Self::query_load_editors(&editor_ids, db).await?;
+                        let map = Self::query_load_editors(&editor_ids, state).await?;
                         for vo in list.iter_mut() {
                             let editor = map.get(&vo.editor_id).cloned();
                             vo.editor = editor;
@@ -542,8 +548,9 @@ impl UserService {
 
     pub async fn query_load_editors(
         ids: &Vec<i64>,
-        db: &DatabaseConnection,
+        state: &AppState,
     ) -> HandleResult<HashMap<i64, EditorVO>> {
+        let db = &state.db;
         let editor_ids: Vec<i64> = ids.into_iter().filter(|&&id| id > 0).cloned().collect();
         if editor_ids.is_empty() {
             return handle_ok(HashMap::<i64, EditorVO>::new());
@@ -640,7 +647,8 @@ impl UserService {
         UserEntity::find().filter(UserColumn::IsDeleted.eq(false))
     }
 
-    async fn fetch_by_id(id: i64, db: &DatabaseConnection) -> HandleResult<UserModel> {
+    async fn fetch_by_id(id: i64, state: &AppState) -> HandleResult<UserModel> {
+        let db = &state.db;
         let model = Self::scope_active_query()
             .filter(UserColumn::Id.eq(id))
             .one(db)
@@ -651,12 +659,13 @@ impl UserService {
     }
 
     /// 软删除记录
-    pub async fn destroy(id: i64, db: &DatabaseConnection) -> HandleResult<()> {
+    pub async fn destroy(id: i64, state: &AppState) -> HandleResult<()> {
         if id < 1 {
             return handle_ok(());
         }
 
-        let result = Self::fetch_by_id(id, db).await;
+        let db = &state.db;
+        let result = Self::fetch_by_id(id, state).await;
         if let Ok(model) = result {
             let mut model: UserActiveModel = model.into();
             model.is_deleted = Set(true);

@@ -42,7 +42,7 @@ pub async fn manager_paginate(
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: UserQueryDTO = query.into();
     dto.load_models = Some(vec![UserLoadEnum::Editor]);
-    let vo = UserService::paginage(&PlatformEnum::Manager, &dto, &state.db).await?;
+    let vo = UserService::paginage(&PlatformEnum::Manager, &dto, state).await?;
     result_ok(vo)
 }
 
@@ -63,7 +63,7 @@ pub async fn manager_create(
     form.validate()?;
     let state = depot.obtain::<AppState>().unwrap();
     let dto = form.into();
-    UserService::store(&PlatformEnum::Manager, &dto, &state.db).await?;
+    UserService::store(&PlatformEnum::Manager, &dto, state).await?;
     result_ok("oK".to_string())
 }
 
@@ -86,7 +86,7 @@ pub async fn manager_update(
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: UserStoreDTO = form.into();
     dto.id = Some(id.into_inner());
-    UserService::store(&PlatformEnum::Manager, &dto, &state.db).await?;
+    UserService::store(&PlatformEnum::Manager, &dto, state).await?;
     result_ok("oK".to_string())
 }
 
@@ -102,7 +102,7 @@ pub async fn manager_update(
 pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<bool> {
     let state = depot.obtain::<AppState>().unwrap();
     let id = id.into_inner();
-    UserService::destroy(id, &state.db).await?;
+    UserService::destroy(id, state).await?;
     result_ok(true)
 }
 
@@ -137,7 +137,7 @@ pub async fn check_field_unique(
     form.validate()?;
     let dto = form.into();
     let state = depot.obtain::<AppState>().unwrap();
-    let value = UserService::field_unique(&dto, &state.db).await?;
+    let value = UserService::field_unique(&dto, state).await?;
     result_ok(value)
 }
 
@@ -161,7 +161,7 @@ pub async fn update_bool_field(
     let mut dto: FieldBoolUpdateDTO = form.into();
     dto.id = id.into_inner();
     let state = depot.obtain::<AppState>().unwrap();
-    let value = UserService::update_bool_field(&dto, &state.db).await?;
+    let value = UserService::update_bool_field(&dto, state).await?;
     result_ok(value)
 }
 
@@ -184,7 +184,7 @@ pub async fn manager_update_password(
     let mut dto: UserUpdatePasswordDTO = form.into();
     dto.id = id.into_inner();
     let state = depot.obtain::<AppState>().unwrap();
-    let value = UserService::update_password(&dto, &state.db).await?;
+    let value = UserService::update_password(&dto, state).await?;
     result_ok(value)
 }
 
@@ -205,7 +205,7 @@ pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<Us
         ..Default::default()
     };
     let state = depot.obtain::<AppState>().unwrap();
-    let model = UserService::view(&dto, &state.db).await?;
+    let model = UserService::view(&dto, state).await?;
     result_ok(model)
 }
 
