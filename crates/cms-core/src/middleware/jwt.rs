@@ -11,8 +11,6 @@ pub fn jwt_authorizor_init() -> JwtAuth<JwtClaimsDTO, ConstDecoder> {
         JwtAuth::new(ConstDecoder::from_secret(&secret_bytes))
             .finders(vec![Box::new(HeaderFinder::new())])
             .force_passed(true);
-    println!("in jwt_authorizor");
-    println!("in jwt_authorizor");
 
     auth
 }

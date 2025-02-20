@@ -1,24 +1,83 @@
-use sea_orm::DatabaseConnection;
+use sea_orm::*;
 
 use cms_core::{
     domain::{handle_ok, HandleResult},
     enums::PlatformEnum,
-    service::AuthService,
+    error::AppError,
+    service::JwtService,
+    utils::encrypt::encrypt_password,
 };
 
 use crate::domain::dto::LoginStoreDTO;
+use crate::domain::entity::user::{
+    ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity, Model as UserModel,
+};
+use crate::domain::vo::LoginTokenCreateVO;
 
 pub struct LoginService {}
 
 impl LoginService {
     pub async fn store(
-        _platform: &PlatformEnum,
+        platform: &PlatformEnum,
         dto: &LoginStoreDTO,
-        _db: &DatabaseConnection,
-    ) -> HandleResult<bool> {
-        println!("dto: {:?}", dto);
-        let res = AuthService::generate_access_token(1, "admin")?;
-        println!("res: {:?}", res);
-        handle_ok(true)
+        db: &DatabaseConnection,
+    ) -> HandleResult<LoginTokenCreateVO> {
+        let name = dto.name.clone();
+        if name.is_none() {
+            let err = AppError::BadRequest(String::from("登录名不能为空"));
+            return Err(err);
+        }
+
+        // TODO: 验证密码
+        let password = dto.password.clone();
+        if password.is_none() {
+            let err = AppError::BadRequest(String::from("密码不能为空"));
+            return Err(err);
+        }
+        let password = password.unwrap();
+
+        let name = name.unwrap().to_lowercase().trim().to_string();
+        let condition = Condition::any()
+            .add(UserColumn::Name.eq(&name))
+            .add(UserColumn::Phone.eq(&name))
+            .add(UserColumn::Email.eq(&name));
+        let user = UserEntity::find().filter(condition).one(db).await?;
+        if user.is_none() {
+            let err = AppError::BadRequest(String::from("用户不存在"));
+            return Err(err);
+        }
+        let user: UserModel = user.unwrap();
+        if user.is_enabled == false {
+            let err = AppError::BadRequest(String::from("用户已被禁用"));
+            return Err(err);
+        }
+
+        let md5_password = encrypt_password(user.salt.as_str(), password.as_str());
+        if md5_password.ne(&user.password) {
+            let err = AppError::BadRequest(String::from("密码错误"));
+            return Err(err);
+        }
+
+        let login_type = match platform {
+            PlatformEnum::Manager => "manager",
+            _ => "member",
+        };
+        let token = JwtService::user_login(user.id, login_type).unwrap();
+        let avatar = user.avatar_path;
+        let roles: Vec<String> = vec![login_type.to_string()];
+        let permissions: Vec<String> = vec![];
+        let vo = LoginTokenCreateVO {
+            user_id: user.id,
+            username: user.name.to_owned(),
+            nickname: user.nickname.to_owned(),
+            avatar: avatar,
+            roles: roles,
+            permissions: permissions,
+            access_token: token.access_token.to_owned(),
+            access_expired: token.access_expired,
+            refresh_token: token.refresh_token.to_owned(),
+            refresh_expired: token.refresh_expired,
+        };
+        handle_ok(vo)
     }
 }

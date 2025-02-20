@@ -8,7 +8,10 @@ use cms_core::{
     enums::PlatformEnum,
 };
 
-use crate::{domain::form::LoginByPasswordForm, service::LoginService};
+use crate::{
+    domain::{form::LoginByPasswordForm, vo::LoginTokenCreateVO},
+    service::LoginService,
+};
 
 /// 密码登录
 ///
@@ -22,11 +25,11 @@ use crate::{domain::form::LoginByPasswordForm, service::LoginService};
 pub async fn manager_create(
     depot: &mut Depot,
     json: JsonBody<LoginByPasswordForm>,
-) -> AppResult<String> {
+) -> AppResult<LoginTokenCreateVO> {
     let form = json.into_inner();
     form.validate()?;
     let state = depot.obtain::<AppState>().unwrap();
     let dto = form.into();
-    LoginService::store(&PlatformEnum::Manager, &dto, &state.db).await?;
-    result_ok("oK".to_string())
+    let token = LoginService::store(&PlatformEnum::Manager, &dto, &state.db).await?;
+    result_ok(token)
 }

@@ -1,3 +1,3 @@
-mod auth;
+mod jwt;
 
-pub use auth::AuthService;
+pub use jwt::JwtService;
