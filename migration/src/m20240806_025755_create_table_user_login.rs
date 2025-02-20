@@ -26,6 +26,13 @@ impl MigrationTrait for Migration {
                             .comment("用户ID"),
                     )
                     .col(
+                        ColumnDef::new(UserLogin::LoginType)
+                            .string_len(15)
+                            .not_null()
+                            .default("")
+                            .comment("登录身份"),
+                    )
+                    .col(
                         ColumnDef::new(UserLogin::ClientIp)
                             .string_len(15)
                             .not_null()
@@ -72,6 +79,7 @@ enum UserLogin {
     Table,
     Id,
     UserId,
+    LoginType,
     ClientIp,
     UserAgent,
     CreatedAt,

@@ -84,6 +84,7 @@ impl LoginService {
         let now = time::current_time();
         let login = LoginActiveModel {
             user_id: Set(user.id),
+            login_type: Set(login_type.to_owned()),
             client_ip: Set(dto.client_ip.to_owned()),
             user_agent: Set(dto.user_agent.to_owned()),
             created_at: Set(now),

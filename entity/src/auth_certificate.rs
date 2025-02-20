@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "auth_certificate")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub uuid: Uuid,
+    #[sea_orm(primary_key, auto_increment = false, column_type = "Binary(16)")]
+    pub uuid: Vec<u8>,
     pub user_type: String,
     pub user_id: i64,
     pub access_token: String,
