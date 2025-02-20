@@ -1,7 +1,8 @@
 use sea_orm::*;
 
 use cms_core::{
-    domain::{handle_ok, HandleResult},
+    config::AppState,
+    domain::{entity::certificate::Model as CertificateModel, handle_ok, HandleResult},
     enums::PlatformEnum,
     error::AppError,
     service::JwtService,
@@ -21,7 +22,7 @@ impl LoginService {
     pub async fn store(
         platform: &PlatformEnum,
         dto: &LoginStoreDTO,
-        db: &DatabaseConnection,
+        state: &AppState,
     ) -> HandleResult<LoginTokenCreateVO> {
         let name = dto.name.clone();
         if name.is_none() {
@@ -42,7 +43,7 @@ impl LoginService {
             .add(UserColumn::Name.eq(&name))
             .add(UserColumn::Phone.eq(&name))
             .add(UserColumn::Email.eq(&name));
-        let user = UserEntity::find().filter(condition).one(db).await?;
+        let user = UserEntity::find().filter(condition).one(&state.db).await?;
         if user.is_none() {
             let err = AppError::BadRequest(String::from("用户不存在"));
             return Err(err);
@@ -63,7 +64,7 @@ impl LoginService {
             PlatformEnum::Manager => "manager",
             _ => "member",
         };
-        let token = JwtService::user_login(user.id, login_type).unwrap();
+        let cert: CertificateModel = JwtService::user_login(user.id, login_type, state).await?;
         let avatar = user.avatar_url();
         let roles: Vec<String> = vec![login_type.to_string()];
         let permissions: Vec<String> = vec![];
@@ -74,10 +75,10 @@ impl LoginService {
             avatar: avatar,
             roles: roles,
             permissions: permissions,
-            access_token: token.access_token.to_owned(),
-            access_expired: token.access_expired,
-            refresh_token: token.refresh_token.to_owned(),
-            refresh_expired: token.refresh_expired,
+            access_token: cert.access_token.to_owned(),
+            access_expired: time::to_db_time(&cert.access_expired_at),
+            refresh_token: cert.refresh_token.to_owned(),
+            refresh_expired: time::to_db_time(&cert.refresh_expired_at),
         };
 
         // 记录登录日志
@@ -90,14 +91,14 @@ impl LoginService {
             created_at: Set(now),
             ..Default::default()
         };
-        let login: LoginModel = login.insert(db).await?;
+        let login: LoginModel = login.insert(&state.db).await?;
 
         // 更新用户表里的最后记录信息
         let mut user: UserActiveModel = user.into();
         user.last_login_at = Set(Some(now));
         user.last_login_id = Set(login.id);
         user.updated_at = Set(now);
-        user.update(db).await?;
+        user.update(&state.db).await?;
 
         handle_ok(vo)
     }

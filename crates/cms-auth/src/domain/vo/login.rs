@@ -28,11 +28,11 @@ pub struct LoginTokenCreateVO {
     pub access_token: String,
 
     /// Access Token 过期时间
-    pub access_expired: i64,
+    pub access_expired: String,
 
     /// Refresh Token
     pub refresh_token: String,
 
     /// Refresh Token 过期时间
-    pub refresh_expired: i64,
+    pub refresh_expired: String,
 }

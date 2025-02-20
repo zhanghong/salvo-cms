@@ -44,6 +44,6 @@ pub async fn manager_create(
     // 获取客户端 IP（支持代理场景）
     dto.client_ip = req.remote_addr().as_ipv4().unwrap().ip().to_string();
 
-    let token = LoginService::store(&PlatformEnum::Manager, &dto, &state.db).await?;
+    let token = LoginService::store(&PlatformEnum::Manager, &dto, state).await?;
     result_ok(token)
 }
