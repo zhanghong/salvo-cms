@@ -5,10 +5,11 @@ use cms_core::{
     enums::PlatformEnum,
     error::AppError,
     service::JwtService,
-    utils::encrypt::encrypt_password,
+    utils::{encrypt::encrypt_password, time},
 };
 
 use crate::domain::dto::LoginStoreDTO;
+use crate::domain::entity::login::{ActiveModel as LoginActiveModel, Model as LoginModel};
 use crate::domain::entity::user::{
     ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity, Model as UserModel,
 };
@@ -63,7 +64,7 @@ impl LoginService {
             _ => "member",
         };
         let token = JwtService::user_login(user.id, login_type).unwrap();
-        let avatar = user.avatar_path;
+        let avatar = user.avatar_url();
         let roles: Vec<String> = vec![login_type.to_string()];
         let permissions: Vec<String> = vec![];
         let vo = LoginTokenCreateVO {
@@ -78,6 +79,25 @@ impl LoginService {
             refresh_token: token.refresh_token.to_owned(),
             refresh_expired: token.refresh_expired,
         };
+
+        // 记录登录日志
+        let now = time::current_time();
+        let login = LoginActiveModel {
+            user_id: Set(user.id),
+            client_ip: Set(dto.client_ip.to_owned()),
+            user_agent: Set(dto.user_agent.to_owned()),
+            created_at: Set(now),
+            ..Default::default()
+        };
+        let login: LoginModel = login.insert(db).await?;
+
+        // 更新用户表里的最后记录信息
+        let mut user: UserActiveModel = user.into();
+        user.last_login_at = Set(Some(now));
+        user.last_login_id = Set(login.id);
+        user.updated_at = Set(now);
+        user.update(db).await?;
+
         handle_ok(vo)
     }
 }

@@ -42,3 +42,9 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl Model {
+    pub fn avatar_url(&self) -> String {
+        self.avatar_path.to_owned()
+    }
+}

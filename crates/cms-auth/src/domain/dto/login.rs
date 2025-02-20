@@ -16,6 +16,10 @@ pub struct LoginStoreDTO {
 
     /// 登录密码
     pub password: Option<String>,
+
+    pub user_agent: String,
+
+    pub client_ip: String,
 }
 
 impl LoginStoreDTO {
@@ -24,6 +28,7 @@ impl LoginStoreDTO {
             login_type: "password".to_string(),
             name: model.name.clone(),
             password: model.password.clone(),
+            ..Default::default()
         }
     }
 }
