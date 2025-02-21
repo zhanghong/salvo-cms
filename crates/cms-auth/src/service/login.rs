@@ -2,19 +2,21 @@ use sea_orm::*;
 
 use cms_core::{
     config::AppState,
-    domain::{entity::certificate::Model as CertificateModel, handle_ok, HandleResult},
+    domain::{
+        dto::JwtClaimsDTO, entity::certificate::Model as CertificateModel, handle_ok, HandleResult,
+    },
     enums::PlatformEnum,
     error::AppError,
     service::JwtService,
     utils::{encrypt::encrypt_password, time},
 };
 
-use crate::domain::dto::LoginStoreDTO;
 use crate::domain::entity::login::{ActiveModel as LoginActiveModel, Model as LoginModel};
 use crate::domain::entity::user::{
     ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity, Model as UserModel,
 };
 use crate::domain::vo::LoginTokenCreateVO;
+use crate::domain::{dto::LoginStoreDTO, vo::LoginTokenUpdateVO};
 
 pub struct LoginService {}
 
@@ -64,7 +66,9 @@ impl LoginService {
             PlatformEnum::Manager => "manager",
             _ => "member",
         };
-        let cert: CertificateModel = JwtService::user_login(user.id, login_type, state).await?;
+        let cert: CertificateModel = JwtService::user_login(user.id, login_type, state)
+            .await
+            .unwrap();
         let avatar = user.avatar_url();
         let roles: Vec<String> = vec![login_type.to_string()];
         let permissions: Vec<String> = vec![];
@@ -100,6 +104,21 @@ impl LoginService {
         user.updated_at = Set(now);
         user.update(&state.db).await?;
 
+        handle_ok(vo)
+    }
+
+    pub async fn update(
+        claims: Option<JwtClaimsDTO>,
+        state: &AppState,
+    ) -> HandleResult<LoginTokenUpdateVO> {
+        let cert = JwtService::user_refresh_by_claims(claims, state).await?;
+
+        let vo = LoginTokenUpdateVO {
+            access_token: cert.access_token.to_owned(),
+            access_expired: time::to_db_time(&cert.access_expired_at),
+            refresh_token: cert.refresh_token.to_owned(),
+            refresh_expired: time::to_db_time(&cert.refresh_expired_at),
+        };
         handle_ok(vo)
     }
 }

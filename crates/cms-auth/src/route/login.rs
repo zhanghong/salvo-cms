@@ -4,11 +4,12 @@ use validator::Validate;
 
 use cms_core::{
     config::AppState,
-    domain::{result_ok, AppResult},
+    domain::{dto::JwtClaimsDTO, result_ok, AppResult},
     enums::PlatformEnum,
 };
 
 use crate::domain::dto::LoginStoreDTO;
+use crate::domain::vo::LoginTokenUpdateVO;
 use crate::{
     domain::{form::LoginByPasswordForm, vo::LoginTokenCreateVO},
     service::LoginService,
@@ -46,4 +47,28 @@ pub async fn manager_create(
 
     let token = LoginService::store(&PlatformEnum::Manager, &dto, state).await?;
     result_ok(token)
+}
+
+/// 刷新 AccessToken
+///
+/// 管理端刷新 AccessToken
+#[endpoint(
+    tags("权鉴模块/管理端/登录"),
+    responses(
+        (status_code = 200, description = "success response")
+    )
+  )]
+pub async fn manager_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> {
+    let state = depot.obtain::<AppState>().unwrap();
+    let claims: Option<JwtClaimsDTO> = match depot.jwt_auth_state() {
+        JwtAuthState::Authorized => {
+            let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
+            let claims = data.claims.clone();
+            Some(claims)
+        }
+        _ => None,
+    };
+
+    let vo = LoginService::update(claims, state).await?;
+    result_ok(vo)
 }

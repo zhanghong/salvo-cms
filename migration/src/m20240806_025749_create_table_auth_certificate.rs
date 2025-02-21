@@ -12,7 +12,7 @@ impl MigrationTrait for Migration {
                     .table(AuthCertificate::Table)
                     .if_not_exists()
                     .col(
-                        ColumnDef::new(AuthCertificate::Uuid)
+                        ColumnDef::new(AuthCertificate::Id)
                             .string_len(36)
                             .primary_key(),
                     )
@@ -93,7 +93,7 @@ impl MigrationTrait for Migration {
 #[derive(DeriveIden)]
 enum AuthCertificate {
     Table,
-    Uuid,
+    Id,
     UserType,
     UserId,
     AccessToken,

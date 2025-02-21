@@ -1,3 +1,3 @@
 mod login;
 
-pub use login::LoginTokenCreateVO;
+pub use login::{LoginTokenCreateVO, LoginTokenUpdateVO};

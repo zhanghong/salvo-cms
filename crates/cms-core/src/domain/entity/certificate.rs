@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "auth_certificate")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub uuid: String,
+    pub id: String,
     pub user_type: String,
     pub user_id: i64,
     pub access_token: String,
