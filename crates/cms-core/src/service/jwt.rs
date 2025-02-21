@@ -1,7 +1,5 @@
 use chrono::Duration;
 use jsonwebtoken::{self, EncodingKey};
-use salvo::prelude::*;
-use salvo::Depot;
 use sea_orm::*;
 
 use crate::config::AppState;
@@ -44,12 +42,9 @@ impl JwtService {
             updated_at: Set(now),
             ..Default::default()
         };
-        let _ = CertificateEntity::insert(model.clone())
-            .exec(&state.db)
-            .await?;
+        let model: CertificateModel = model.insert(&state.db).await?;
         RedisService::set_jwt_key(&state.redis, &uuid, access.expired_time);
 
-        let model = model.try_into_model().unwrap();
         handle_ok(model)
     }
 
@@ -79,9 +74,9 @@ impl JwtService {
             .await?
             .unwrap();
 
-        let now = time::current_timestamp();
+        let current_timestamp = time::current_timestamp();
         let refresh_expired_time = time::to_timestamp(model.refresh_expired_at.clone());
-        if now > refresh_expired_time {
+        if current_timestamp > refresh_expired_time {
             let err = AppError::Unauthorized;
             return Err(err);
         }
@@ -94,23 +89,19 @@ impl JwtService {
         model.access_token = Set(access.token_value.to_owned());
         model.access_expired_at = Set(time::from_timestamp(access.expired_time));
 
-        if now + (3 * 24 * 60 * 60) > refresh_expired_time {
+        if current_timestamp + (3 * 24 * 60 * 60) > refresh_expired_time {
             let refresh = Self::generate_refresh_token(&uuid, user_id, user_type).unwrap();
             model.refresh_token = Set(refresh.token_value.to_owned());
             model.refresh_expired_at = Set(time::from_timestamp(refresh.expired_time));
         }
-        let _ = CertificateEntity::update_many()
-            .set(model.clone())
-            .filter(CertificateColummn::Id.eq(uuid.to_owned()))
-            .exec(db)
-            .await?;
-
+        model.updated_at = Set(time::current_time());
+        let model: CertificateModel = model.update(db).await?;
         RedisService::set_jwt_key(&state.redis, &uuid, access.expired_time);
 
-        let model = model.try_into_model().unwrap();
         handle_ok(model)
     }
 
+    /// 生成 Access Token
     fn generate_access_token(
         uuid: &String,
         user_id: i64,
@@ -141,29 +132,30 @@ impl JwtService {
         handle_ok(dto)
     }
 
-    pub fn verify_access_token(depot: &Depot) -> HandleResult<()> {
-        match depot.jwt_auth_state() {
-            JwtAuthState::Authorized => {
-                let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
-                println!("data: {:#?}", data.claims);
-                let token_type = TokenTypeEnum::form_string(data.claims.token_type.to_owned());
-                match token_type {
-                    TokenTypeEnum::AccessToken => {}
-                    _ => {
-                        let err = AppError::Unauthorized;
-                        return Err(err);
-                    }
-                }
-            }
-            _ => {
-                let err = AppError::Unauthorized;
-                return Err(err);
-            }
-        };
+    // pub fn verify_access_token(depot: &Depot) -> HandleResult<()> {
+    //     match depot.jwt_auth_state() {
+    //         JwtAuthState::Authorized => {
+    //             let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
+    //             println!("data: {:#?}", data.claims);
+    //             let token_type = TokenTypeEnum::form_string(data.claims.token_type.to_owned());
+    //             match token_type {
+    //                 TokenTypeEnum::AccessToken => {}
+    //                 _ => {
+    //                     let err = AppError::Unauthorized;
+    //                     return Err(err);
+    //                 }
+    //             }
+    //         }
+    //         _ => {
+    //             let err = AppError::Unauthorized;
+    //             return Err(err);
+    //         }
+    //     };
 
-        handle_ok(())
-    }
+    //     handle_ok(())
+    // }
 
+    /// 生成 Refresh Token
     fn generate_refresh_token(
         uuid: &String,
         user_id: i64,
@@ -195,26 +187,26 @@ impl JwtService {
         handle_ok(dto)
     }
 
-    pub fn verify_fresh_token(depot: &Depot) -> HandleResult<()> {
-        match depot.jwt_auth_state() {
-            JwtAuthState::Authorized => {
-                let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
-                println!("data: {:#?}", data.claims);
-                let token_type = TokenTypeEnum::form_string(data.claims.token_type.to_owned());
-                match token_type {
-                    TokenTypeEnum::RefreshToken => {}
-                    _ => {
-                        let err = AppError::Unauthorized;
-                        return Err(err);
-                    }
-                }
-            }
-            _ => {
-                let err = AppError::Unauthorized;
-                return Err(err);
-            }
-        };
+    // pub fn verify_fresh_token(depot: &Depot) -> HandleResult<()> {
+    //     match depot.jwt_auth_state() {
+    //         JwtAuthState::Authorized => {
+    //             let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
+    //             println!("data: {:#?}", data.claims);
+    //             let token_type = TokenTypeEnum::form_string(data.claims.token_type.to_owned());
+    //             match token_type {
+    //                 TokenTypeEnum::RefreshToken => {}
+    //                 _ => {
+    //                     let err = AppError::Unauthorized;
+    //                     return Err(err);
+    //                 }
+    //             }
+    //         }
+    //         _ => {
+    //             let err = AppError::Unauthorized;
+    //             return Err(err);
+    //         }
+    //     };
 
-        handle_ok(())
-    }
+    //     handle_ok(())
+    // }
 }
