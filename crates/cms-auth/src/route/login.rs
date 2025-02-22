@@ -72,3 +72,27 @@ pub async fn manager_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> 
     let vo = LoginService::update(claims, state).await?;
     result_ok(vo)
 }
+
+/// 退出登录
+///
+/// 管理端删除 AccessToken
+#[endpoint(
+    tags("权鉴模块/管理端/登录"),
+    responses(
+        (status_code = 200, description = "success response")
+    )
+  )]
+pub async fn manager_delete(depot: &mut Depot) -> AppResult<()> {
+    let state = depot.obtain::<AppState>().unwrap();
+    let claims: Option<JwtClaimsDTO> = match depot.jwt_auth_state() {
+        JwtAuthState::Authorized => {
+            let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
+            let claims = data.claims.clone();
+            Some(claims)
+        }
+        _ => None,
+    };
+
+    LoginService::delete(claims, state).await?;
+    result_ok(())
+}

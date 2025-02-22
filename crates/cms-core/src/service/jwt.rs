@@ -1,9 +1,9 @@
 use chrono::Duration;
 use jsonwebtoken::{self, EncodingKey};
+use salvo::prelude::*;
 use sea_orm::*;
 
-use crate::config::AppState;
-use crate::config::JwtConfig;
+use crate::config::{AppState, JwtConfig};
 use crate::domain::dto::{JwtClaimsDTO, JwtTokenDTO};
 use crate::domain::entity::certificate::{
     ActiveModel as CertificateActiveModel, Column as CertificateColummn,
@@ -20,7 +20,7 @@ pub struct JwtService {}
 
 impl JwtService {
     /// 用户登录
-    pub async fn user_login(
+    pub async fn create(
         user_id: i64,
         user_type: &str,
         state: &AppState,
@@ -49,7 +49,7 @@ impl JwtService {
     }
 
     // 用户刷新 Token
-    pub async fn user_refresh_by_claims(
+    pub async fn update_by_claims(
         dto: Option<JwtClaimsDTO>,
         state: &AppState,
     ) -> HandleResult<CertificateModel> {
@@ -132,28 +132,38 @@ impl JwtService {
         handle_ok(dto)
     }
 
-    // pub fn verify_access_token(depot: &Depot) -> HandleResult<()> {
-    //     match depot.jwt_auth_state() {
-    //         JwtAuthState::Authorized => {
-    //             let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
-    //             println!("data: {:#?}", data.claims);
-    //             let token_type = TokenTypeEnum::form_string(data.claims.token_type.to_owned());
-    //             match token_type {
-    //                 TokenTypeEnum::AccessToken => {}
-    //                 _ => {
-    //                     let err = AppError::Unauthorized;
-    //                     return Err(err);
-    //                 }
-    //             }
-    //         }
-    //         _ => {
-    //             let err = AppError::Unauthorized;
-    //             return Err(err);
-    //         }
-    //     };
+    /// 验证 AccessToken
+    pub fn verify_access_token(depot: &Depot) -> HandleResult<()> {
+        let mut claims: Option<JwtClaimsDTO> = None;
+        match depot.jwt_auth_state() {
+            JwtAuthState::Authorized => {
+                let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
+                claims = Some(data.claims.clone());
+            }
+            _ => {
+                let err = AppError::Unauthorized;
+                return Err(err);
+            }
+        };
 
-    //     handle_ok(())
-    // }
+        let claims = claims.ok_or(AppError::Unauthorized).unwrap();
+        let state = depot.obtain::<AppState>().unwrap();
+        if !RedisService::has_jwt_key(&state.redis, &claims.uuid) {
+            let err = AppError::Unauthorized;
+            return Err(err);
+        }
+
+        let token_type = TokenTypeEnum::form_string(claims.token_type.to_owned());
+        match token_type {
+            TokenTypeEnum::AccessToken => {}
+            _ => {
+                let err = AppError::Unauthorized;
+                return Err(err);
+            }
+        }
+
+        handle_ok(())
+    }
 
     /// 生成 Refresh Token
     fn generate_refresh_token(
@@ -187,26 +197,49 @@ impl JwtService {
         handle_ok(dto)
     }
 
-    // pub fn verify_fresh_token(depot: &Depot) -> HandleResult<()> {
-    //     match depot.jwt_auth_state() {
-    //         JwtAuthState::Authorized => {
-    //             let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
-    //             println!("data: {:#?}", data.claims);
-    //             let token_type = TokenTypeEnum::form_string(data.claims.token_type.to_owned());
-    //             match token_type {
-    //                 TokenTypeEnum::RefreshToken => {}
-    //                 _ => {
-    //                     let err = AppError::Unauthorized;
-    //                     return Err(err);
-    //                 }
-    //             }
-    //         }
-    //         _ => {
-    //             let err = AppError::Unauthorized;
-    //             return Err(err);
-    //         }
-    //     };
+    /// 验证 RefreshToken
+    pub fn verify_refresh_token(depot: &Depot) -> HandleResult<()> {
+        match depot.jwt_auth_state() {
+            JwtAuthState::Authorized => {
+                let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
+                let token_type = TokenTypeEnum::form_string(data.claims.token_type.to_owned());
+                match token_type {
+                    TokenTypeEnum::RefreshToken => {}
+                    _ => {
+                        let err = AppError::Unauthorized;
+                        return Err(err);
+                    }
+                }
+            }
+            _ => {
+                let err = AppError::Unauthorized;
+                return Err(err);
+            }
+        };
 
-    //     handle_ok(())
-    // }
+        handle_ok(())
+    }
+
+    // 删除 Token
+    pub async fn delete_by_claims(dto: Option<JwtClaimsDTO>, state: &AppState) -> HandleResult<()> {
+        if dto.is_none() {
+            return handle_ok(());
+        }
+        let dto = dto.unwrap();
+        let token_type = TokenTypeEnum::form_string(dto.token_type.to_owned());
+        match token_type {
+            TokenTypeEnum::AccessToken => {}
+            _ => {
+                let err = AppError::Unauthorized;
+                return Err(err);
+            }
+        }
+        let uuid = dto.uuid.to_owned();
+        RedisService::del_jwt_key(&state.redis, &uuid);
+        let _ = CertificateEntity::delete_by_id(uuid)
+            .exec(&state.db)
+            .await?;
+
+        handle_ok(())
+    }
 }

@@ -3,6 +3,8 @@ use salvo::prelude::*;
 
 use crate::config::JwtConfig;
 use crate::domain::dto::JwtClaimsDTO;
+use crate::domain::{handle_ok, HandleResult};
+use crate::service::JwtService;
 
 pub fn jwt_authorizor_init() -> JwtAuth<JwtClaimsDTO, ConstDecoder> {
     let cfg = JwtConfig::from_env().expect("Failed to load jwt config");
@@ -13,4 +15,16 @@ pub fn jwt_authorizor_init() -> JwtAuth<JwtClaimsDTO, ConstDecoder> {
             .force_passed(true);
 
     auth
+}
+
+#[handler]
+pub fn jwt_verify_access(depot: &mut Depot) -> HandleResult<()> {
+    JwtService::verify_access_token(depot)?;
+    handle_ok(())
+}
+
+#[handler]
+pub fn jwt_verify_refresh(depot: &mut Depot) -> HandleResult<()> {
+    JwtService::verify_refresh_token(depot)?;
+    handle_ok(())
 }

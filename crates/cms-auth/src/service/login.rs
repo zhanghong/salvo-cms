@@ -66,7 +66,7 @@ impl LoginService {
             PlatformEnum::Manager => "manager",
             _ => "member",
         };
-        let cert: CertificateModel = JwtService::user_login(user.id, login_type, state)
+        let cert: CertificateModel = JwtService::create(user.id, login_type, state)
             .await
             .unwrap();
         let avatar = user.avatar_url();
@@ -111,7 +111,7 @@ impl LoginService {
         claims: Option<JwtClaimsDTO>,
         state: &AppState,
     ) -> HandleResult<LoginTokenUpdateVO> {
-        let cert = JwtService::user_refresh_by_claims(claims, state).await?;
+        let cert = JwtService::update_by_claims(claims, state).await?;
 
         let vo = LoginTokenUpdateVO {
             access_token: cert.access_token.to_owned(),
@@ -120,5 +120,11 @@ impl LoginService {
             refresh_expired: time::to_db_time(&cert.refresh_expired_at),
         };
         handle_ok(vo)
+    }
+
+    pub async fn delete(claims: Option<JwtClaimsDTO>, state: &AppState) -> HandleResult<()> {
+        JwtService::delete_by_claims(claims, state).await?;
+
+        handle_ok(())
     }
 }
