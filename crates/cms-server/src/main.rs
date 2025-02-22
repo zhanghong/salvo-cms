@@ -1,6 +1,4 @@
 use dotenvy::dotenv;
-use salvo::cors::Cors;
-use salvo::http::Method;
 use salvo::oapi::OpenApi;
 use salvo::prelude::*;
 
@@ -61,14 +59,6 @@ async fn main() {
                 .into_router("rapi-doc"),
         );
 
-    let cors = Cors::new()
-        .allow_origin("*")
-        .allow_methods(vec![Method::GET, Method::POST, Method::DELETE])
-        .allow_headers("authorization")
-        .into_handler();
-
-    let service = Service::new(router).hoop(cors);
-
     let acceptor = TcpListener::new(&addr).bind().await;
-    Server::new(acceptor).serve(service).await;
+    Server::new(acceptor).serve(router).await;
 }
