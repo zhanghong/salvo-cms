@@ -26,8 +26,8 @@ impl LoginService {
         dto: &LoginStoreDTO,
         state: &AppState,
     ) -> HandleResult<LoginTokenCreateVO> {
-        let name = dto.name.clone();
-        if name.is_none() {
+        let username: Option<String> = dto.username.clone();
+        if username.is_none() {
             let err = AppError::BadRequest(String::from("登录名不能为空"));
             return Err(err);
         }
@@ -40,11 +40,11 @@ impl LoginService {
         }
         let password = password.unwrap();
 
-        let name = name.unwrap().to_lowercase().trim().to_string();
+        let username = username.unwrap().to_lowercase().trim().to_string();
         let condition = Condition::any()
-            .add(UserColumn::Name.eq(&name))
-            .add(UserColumn::Phone.eq(&name))
-            .add(UserColumn::Email.eq(&name));
+            .add(UserColumn::Name.eq(&username))
+            .add(UserColumn::Phone.eq(&username))
+            .add(UserColumn::Email.eq(&username));
         let user = UserEntity::find().filter(condition).one(&state.db).await?;
         if user.is_none() {
             let err = AppError::BadRequest(String::from("用户不存在"));

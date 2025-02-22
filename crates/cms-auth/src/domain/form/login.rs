@@ -13,7 +13,7 @@ pub struct LoginByPasswordForm {
         required(message = "登录名不能为空"),
         length(min = 1, message = "登录名不能为空")
     )]
-    pub name: Option<String>,
+    pub username: Option<String>,
 
     /// 登录密码
     #[validate(

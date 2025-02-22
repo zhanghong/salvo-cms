@@ -12,7 +12,7 @@ pub struct LoginStoreDTO {
     pub login_type: String,
 
     /// 登录名
-    pub name: Option<String>,
+    pub username: Option<String>,
 
     /// 登录密码
     pub password: Option<String>,
@@ -26,7 +26,7 @@ impl LoginStoreDTO {
     pub fn by_password_form(model: &LoginByPasswordForm) -> Self {
         Self {
             login_type: "password".to_string(),
-            name: model.name.clone(),
+            username: model.username.clone(),
             password: model.password.clone(),
             ..Default::default()
         }

@@ -2,6 +2,7 @@ use salvo::prelude::*;
 
 mod checker;
 mod login;
+mod route;
 
 use cms_core::middleware::{jwt_verify_access, jwt_verify_refresh};
 
@@ -19,7 +20,8 @@ pub fn init_router() -> Router {
         .push(
             Router::with_path("manage")
                 .hoop(jwt_verify_access)
-                .push(Router::with_path("/login").delete(login::manager_delete)),
+                .push(Router::with_path("/login").delete(login::manager_delete))
+                .push(Router::with_path("/routes/list").get(route::manager_list)),
         )
         .push(
             Router::with_path("open")
