@@ -16,6 +16,7 @@ pub struct Model {
     pub title: String,
     pub description: String,
     pub icon: String,
+    pub is_multiple: bool,
     pub sort: i16,
     pub is_enabled: bool,
     pub is_deleted: bool,
@@ -25,6 +26,37 @@ pub struct Model {
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::module::Entity",
+        from = "Column::ModuleId",
+        to = "super::module::Column::Id"
+    )]
+    Module,
+
+    #[sea_orm(has_many = "super::item::Entity")]
+    Item,
+
+    #[sea_orm(has_many = "super::morphable::Entity")]
+    Morphable,
+}
+
+impl Related<super::module::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Module.def()
+    }
+}
+
+impl Related<super::item::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Item.def()
+    }
+}
+
+impl Related<super::morphable::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Morphable.def()
+    }
+}
 
 impl ActiveModelBehavior for ActiveModel {}

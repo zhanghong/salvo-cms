@@ -68,6 +68,13 @@ impl MigrationTrait for Migration {
                             .comment("图标"),
                     )
                     .col(
+                        ColumnDef::new(MateKind::IsMultiple)
+                            .boolean()
+                            .not_null()
+                            .default(false)
+                            .comment("是否多选"),
+                    )
+                    .col(
                         ColumnDef::new(MateKind::Sort)
                             .small_integer()
                             .not_null()
@@ -138,6 +145,7 @@ enum MateKind {
     Title,
     Description,
     Icon,
+    IsMultiple,
     Sort,
     IsEnabled,
     IsDeleted,

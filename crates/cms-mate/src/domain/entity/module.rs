@@ -24,6 +24,33 @@ pub struct Model {
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(has_many = "super::kind::Entity")]
+    Kind,
+
+    #[sea_orm(has_many = "super::item::Entity")]
+    Item,
+
+    #[sea_orm(has_many = "super::morphable::Entity")]
+    Morphable,
+}
+
+impl Related<super::kind::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Kind.def()
+    }
+}
+
+impl Related<super::item::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Item.def()
+    }
+}
+
+impl Related<super::morphable::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Morphable.def()
+    }
+}
 
 impl ActiveModelBehavior for ActiveModel {}

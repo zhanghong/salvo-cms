@@ -16,6 +16,7 @@ pub struct Model {
     pub title: String,
     pub description: String,
     pub icon: String,
+    pub is_multiple: bool,
     pub sort: i16,
     pub is_enabled: bool,
     pub is_deleted: bool,
