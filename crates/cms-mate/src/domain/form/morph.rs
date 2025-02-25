@@ -30,5 +30,5 @@ pub struct MorphInstanceStoreForm {
     pub instance_id: Option<i64>,
 
     /// 关联Item列表
-    pub description: Option<HashMap<String, String>>,
+    pub items: Option<HashMap<String, String>>,
 }
