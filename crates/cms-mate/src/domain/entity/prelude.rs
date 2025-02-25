@@ -3,4 +3,4 @@
 pub use super::item::Entity as Item;
 pub use super::kind::Entity as Kind;
 pub use super::module::Entity as Module;
-pub use super::morphable::Entity as Morphable;
+pub use super::morph::Entity as Morph;

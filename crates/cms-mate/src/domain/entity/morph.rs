@@ -14,8 +14,8 @@ pub struct Model {
     pub module_id: i64,
     pub kind_id: i64,
     pub item_id: i64,
-    pub morphable_type: String,
-    pub morphable_id: i64,
+    pub instance_type: String,
+    pub instance_id: i64,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }

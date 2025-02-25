@@ -9,72 +9,72 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(MateMorphable::Table)
+                    .table(MateMorph::Table)
                     .if_not_exists()
                     .col(
-                        ColumnDef::new(MateMorphable::Id)
+                        ColumnDef::new(MateMorph::Id)
                             .big_integer()
                             .primary_key()
                             .auto_increment()
                             .comment("ID"),
                     )
                     .col(
-                        ColumnDef::new(MateMorphable::EditorType)
+                        ColumnDef::new(MateMorph::EditorType)
                             .string_len(10)
                             .not_null()
                             .default("system")
                             .comment("编辑类型"),
                     )
                     .col(
-                        ColumnDef::new(MateMorphable::EditorId)
+                        ColumnDef::new(MateMorph::EditorId)
                             .big_integer()
                             .not_null()
                             .default(0)
                             .comment("编辑ID"),
                     )
                     .col(
-                        ColumnDef::new(MateMorphable::ModuleId)
+                        ColumnDef::new(MateMorph::ModuleId)
                             .big_integer()
                             .not_null()
                             .default(0)
                             .comment("模块ID"),
                     )
                     .col(
-                        ColumnDef::new(MateMorphable::KindId)
+                        ColumnDef::new(MateMorph::KindId)
                             .big_integer()
                             .not_null()
                             .default(0)
                             .comment("类型ID"),
                     )
                     .col(
-                        ColumnDef::new(MateMorphable::ItemId)
+                        ColumnDef::new(MateMorph::ItemId)
                             .big_integer()
                             .not_null()
                             .default(0)
                             .comment("项目ID"),
                     )
                     .col(
-                        ColumnDef::new(MateMorphable::MorphableType)
+                        ColumnDef::new(MateMorph::InstanceType)
                             .string_len(30)
                             .not_null()
                             .default("")
                             .comment("关联类型"),
                     )
                     .col(
-                        ColumnDef::new(MateMorphable::MorphableId)
+                        ColumnDef::new(MateMorph::InstanceId)
                             .big_integer()
                             .not_null()
                             .default(0)
                             .comment("关联ID"),
                     )
                     .col(
-                        ColumnDef::new(MateMorphable::CreatedAt)
+                        ColumnDef::new(MateMorph::CreatedAt)
                             .date_time()
                             .not_null()
                             .comment("创建时间"),
                     )
                     .col(
-                        ColumnDef::new(MateMorphable::UpdatedAt)
+                        ColumnDef::new(MateMorph::UpdatedAt)
                             .date_time()
                             .not_null()
                             .comment("更新时间"),
@@ -87,9 +87,9 @@ impl MigrationTrait for Migration {
             .create_index(
                 Index::create()
                     .name("mate-morphable-by-item-kind")
-                    .table(MateMorphable::Table)
-                    .col(MateMorphable::ModuleId)
-                    .col(MateMorphable::KindId)
+                    .table(MateMorph::Table)
+                    .col(MateMorph::ModuleId)
+                    .col(MateMorph::KindId)
                     .to_owned(),
             )
             .await?;
@@ -97,10 +97,10 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("mate-morphable-by-morphable")
-                    .table(MateMorphable::Table)
-                    .col(MateMorphable::MorphableType)
-                    .col(MateMorphable::MorphableId)
+                    .name("mate-morph-by-instance")
+                    .table(MateMorph::Table)
+                    .col(MateMorph::InstanceType)
+                    .col(MateMorph::InstanceId)
                     .to_owned(),
             )
             .await
@@ -108,13 +108,13 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(MateMorphable::Table).to_owned())
+            .drop_table(Table::drop().table(MateMorph::Table).to_owned())
             .await
     }
 }
 
 #[derive(DeriveIden)]
-enum MateMorphable {
+enum MateMorph {
     Table,
     Id,
     EditorType,
@@ -122,8 +122,8 @@ enum MateMorphable {
     ModuleId,
     KindId,
     ItemId,
-    MorphableType,
-    MorphableId,
+    InstanceType,
+    InstanceId,
     CreatedAt,
     UpdatedAt,
 }

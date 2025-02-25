@@ -5,7 +5,7 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
-#[sea_orm(table_name = "mate_morphable")]
+#[sea_orm(table_name = "mate_morph")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i64,
@@ -14,8 +14,8 @@ pub struct Model {
     pub module_id: i64,
     pub kind_id: i64,
     pub item_id: i64,
-    pub morphable_type: String,
-    pub morphable_id: i64,
+    pub instance_type: String,
+    pub instance_id: i64,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }

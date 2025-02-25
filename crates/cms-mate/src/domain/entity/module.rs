@@ -31,8 +31,8 @@ pub enum Relation {
     #[sea_orm(has_many = "super::item::Entity")]
     Item,
 
-    #[sea_orm(has_many = "super::morphable::Entity")]
-    Morphable,
+    #[sea_orm(has_many = "super::morph::Entity")]
+    Morph,
 }
 
 impl Related<super::kind::Entity> for Entity {
@@ -47,9 +47,9 @@ impl Related<super::item::Entity> for Entity {
     }
 }
 
-impl Related<super::morphable::Entity> for Entity {
+impl Related<super::morph::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Morphable.def()
+        Relation::Morph.def()
     }
 }
 
