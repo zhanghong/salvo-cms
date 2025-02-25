@@ -8,16 +8,31 @@ use crate::domain::entity::kind::Model;
 use crate::domain::vo::module::ModuleVO;
 
 // ------------------------------------
-// 创建/更新用户
+// 创建/更新表单选项
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
-pub struct ItemFormOptionVO {
+pub struct KindFormOptionVO {
     /// 模块选项
     pub modules: Vec<SelectOptionItem>,
+
+    /// 启用状态
+    pub enables: Vec<SelectOptionItem>,
 }
 
 // ------------------------------------
-// 用户详情
+// 查询表单选项
+// ------------------------------------
+#[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
+pub struct KindQueryOptionVO {
+    /// 模块选项
+    pub modules: Option<Vec<SelectOptionItem>>,
+
+    /// 启用状态
+    pub enables: Vec<SelectOptionItem>,
+}
+
+// ------------------------------------
+// 详情视图
 // ------------------------------------
 // Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]

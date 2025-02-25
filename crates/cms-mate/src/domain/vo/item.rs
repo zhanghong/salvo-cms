@@ -9,7 +9,7 @@ use super::module::ModuleVO;
 use crate::domain::entity::item::Model;
 
 // ------------------------------------
-// 创建/更新用户
+// 创建/更新表单选项
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 pub struct ItemFormOptionVO {
@@ -18,10 +18,28 @@ pub struct ItemFormOptionVO {
 
     /// 父级
     pub parents: Vec<SelectOptionItem>,
+
+    /// 启用状态
+    pub enables: Vec<SelectOptionItem>,
 }
 
 // ------------------------------------
-// 用户详情
+// 查询表单选项
+// ------------------------------------
+#[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
+pub struct ItemQueryOptionVO {
+    /// 性别选项
+    pub modules: Vec<SelectOptionItem>,
+
+    /// 父级
+    pub parents: Vec<SelectOptionItem>,
+
+    /// 启用状态
+    pub enables: Vec<SelectOptionItem>,
+}
+
+// ------------------------------------
+// 详情视图
 // ------------------------------------
 // Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
@@ -86,7 +104,7 @@ impl From<&Model> for ItemRelatedVO {
 // ------------------------------------
 // Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
-pub struct ItemMainVO {
+pub struct ItemMasterVO {
     /// 主键
     pub id: i64,
 
@@ -179,7 +197,7 @@ pub struct ItemMainVO {
     pub children: Option<Vec<ItemRelatedVO>>,
 }
 
-impl ItemMainVO {
+impl ItemMasterVO {
     fn from_model_inner(model: &Model) -> Self {
         let pc_detail_url = model.pc_detail_url();
         let wap_detail_url = model.wap_detail_url();
@@ -211,13 +229,13 @@ impl ItemMainVO {
     }
 }
 
-impl From<Model> for ItemMainVO {
+impl From<Model> for ItemMasterVO {
     fn from(model: Model) -> Self {
         Self::from_model_inner(&model)
     }
 }
 
-impl From<&Model> for ItemMainVO {
+impl From<&Model> for ItemMasterVO {
     fn from(model: &Model) -> Self {
         Self::from_model_inner(model)
     }

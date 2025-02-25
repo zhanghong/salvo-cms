@@ -6,7 +6,7 @@ use super::item::ItemRelatedVO;
 use crate::domain::entity::morph::Model;
 
 // ------------------------------------
-// 用户详情
+// 详情视图
 // ------------------------------------
 // Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
