@@ -651,12 +651,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "cms-mate"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "cms-core",
+ "dotenvy",
+ "envy",
+ "regex",
+ "salvo",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+ "validator",
+]
+
+[[package]]
 name = "cms-server"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "cms-auth",
  "cms-core",
+ "cms-mate",
  "cms-user",
  "dotenvy",
  "envy",
