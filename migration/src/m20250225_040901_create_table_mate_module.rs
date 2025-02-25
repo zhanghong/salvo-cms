@@ -1,0 +1,130 @@
+use sea_orm_migration::prelude::*;
+
+#[derive(DeriveMigrationName)]
+pub struct Migration;
+
+#[async_trait::async_trait]
+impl MigrationTrait for Migration {
+    async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        // Replace the sample below with your own migration scripts
+        manager
+            .create_table(
+                Table::create()
+                    .table(MateModule::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(MateModule::Id)
+                            .big_integer()
+                            .primary_key()
+                            .auto_increment()
+                            .comment("ID"),
+                    )
+                    .col(
+                        ColumnDef::new(MateModule::EditorType)
+                            .string_len(10)
+                            .not_null()
+                            .default("system")
+                            .comment("编辑类型"),
+                    )
+                    .col(
+                        ColumnDef::new(MateModule::EditorId)
+                            .big_integer()
+                            .not_null()
+                            .default(0)
+                            .comment("编辑ID"),
+                    )
+                    .col(
+                        ColumnDef::new(MateModule::Name)
+                            .string_len(30)
+                            .not_null()
+                            .default("")
+                            .comment("名称"),
+                    )
+                    .col(
+                        ColumnDef::new(MateModule::Title)
+                            .string_len(30)
+                            .not_null()
+                            .default("")
+                            .comment("标题"),
+                    )
+                    .col(
+                        ColumnDef::new(MateModule::Description)
+                            .string_len(200)
+                            .not_null()
+                            .default("")
+                            .comment("描述"),
+                    )
+                    .col(
+                        ColumnDef::new(MateModule::Icon)
+                            .string_len(200)
+                            .not_null()
+                            .default("")
+                            .comment("图标"),
+                    )
+                    .col(
+                        ColumnDef::new(MateModule::Sort)
+                            .small_integer()
+                            .not_null()
+                            .default(99)
+                            .comment("排序编号"),
+                    )
+                    .col(
+                        ColumnDef::new(MateModule::IsEnabled)
+                            .boolean()
+                            .not_null()
+                            .default(true)
+                            .comment("是否启用"),
+                    )
+                    .col(
+                        ColumnDef::new(MateModule::IsDeleted)
+                            .boolean()
+                            .not_null()
+                            .default(false)
+                            .comment("是否删除"),
+                    )
+                    .col(
+                        ColumnDef::new(MateModule::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .comment("创建时间"),
+                    )
+                    .col(
+                        ColumnDef::new(MateModule::UpdatedAt)
+                            .date_time()
+                            .not_null()
+                            .comment("更新时间"),
+                    )
+                    .col(
+                        ColumnDef::new(MateModule::DeletedAt)
+                            .date_time()
+                            .comment("删除时间"),
+                    )
+                    .to_owned(),
+            )
+            .await
+    }
+
+    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .drop_table(Table::drop().table(MateModule::Table).to_owned())
+            .await
+    }
+}
+
+#[derive(DeriveIden)]
+enum MateModule {
+    Table,
+    Id,
+    EditorType,
+    EditorId,
+    Name,
+    Title,
+    Description,
+    Icon,
+    Sort,
+    IsEnabled,
+    IsDeleted,
+    DeletedAt,
+    CreatedAt,
+    UpdatedAt,
+}

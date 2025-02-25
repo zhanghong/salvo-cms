@@ -1,0 +1,129 @@
+use sea_orm_migration::prelude::*;
+
+#[derive(DeriveMigrationName)]
+pub struct Migration;
+
+#[async_trait::async_trait]
+impl MigrationTrait for Migration {
+    async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .create_table(
+                Table::create()
+                    .table(MateMorphable::Table)
+                    .if_not_exists()
+                    .col(
+                        ColumnDef::new(MateMorphable::Id)
+                            .big_integer()
+                            .primary_key()
+                            .auto_increment()
+                            .comment("ID"),
+                    )
+                    .col(
+                        ColumnDef::new(MateMorphable::EditorType)
+                            .string_len(10)
+                            .not_null()
+                            .default("system")
+                            .comment("编辑类型"),
+                    )
+                    .col(
+                        ColumnDef::new(MateMorphable::EditorId)
+                            .big_integer()
+                            .not_null()
+                            .default(0)
+                            .comment("编辑ID"),
+                    )
+                    .col(
+                        ColumnDef::new(MateMorphable::ModuleId)
+                            .big_integer()
+                            .not_null()
+                            .default(0)
+                            .comment("模块ID"),
+                    )
+                    .col(
+                        ColumnDef::new(MateMorphable::KindId)
+                            .big_integer()
+                            .not_null()
+                            .default(0)
+                            .comment("类型ID"),
+                    )
+                    .col(
+                        ColumnDef::new(MateMorphable::ItemId)
+                            .big_integer()
+                            .not_null()
+                            .default(0)
+                            .comment("项目ID"),
+                    )
+                    .col(
+                        ColumnDef::new(MateMorphable::MorphableType)
+                            .string_len(30)
+                            .not_null()
+                            .default("")
+                            .comment("关联类型"),
+                    )
+                    .col(
+                        ColumnDef::new(MateMorphable::MorphableId)
+                            .big_integer()
+                            .not_null()
+                            .default(0)
+                            .comment("关联ID"),
+                    )
+                    .col(
+                        ColumnDef::new(MateMorphable::CreatedAt)
+                            .date_time()
+                            .not_null()
+                            .comment("创建时间"),
+                    )
+                    .col(
+                        ColumnDef::new(MateMorphable::UpdatedAt)
+                            .date_time()
+                            .not_null()
+                            .comment("更新时间"),
+                    )
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .create_index(
+                Index::create()
+                    .name("mate-morphable-by-item-kind")
+                    .table(MateMorphable::Table)
+                    .col(MateMorphable::ModuleId)
+                    .col(MateMorphable::KindId)
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .create_index(
+                Index::create()
+                    .name("mate-morphable-by-morphable")
+                    .table(MateMorphable::Table)
+                    .col(MateMorphable::MorphableType)
+                    .col(MateMorphable::MorphableId)
+                    .to_owned(),
+            )
+            .await
+    }
+
+    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .drop_table(Table::drop().table(MateMorphable::Table).to_owned())
+            .await
+    }
+}
+
+#[derive(DeriveIden)]
+enum MateMorphable {
+    Table,
+    Id,
+    EditorType,
+    EditorId,
+    ModuleId,
+    KindId,
+    ItemId,
+    MorphableType,
+    MorphableId,
+    CreatedAt,
+    UpdatedAt,
+}
