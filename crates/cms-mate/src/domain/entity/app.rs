@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use cms_core::utils::time;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
-#[sea_orm(table_name = "mate_module")]
+#[sea_orm(table_name = "mate_app")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i64,

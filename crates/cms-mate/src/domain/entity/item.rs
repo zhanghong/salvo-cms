@@ -13,7 +13,7 @@ pub struct Model {
     pub id: i64,
     pub editor_type: String,
     pub editor_id: i64,
-    pub module_id: i64,
+    pub app_id: i64,
     pub kind_id: i64,
     pub name: String,
     pub title: String,
@@ -39,11 +39,11 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(
-        belongs_to = "super::module::Entity",
-        from = "Column::ModuleId",
-        to = "super::module::Column::Id"
+        belongs_to = "super::app::Entity",
+        from = "Column::AppId",
+        to = "super::app::Column::Id"
     )]
-    Module,
+    App,
 
     #[sea_orm(
         belongs_to = "super::kind::Entity",
@@ -56,9 +56,9 @@ pub enum Relation {
     Morph,
 }
 
-impl Related<super::module::Entity> for Entity {
+impl Related<super::app::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Module.def()
+        Relation::App.def()
     }
 }
 
