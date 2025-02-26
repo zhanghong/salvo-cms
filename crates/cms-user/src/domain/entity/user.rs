@@ -4,7 +4,7 @@ use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use cms_core::{domain::vo::EditorVO, utils::time};
+use cms_core::utils::time;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "user")]
@@ -65,38 +65,5 @@ impl Model {
 
     pub fn updated_time(&self) -> String {
         time::to_db_time(&self.updated_at)
-    }
-
-    pub fn into_editor_inner(&self) -> EditorVO {
-        let avatar_url = self.avatar_url();
-        EditorVO {
-            id: self.id,
-            no: self.no.to_owned(),
-            name: self.name.to_owned(),
-            phone: self.phone.to_owned(),
-            email: self.email.to_owned(),
-            avatar_url: avatar_url.to_owned(),
-        }
-    }
-}
-
-impl Into<EditorVO> for Model {
-    fn into(self) -> EditorVO {
-        Self::into_editor_inner(&self)
-    }
-}
-
-impl Into<EditorVO> for &Model {
-    fn into(self) -> EditorVO {
-        let avatar_url = self.avatar_url();
-
-        EditorVO {
-            id: self.id,
-            no: self.no.to_owned(),
-            name: self.name.to_owned(),
-            phone: self.phone.to_owned(),
-            email: self.email.to_owned(),
-            avatar_url: avatar_url.to_owned(),
-        }
     }
 }

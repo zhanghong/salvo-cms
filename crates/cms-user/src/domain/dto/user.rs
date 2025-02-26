@@ -181,7 +181,7 @@ pub struct UserViewDTO {
     /// 当前密码
     pub user_type: Option<UserTypeEnum>,
 
-    /// 确认密码
+    /// 是否启用
     pub enabled: Option<bool>,
 
     /// 加载关联数据

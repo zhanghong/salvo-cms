@@ -1,14 +1,16 @@
-use std::collections::HashMap;
-
-use cms_core::config::AppState;
-use cms_core::domain::dto::FieldBoolUpdateDTO;
-use cms_core::domain::vo::{EditorVO, PaginateResultVO};
 use sea_orm::prelude::Expr;
 use sea_orm::*;
 
-use cms_core::domain::{dto::FieldValueUniqueDTO, handle_ok, HandleResult};
+use cms_core::config::AppState;
+use cms_core::domain::{
+    dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO},
+    handle_ok,
+    vo::PaginateResultVO,
+    HandleResult,
+};
 use cms_core::enums::PlatformEnum;
 use cms_core::error::AppError;
+use cms_core::service::EditorService;
 use cms_core::utils::{encrypt::encrypt_password, random, time};
 
 use crate::domain::dto::{
@@ -448,7 +450,11 @@ impl UserService {
         handle_ok(true)
     }
 
-    pub async fn view(dto: &UserViewDTO, state: &AppState) -> HandleResult<UserItemVO> {
+    pub async fn view(
+        platform: &PlatformEnum,
+        dto: &UserViewDTO,
+        state: &AppState,
+    ) -> HandleResult<UserItemVO> {
         let id = dto.id;
         if id < 1 {
             let err = AppError::BadRequest(String::from("无效的用户ID"));
@@ -457,16 +463,22 @@ impl UserService {
 
         let db = &state.db;
         let model = Self::fetch_by_id(id, state).await?;
+        if *platform == PlatformEnum::Open {
+            if model.is_test {
+                let err = AppError::BadRequest(String::from("无效的用户ID"));
+                return Err(err);
+            } else if !model.is_enabled {
+                let err = AppError::BadRequest(String::from("无效的用户ID"));
+                return Err(err);
+            }
+        }
 
         let mut vo: UserItemVO = model.into();
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
                     UserLoadEnum::Editor => {
-                        let opt = Self::fetch_by_id(vo.editor_id, state).await;
-                        if let Ok(editor) = opt {
-                            vo.editor = Some(editor.into());
-                        }
+                        vo.editor = EditorService::load_by_id(vo.editor_id, state).await?;
                     }
                     UserLoadEnum::Detail => {
                         let detail = DetailEntity::find()
@@ -520,7 +532,7 @@ impl UserService {
             for enums in load_models {
                 match enums {
                     UserLoadEnum::Editor => {
-                        let map = Self::query_load_editors(&editor_ids, state).await?;
+                        let map = EditorService::batch_load_by_ids(&editor_ids, state).await?;
                         for vo in list.iter_mut() {
                             let editor = map.get(&vo.editor_id).cloned();
                             vo.editor = editor;
@@ -544,29 +556,6 @@ impl UserService {
         //     .map(|model| model.editor_id)
         //     .collect::<Vec<i64>>();
         handle_ok(vo)
-    }
-
-    pub async fn query_load_editors(
-        ids: &Vec<i64>,
-        state: &AppState,
-    ) -> HandleResult<HashMap<i64, EditorVO>> {
-        let db = &state.db;
-        let editor_ids: Vec<i64> = ids.into_iter().filter(|&&id| id > 0).cloned().collect();
-        if editor_ids.is_empty() {
-            return handle_ok(HashMap::<i64, EditorVO>::new());
-        }
-
-        let models = Self::scope_active_query()
-            .filter(UserColumn::Id.is_in(editor_ids))
-            .all(db)
-            .await?;
-
-        let map: HashMap<i64, EditorVO> = models
-            .into_iter()
-            .map(|model| (model.id, model.into()))
-            .collect();
-
-        handle_ok(map)
     }
 
     async fn query_builder(

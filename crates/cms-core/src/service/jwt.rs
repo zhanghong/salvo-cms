@@ -134,11 +134,12 @@ impl JwtService {
 
     /// 验证 AccessToken
     pub fn verify_access_token(depot: &Depot) -> HandleResult<()> {
-        let mut claims: Option<JwtClaimsDTO> = None;
+        let claims: JwtClaimsDTO;
         match depot.jwt_auth_state() {
             JwtAuthState::Authorized => {
                 let data = depot.jwt_auth_data::<JwtClaimsDTO>().unwrap();
-                claims = Some(data.claims.clone());
+                let opt = Some(data.claims.clone());
+                claims = opt.ok_or(AppError::Unauthorized).unwrap();
             }
             _ => {
                 let err = AppError::Unauthorized;
@@ -146,7 +147,6 @@ impl JwtService {
             }
         };
 
-        let claims = claims.ok_or(AppError::Unauthorized).unwrap();
         let state = depot.obtain::<AppState>().unwrap();
         if !RedisService::has_jwt_key(&state.redis, &claims.uuid) {
             let err = AppError::Unauthorized;

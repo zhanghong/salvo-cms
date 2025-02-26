@@ -5,5 +5,5 @@ mod morph;
 
 pub use item::ItemStoreDTO;
 pub use kind::KindStoreDTO;
-pub use module::ModuleStoreDTO;
+pub use module::{ModuleQueryDTO, ModuleStoreDTO, ModuleViewDTO};
 pub use morph::MorphInstanceStoreDTO;

@@ -205,7 +205,7 @@ pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<Us
         ..Default::default()
     };
     let state = depot.obtain::<AppState>().unwrap();
-    let model = UserService::view(&dto, state).await?;
+    let model = UserService::view(&PlatformEnum::Manager, &dto, state).await?;
     result_ok(model)
 }
 
