@@ -11,7 +11,7 @@ pub struct Model {
     pub id: i64,
     pub editor_type: String,
     pub editor_id: i64,
-    pub module_id: i64,
+    pub app_id: i64,
     pub kind_id: i64,
     pub item_id: i64,
     pub instance_type: String,

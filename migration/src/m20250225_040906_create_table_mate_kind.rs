@@ -33,7 +33,7 @@ impl MigrationTrait for Migration {
                             .comment("编辑ID"),
                     )
                     .col(
-                        ColumnDef::new(MateKind::ModuleId)
+                        ColumnDef::new(MateKind::AppId)
                             .big_integer()
                             .not_null()
                             .default(0)
@@ -52,6 +52,13 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default("")
                             .comment("标题"),
+                    )
+                    .col(
+                        ColumnDef::new(MateKind::MaxLevel)
+                            .tiny_integer()
+                            .not_null()
+                            .default(0)
+                            .comment("最大层级"),
                     )
                     .col(
                         ColumnDef::new(MateKind::Description)
@@ -118,9 +125,9 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("idx-by-module-and-deleted")
+                    .name("idx-by-app-deleted")
                     .table(MateKind::Table)
-                    .col(MateKind::ModuleId)
+                    .col(MateKind::AppId)
                     .col(MateKind::IsDeleted)
                     .to_owned(),
             )
@@ -140,9 +147,10 @@ enum MateKind {
     Id,
     EditorType,
     EditorId,
-    ModuleId,
+    AppId,
     Name,
     Title,
+    MaxLevel,
     Description,
     Icon,
     IsMultiple,

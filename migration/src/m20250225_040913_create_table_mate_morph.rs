@@ -33,7 +33,7 @@ impl MigrationTrait for Migration {
                             .comment("编辑ID"),
                     )
                     .col(
-                        ColumnDef::new(MateMorph::ModuleId)
+                        ColumnDef::new(MateMorph::AppId)
                             .big_integer()
                             .not_null()
                             .default(0)
@@ -86,9 +86,9 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("mate-morphable-by-item-kind")
+                    .name("mate-morphable-by-app-kind")
                     .table(MateMorph::Table)
-                    .col(MateMorph::ModuleId)
+                    .col(MateMorph::AppId)
                     .col(MateMorph::KindId)
                     .to_owned(),
             )
@@ -119,7 +119,7 @@ enum MateMorph {
     Id,
     EditorType,
     EditorId,
-    ModuleId,
+    AppId,
     KindId,
     ItemId,
     InstanceType,

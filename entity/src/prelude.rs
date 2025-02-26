@@ -2,10 +2,10 @@
 
 pub use super::auth_certificate::Entity as AuthCertificate;
 pub use super::category_item::Entity as CategoryItem;
+pub use super::mate_app::Entity as MateApp;
 pub use super::mate_item::Entity as MateItem;
 pub use super::mate_kind::Entity as MateKind;
-pub use super::mate_module::Entity as MateModule;
-pub use super::mate_morphable::Entity as MateMorphable;
+pub use super::mate_morph::Entity as MateMorph;
 pub use super::user::Entity as User;
 pub use super::user_detail::Entity as UserDetail;
 pub use super::user_login::Entity as UserLogin;

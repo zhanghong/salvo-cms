@@ -4,10 +4,10 @@ pub mod prelude;
 
 pub mod auth_certificate;
 pub mod category_item;
+pub mod mate_app;
 pub mod mate_item;
 pub mod mate_kind;
-pub mod mate_module;
-pub mod mate_morphable;
+pub mod mate_morph;
 pub mod user;
 pub mod user_detail;
 pub mod user_login;

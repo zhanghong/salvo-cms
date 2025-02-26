@@ -33,7 +33,7 @@ impl MigrationTrait for Migration {
                             .comment("编辑ID"),
                     )
                     .col(
-                        ColumnDef::new(MateItem::ModuleId)
+                        ColumnDef::new(MateItem::AppId)
                             .big_integer()
                             .not_null()
                             .default(0)
@@ -166,9 +166,9 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("mate-by-module-and-kind-deleted")
+                    .name("mate-by-app-kind-deleted")
                     .table(MateItem::Table)
-                    .col(MateItem::ModuleId)
+                    .col(MateItem::AppId)
                     .col(MateItem::KindId)
                     .col(MateItem::IsDeleted)
                     .to_owned(),
@@ -189,7 +189,7 @@ enum MateItem {
     Id,
     EditorType,
     EditorId,
-    ModuleId,
+    AppId,
     KindId,
     Name,
     Title,
