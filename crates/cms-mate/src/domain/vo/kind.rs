@@ -5,15 +5,15 @@ use serde::{Deserialize, Serialize};
 use cms_core::domain::SelectOptionItem;
 
 use crate::domain::entity::kind::Model;
-use crate::domain::vo::module::ModuleVO;
+use crate::domain::vo::app::AppMasterVo;
 
 // ------------------------------------
 // 创建/更新表单选项
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 pub struct KindFormOptionVO {
-    /// 模块选项
-    pub modules: Vec<SelectOptionItem>,
+    /// App 选项
+    pub apps: Vec<SelectOptionItem>,
 
     /// 启用状态
     pub enables: Vec<SelectOptionItem>,
@@ -24,8 +24,8 @@ pub struct KindFormOptionVO {
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 pub struct KindQueryOptionVO {
-    /// 模块选项
-    pub modules: Option<Vec<SelectOptionItem>>,
+    /// App 选项
+    pub apps: Option<Vec<SelectOptionItem>>,
 
     /// 启用状态
     pub enables: Vec<SelectOptionItem>,
@@ -36,7 +36,7 @@ pub struct KindQueryOptionVO {
 // ------------------------------------
 // Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
-pub struct KindVO {
+pub struct KindMasterVO {
     /// 主键
     pub id: i64,
 
@@ -50,13 +50,17 @@ pub struct KindVO {
 
     /// 模块ID
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub module_id: Option<i64>,
+    pub app_id: Option<i64>,
 
     /// 名称
     pub name: String,
 
     /// 标题
     pub title: String,
+
+    /// 最大层级
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_level: Option<i8>,
 
     /// 描述
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -90,10 +94,10 @@ pub struct KindVO {
 
     /// 模块
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub module: Option<ModuleVO>,
+    pub app: Option<AppMasterVo>,
 }
 
-impl KindVO {
+impl KindMasterVO {
     fn from_model_inner(model: &Model) -> Self {
         let created_time = model.created_time();
         let updated_time = model.updated_time();
@@ -102,9 +106,10 @@ impl KindVO {
             id: model.id,
             editor_type: model.editor_type.to_owned(),
             editor_id: model.editor_id,
-            module_id: Some(model.module_id),
+            app_id: Some(model.app_id),
             name: model.name.to_owned(),
             title: model.title.to_owned(),
+            max_level: Some(model.max_level),
             description: Some(model.description.to_owned()),
             icon: Some(model.icon.to_owned()),
             is_multiple: Some(model.is_multiple),
@@ -117,13 +122,13 @@ impl KindVO {
     }
 }
 
-impl From<Model> for KindVO {
+impl From<Model> for KindMasterVO {
     fn from(model: Model) -> Self {
         Self::from_model_inner(&model)
     }
 }
 
-impl From<&Model> for KindVO {
+impl From<&Model> for KindMasterVO {
     fn from(model: &Model) -> Self {
         Self::from_model_inner(model)
     }

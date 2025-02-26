@@ -40,7 +40,7 @@ fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
 // ------------------------------------
 // Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
-pub struct ModuleStoreForm {
+pub struct AppStoreForm {
     /// 名称
     #[validate(custom(function = "validate_field_name", message = "名称长度为5-20位"))]
     pub name: Option<String>,

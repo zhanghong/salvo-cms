@@ -2,15 +2,15 @@ use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    domain::{form::ModuleStoreForm, query::ModulePaginateQuery},
-    enums::ModuleLoadEnum,
+    domain::{form::AppStoreForm, query::AppPaginateQuery},
+    enums::AppLoadEnum,
 };
 
 // ------------------------------------
 // 创建/更新
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
-pub struct ModuleStoreDTO {
+pub struct AppStoreDTO {
     /// 主键
     pub id: Option<i64>,
 
@@ -33,8 +33,8 @@ pub struct ModuleStoreDTO {
     pub is_enabled: Option<bool>,
 }
 
-impl ModuleStoreDTO {
-    fn form_inner(model: &ModuleStoreForm) -> Self {
+impl AppStoreDTO {
+    fn form_inner(model: &AppStoreForm) -> Self {
         Self {
             name: model.name.clone(),
             title: model.title.clone(),
@@ -47,23 +47,23 @@ impl ModuleStoreDTO {
     }
 }
 
-impl From<ModuleStoreForm> for ModuleStoreDTO {
-    fn from(model: ModuleStoreForm) -> Self {
+impl From<AppStoreForm> for AppStoreDTO {
+    fn from(model: AppStoreForm) -> Self {
         Self::form_inner(&model)
     }
 }
 
-impl From<&ModuleStoreForm> for ModuleStoreDTO {
-    fn from(model: &ModuleStoreForm) -> Self {
+impl From<&AppStoreForm> for AppStoreDTO {
+    fn from(model: &AppStoreForm) -> Self {
         Self::form_inner(model)
     }
 }
 
 // ------------------------------------
-// 分页查询
+// 查询
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
-pub struct ModuleQueryDTO {
+pub struct AppQueryDTO {
     /// 页码
     pub page: Option<u64>,
 
@@ -86,11 +86,11 @@ pub struct ModuleQueryDTO {
     pub created_end_time: Option<NaiveDateTime>,
 
     /// 加载关联数据
-    pub load_models: Option<Vec<ModuleLoadEnum>>,
+    pub load_models: Option<Vec<AppLoadEnum>>,
 }
 
-impl ModuleQueryDTO {
-    fn form_inner(model: &ModulePaginateQuery) -> Self {
+impl AppQueryDTO {
+    fn form_inner(model: &AppPaginateQuery) -> Self {
         Self {
             page: model.page.clone(),
             page_size: model.page_size.clone(),
@@ -104,14 +104,14 @@ impl ModuleQueryDTO {
     }
 }
 
-impl From<ModulePaginateQuery> for ModuleQueryDTO {
-    fn from(model: ModulePaginateQuery) -> Self {
+impl From<AppPaginateQuery> for AppQueryDTO {
+    fn from(model: AppPaginateQuery) -> Self {
         Self::form_inner(&model)
     }
 }
 
-impl From<&ModulePaginateQuery> for ModuleQueryDTO {
-    fn from(model: &ModulePaginateQuery) -> Self {
+impl From<&AppPaginateQuery> for AppQueryDTO {
+    fn from(model: &AppPaginateQuery) -> Self {
         Self::form_inner(model)
     }
 }
@@ -120,7 +120,7 @@ impl From<&ModulePaginateQuery> for ModuleQueryDTO {
 // 查看
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
-pub struct ModuleViewDTO {
+pub struct AppViewDTO {
     /// 主键
     pub id: i64,
 
@@ -128,5 +128,5 @@ pub struct ModuleViewDTO {
     pub enabled: Option<bool>,
 
     /// 加载关联数据
-    pub load_models: Option<Vec<ModuleLoadEnum>>,
+    pub load_models: Option<Vec<AppLoadEnum>>,
 }

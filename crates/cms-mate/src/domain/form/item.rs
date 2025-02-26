@@ -60,7 +60,7 @@ fn validate_field_sort(num: i64) -> Result<(), ValidationError> {
 pub struct ItemStoreForm {
     /// 模块ID
     #[validate(custom(function = "validate_big_integer_present", message = "模块ID不能为空"))]
-    pub module_id: Option<i64>,
+    pub app_id: Option<i64>,
 
     /// 类型ID
     #[validate(custom(function = "validate_big_integer_present", message = "类型ID不能为空"))]

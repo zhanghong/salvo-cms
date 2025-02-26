@@ -19,6 +19,10 @@ fn validate_field_title(ptr: &&String) -> Result<(), ValidationError> {
     validate::string_length(str, true, 2, 30)
 }
 
+fn validate_field_max_level(num: i8) -> Result<(), ValidationError> {
+    validate::numeric_range(Some(num), true, 1, 2)
+}
+
 fn validate_field_description(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
@@ -47,7 +51,7 @@ fn validate_field_sort(num: i64) -> Result<(), ValidationError> {
 pub struct KindStoreForm {
     /// 模块ID
     #[validate(custom(function = "validate_big_integer_present", message = "模块ID不能为空"))]
-    pub module_id: Option<i64>,
+    pub app_id: Option<i64>,
 
     /// 名称
     #[validate(custom(function = "validate_field_name", message = "名称长度为5-20位"))]
@@ -56,6 +60,13 @@ pub struct KindStoreForm {
     /// 标题
     #[validate(custom(function = "validate_field_title", message = "标题长度为2-30位"))]
     pub title: Option<String>,
+
+    /// 最大层级
+    #[validate(custom(
+        function = "validate_field_max_level",
+        message = "最大层级必须在1-2之间"
+    ))]
+    pub max_level: Option<i8>,
 
     /// 描述
     #[validate(custom(

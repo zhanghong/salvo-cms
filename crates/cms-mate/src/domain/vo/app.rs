@@ -4,13 +4,13 @@ use serde::{Deserialize, Serialize};
 
 use cms_core::domain::SelectOptionItem;
 
-use crate::domain::entity::module::Model;
+use crate::domain::entity::app::Model;
 
 // ------------------------------------
 // 创建/更新表单选项
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
-pub struct ModuleFormOptionVO {
+pub struct AppFormOptionVO {
     /// 启用状态
     pub enables: Vec<SelectOptionItem>,
 }
@@ -19,7 +19,7 @@ pub struct ModuleFormOptionVO {
 // 查询表单选项
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
-pub struct ModuleQueryOptionVO {
+pub struct AppQueryOptionVO {
     /// 启用状态
     pub enables: Vec<SelectOptionItem>,
 }
@@ -29,7 +29,7 @@ pub struct ModuleQueryOptionVO {
 // ------------------------------------
 // Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
-pub struct ModuleVO {
+pub struct AppMasterVo {
     /// 主键
     pub id: i64,
 
@@ -74,7 +74,7 @@ pub struct ModuleVO {
     pub editor: Option<EditorVO>,
 }
 
-impl ModuleVO {
+impl AppMasterVo {
     fn from_model_inner(model: &Model) -> Self {
         let created_time = model.created_time();
         let updated_time = model.updated_time();
@@ -96,13 +96,13 @@ impl ModuleVO {
     }
 }
 
-impl From<Model> for ModuleVO {
+impl From<Model> for AppMasterVo {
     fn from(model: Model) -> Self {
         Self::from_model_inner(&model)
     }
 }
 
-impl From<&Model> for ModuleVO {
+impl From<&Model> for AppMasterVo {
     fn from(model: &Model) -> Self {
         Self::from_model_inner(model)
     }

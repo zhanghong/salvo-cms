@@ -1,15 +1,21 @@
+use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-use crate::domain::form::ItemStoreForm;
+use crate::{
+    domain::{form::ItemStoreForm, query::ItemPaginateQuery},
+    enums::ItemLoadEnum,
+};
 
 // ------------------------------------
-// 创建/更新用户
+// 创建/更新
 // ------------------------------------
-// Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct ItemStoreDTO {
+    /// 主键
+    pub id: Option<i64>,
+
     /// 模块ID
-    pub module_id: Option<i64>,
+    pub app_id: Option<i64>,
 
     /// 类型ID
     pub kind_id: Option<i64>,
@@ -48,7 +54,7 @@ pub struct ItemStoreDTO {
 impl ItemStoreDTO {
     fn by_store_form(model: &ItemStoreForm) -> Self {
         Self {
-            module_id: model.module_id.clone(),
+            app_id: model.app_id.clone(),
             kind_id: model.kind_id.clone(),
             name: model.name.clone(),
             title: model.title.clone(),
@@ -75,4 +81,88 @@ impl From<&ItemStoreForm> for ItemStoreDTO {
     fn from(model: &ItemStoreForm) -> Self {
         Self::by_store_form(model)
     }
+}
+
+// ------------------------------------
+// 查询
+// ------------------------------------
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
+pub struct ItemQueryDTO {
+    /// 页码
+    pub page: Option<u64>,
+
+    /// 每页数量
+    pub page_size: Option<u64>,
+
+    /// App ID
+    pub app_id: Option<i64>,
+
+    /// 类型ID
+    pub kind_id: Option<i64>,
+
+    /// 父级ID
+    pub parent_id: Option<i64>,
+
+    /// 关键字
+    pub keyword: Option<String>,
+
+    /// 标题
+    pub title: Option<String>,
+
+    /// 启用状态
+    pub is_enabled: Option<bool>,
+
+    /// 创建开始时间
+    pub created_start_time: Option<NaiveDateTime>,
+
+    /// 创建结束时间
+    pub created_end_time: Option<NaiveDateTime>,
+
+    /// 加载关联数据
+    pub load_models: Option<Vec<ItemLoadEnum>>,
+}
+
+impl ItemQueryDTO {
+    fn form_inner(model: &ItemPaginateQuery) -> Self {
+        Self {
+            page: model.page.clone(),
+            page_size: model.page_size.clone(),
+            app_id: model.app_id.clone(),
+            kind_id: model.kind_id.clone(),
+            parent_id: model.parent_id.clone(),
+            keyword: model.keyword.clone(),
+            title: model.title.clone(),
+            is_enabled: model.is_enabled.clone(),
+            created_start_time: model.created_start_time.clone(),
+            created_end_time: model.created_end_time.clone(),
+            ..Default::default()
+        }
+    }
+}
+
+impl From<ItemPaginateQuery> for ItemQueryDTO {
+    fn from(model: ItemPaginateQuery) -> Self {
+        Self::form_inner(&model)
+    }
+}
+
+impl From<&ItemPaginateQuery> for ItemQueryDTO {
+    fn from(model: &ItemPaginateQuery) -> Self {
+        Self::form_inner(model)
+    }
+}
+
+// ------------------------------------
+// 查看
+// ------------------------------------
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
+pub struct ItemViewDTO {
+    /// 主键
+    pub id: i64,
+
+    /// 是否启用
+    pub enabled: Option<bool>,
+
+    /// 加载关联数据
+    pub load_models: Option<Vec<ItemLoadEnum>>,
 }

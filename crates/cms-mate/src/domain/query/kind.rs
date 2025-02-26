@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 // 分页查询用户
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToParameters)]
-pub struct ModulePaginateQuery {
+pub struct KindPaginateQuery {
     /// 页码
     #[salvo(parameter(required = false, nullable = true, value_type =u32, default = 1, minimum = 1))]
     pub page: Option<u64>,
@@ -15,11 +15,15 @@ pub struct ModulePaginateQuery {
     #[salvo(parameter(required = false, nullable = true, value_type =u32, default = 10, minimum = 1, maximum = 100))]
     pub page_size: Option<u64>,
 
+    /// App ID
+    #[salvo(parameter(required = false, nullable = true, value_type =u32, default = 10, minimum = 1, maximum = 100))]
+    pub app_id: Option<i64>,
+
     /// 关键字
     #[salvo(parameter(required = false, nullable = true))]
     pub keyword: Option<String>,
 
-    /// 标题
+    /// 手机号
     #[salvo(parameter(required = false, nullable = true))]
     pub title: Option<String>,
 

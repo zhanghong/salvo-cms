@@ -1,7 +1,9 @@
+mod app;
 mod item;
-mod module;
+mod kind;
 mod morph;
 
+pub use app::AppPaginateQuery;
 pub use item::ItemPaginateQuery;
-pub use module::ModulePaginateQuery;
+pub use kind::KindPaginateQuery;
 pub use morph::MorphInstanceQuery;

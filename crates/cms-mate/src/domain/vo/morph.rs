@@ -24,7 +24,7 @@ pub struct MorphInstanceVO {
 
     /// 模块ID
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub module_id: Option<i64>,
+    pub app_id: Option<i64>,
 
     /// 类型ID
     pub kind_id: i64,
@@ -45,7 +45,7 @@ impl MorphInstanceVO {
             id: model.id,
             editor_type: model.editor_type.to_owned(),
             editor_id: model.editor_id,
-            module_id: Some(model.module_id),
+            app_id: Some(model.app_id),
             kind_id: model.kind_id,
             item_id: model.item_id,
             ..Default::default()

@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use cms_core::domain::SelectOptionItem;
 
-use super::kind::KindVO;
-use super::module::ModuleVO;
+use super::app::AppMasterVo;
+use super::kind::KindMasterVO;
 use crate::domain::entity::item::Model;
 
 // ------------------------------------
@@ -13,8 +13,8 @@ use crate::domain::entity::item::Model;
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 pub struct ItemFormOptionVO {
-    /// 性别选项
-    pub modules: Vec<SelectOptionItem>,
+    /// App 选项
+    pub apps: Vec<SelectOptionItem>,
 
     /// 父级
     pub parents: Vec<SelectOptionItem>,
@@ -28,8 +28,8 @@ pub struct ItemFormOptionVO {
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 pub struct ItemQueryOptionVO {
-    /// 性别选项
-    pub modules: Vec<SelectOptionItem>,
+    /// App 选项
+    pub apps: Vec<SelectOptionItem>,
 
     /// 父级
     pub parents: Vec<SelectOptionItem>,
@@ -116,9 +116,9 @@ pub struct ItemMasterVO {
     #[serde(skip_serializing)]
     pub editor_id: i64,
 
-    /// 模块ID
+    /// App ID
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub module_id: Option<i64>,
+    pub app_id: Option<i64>,
 
     /// 类型ID
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -182,11 +182,11 @@ pub struct ItemMasterVO {
 
     /// 模块
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub module: Option<ModuleVO>,
+    pub app: Option<AppMasterVo>,
 
     /// 类型
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub kind: Option<KindVO>,
+    pub kind: Option<KindMasterVO>,
 
     /// 父级
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -208,7 +208,7 @@ impl ItemMasterVO {
             id: model.id,
             editor_type: model.editor_type.to_owned(),
             editor_id: model.editor_id,
-            module_id: Some(model.module_id),
+            app_id: Some(model.app_id),
             kind_id: Some(model.kind_id),
             name: model.name.to_owned(),
             title: model.title.to_owned(),
