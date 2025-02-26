@@ -1,4 +1,4 @@
-use cms_core::domain::vo::EditorVO;
+use cms_core::domain::vo::EditorLoadVO;
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
@@ -100,7 +100,7 @@ pub struct UserItemVO {
 
     /// 详情信息
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub editor: Option<EditorVO>,
+    pub editor: Option<EditorLoadVO>,
 
     /// 详情信息
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -1,11 +1,12 @@
-use cms_core::domain::vo::EditorVO;
+use cms_core::domain::vo::EditorLoadVO;
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
 use cms_core::domain::SelectOptionItem;
 
 use crate::domain::entity::kind::Model;
-use crate::domain::vo::app::AppMasterVo;
+
+use super::AppLoadVO;
 
 // ------------------------------------
 // 创建/更新表单选项
@@ -16,7 +17,8 @@ pub struct KindFormOptionVO {
     pub apps: Vec<SelectOptionItem>,
 
     /// 启用状态
-    pub enables: Vec<SelectOptionItem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enables: Option<Vec<SelectOptionItem>>,
 }
 
 // ------------------------------------
@@ -25,16 +27,17 @@ pub struct KindFormOptionVO {
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 pub struct KindQueryOptionVO {
     /// App 选项
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub apps: Option<Vec<SelectOptionItem>>,
 
     /// 启用状态
-    pub enables: Vec<SelectOptionItem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enables: Option<Vec<SelectOptionItem>>,
 }
 
 // ------------------------------------
 // 详情视图
 // ------------------------------------
-// Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
 pub struct KindMasterVO {
     /// 主键
@@ -49,8 +52,7 @@ pub struct KindMasterVO {
     pub editor_id: i64,
 
     /// 模块ID
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub app_id: Option<i64>,
+    pub app_id: i64,
 
     /// 名称
     pub name: String,
@@ -90,11 +92,11 @@ pub struct KindMasterVO {
 
     /// 详情信息
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub editor: Option<EditorVO>,
+    pub editor: Option<EditorLoadVO>,
 
     /// 模块
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub app: Option<AppMasterVo>,
+    pub app: Option<AppLoadVO>,
 }
 
 impl KindMasterVO {
@@ -106,7 +108,7 @@ impl KindMasterVO {
             id: model.id,
             editor_type: model.editor_type.to_owned(),
             editor_id: model.editor_id,
-            app_id: Some(model.app_id),
+            app_id: model.app_id,
             name: model.name.to_owned(),
             title: model.title.to_owned(),
             max_level: Some(model.max_level),
@@ -129,6 +131,48 @@ impl From<Model> for KindMasterVO {
 }
 
 impl From<&Model> for KindMasterVO {
+    fn from(model: &Model) -> Self {
+        Self::from_model_inner(model)
+    }
+}
+
+// ------------------------------------
+// SelectOptionItem 视图
+// ------------------------------------
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
+pub struct KindLoadVO {
+    /// 主键
+    pub id: i64,
+
+    /// 名称
+    pub name: String,
+
+    /// 标题
+    pub title: String,
+
+    /// 模块
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub app: Option<AppLoadVO>,
+}
+
+impl KindLoadVO {
+    fn from_model_inner(model: &Model) -> Self {
+        Self {
+            id: model.id,
+            name: model.name.to_owned(),
+            title: model.title.to_owned(),
+            ..Default::default()
+        }
+    }
+}
+
+impl From<Model> for KindLoadVO {
+    fn from(model: Model) -> Self {
+        Self::from_model_inner(&model)
+    }
+}
+
+impl From<&Model> for KindLoadVO {
     fn from(model: &Model) -> Self {
         Self::from_model_inner(model)
     }

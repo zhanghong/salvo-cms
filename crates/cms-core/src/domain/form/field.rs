@@ -1,6 +1,7 @@
 // 验证字符串长度是否在指定范围内
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use validator::Validate;
 
 use crate::utils::validate::string_present;
@@ -21,6 +22,9 @@ pub struct FieldValueUniqueForm {
 
     /// Model id
     pub skip_id: Option<i64>,
+
+    /// 扩展参数
+    pub extends: Option<HashMap<String, String>>,
 }
 
 // ------------------------------------

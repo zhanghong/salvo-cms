@@ -45,7 +45,7 @@ pub struct ItemStoreDTO {
     pub parent_id: Option<i64>,
 
     /// 排序编号
-    pub sort: Option<i64>,
+    pub sort: Option<i16>,
 
     /// 是否启用
     pub is_enabled: Option<bool>,

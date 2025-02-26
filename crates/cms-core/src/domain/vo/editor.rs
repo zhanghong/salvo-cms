@@ -7,7 +7,7 @@ use crate::domain::entity::editor::Model;
 // 分页查询 VO
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
-pub struct EditorVO {
+pub struct EditorLoadVO {
     /// 主键
     pub id: i64,
 
@@ -27,7 +27,7 @@ pub struct EditorVO {
     pub avatar_url: String,
 }
 
-impl EditorVO {
+impl EditorLoadVO {
     fn from_model_inner(model: &Model) -> Self {
         let avatar_url = model.avatar_url();
 
@@ -42,13 +42,13 @@ impl EditorVO {
     }
 }
 
-impl From<Model> for EditorVO {
+impl From<Model> for EditorLoadVO {
     fn from(model: Model) -> Self {
         Self::from_model_inner(&model)
     }
 }
 
-impl From<&Model> for EditorVO {
+impl From<&Model> for EditorLoadVO {
     fn from(model: &Model) -> Self {
         Self::from_model_inner(model)
     }

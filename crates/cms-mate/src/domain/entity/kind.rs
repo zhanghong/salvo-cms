@@ -4,7 +4,10 @@ use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use cms_core::utils::time;
+use cms_core::{
+    domain::{SelectOptionItem, SelectValueEnum},
+    utils::time,
+};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "mate_kind")]
@@ -71,5 +74,33 @@ impl Model {
 
     pub fn updated_time(&self) -> String {
         time::to_db_time(&self.updated_at)
+    }
+}
+
+impl Into<SelectOptionItem> for Model {
+    fn into(self) -> SelectOptionItem {
+        SelectOptionItem {
+            label: self.title,
+            value: SelectValueEnum::BigNum(self.id),
+            disabled: Some(!self.is_enabled),
+            alias: Some(vec![self.name]),
+            group: Some(self.app_id.to_string()),
+            children: None,
+            ..Default::default()
+        }
+    }
+}
+
+impl Into<SelectOptionItem> for &Model {
+    fn into(self) -> SelectOptionItem {
+        SelectOptionItem {
+            label: self.title.clone(),
+            value: SelectValueEnum::BigNum(self.id),
+            disabled: Some(!self.is_enabled),
+            alias: Some(vec![self.name.clone()]),
+            group: Some(self.app_id.to_string()),
+            children: None,
+            ..Default::default()
+        }
     }
 }

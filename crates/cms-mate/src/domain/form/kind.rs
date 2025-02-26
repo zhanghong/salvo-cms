@@ -39,7 +39,7 @@ fn validate_big_integer_present(num: i64) -> Result<(), ValidationError> {
     validate::numeric_equal_or_greater_than(Some(num), 0)
 }
 
-fn validate_field_sort(num: i64) -> Result<(), ValidationError> {
+fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
     validate::numeric_range(Some(num), true, 0, 9999)
 }
 
@@ -84,7 +84,7 @@ pub struct KindStoreForm {
 
     /// 排序编号
     #[validate(custom(function = "validate_field_sort", message = "排序编号必须在0-9999之间"))]
-    pub sort: Option<i64>,
+    pub sort: Option<i16>,
 
     /// 是否启用
     pub is_enabled: Option<bool>,

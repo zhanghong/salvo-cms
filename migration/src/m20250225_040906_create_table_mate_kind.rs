@@ -57,7 +57,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(MateKind::MaxLevel)
                             .tiny_integer()
                             .not_null()
-                            .default(0)
+                            .default(1)
                             .comment("最大层级"),
                     )
                     .col(

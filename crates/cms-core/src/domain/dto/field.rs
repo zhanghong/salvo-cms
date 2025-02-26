@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 use crate::domain::form::{FieldBoolUpdateForm, FieldValueUniqueForm};
 
@@ -16,6 +17,9 @@ pub struct FieldValueUniqueDTO {
 
     /// Model id
     pub skip_id: i64,
+
+    /// 扩展参数
+    pub extends: Option<HashMap<String, String>>,
 }
 
 impl From<FieldValueUniqueForm> for FieldValueUniqueDTO {
@@ -24,6 +28,7 @@ impl From<FieldValueUniqueForm> for FieldValueUniqueDTO {
             skip_id: form.skip_id.unwrap_or_default(),
             field_name: form.field_name.unwrap_or_default(),
             field_value: form.field_value.unwrap_or_default(),
+            extends: form.extends,
         }
     }
 }

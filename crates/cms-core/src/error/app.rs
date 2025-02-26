@@ -15,6 +15,9 @@ pub enum AppError {
     #[error("Internal server error")]
     Internal,
 
+    #[error("Not found: {0}")]
+    NotFound(String),
+
     #[error("Bad request: {0}")]
     BadRequest(String),
 
@@ -41,7 +44,6 @@ impl From<anyhow::Error> for AppError {
 // 修改 From 实现
 impl From<sea_orm::DbErr> for AppError {
     fn from(err: sea_orm::DbErr) -> Self {
-        println!("Database error: {:?}", err);
         AppError::Database(err.to_string()) // 将 DbErr 转换为字符串
     }
 }
@@ -68,6 +70,10 @@ impl Writer for AppError {
             AppError::Unauthorized => {
                 code = 401;
                 message = String::from("Unauthorized");
+            }
+            AppError::NotFound(msg) => {
+                code = 404;
+                message = msg;
             }
             AppError::Validation(err) => {
                 code = 400;

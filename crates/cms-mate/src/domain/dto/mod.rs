@@ -4,6 +4,6 @@ mod kind;
 mod morph;
 
 pub use app::{AppQueryDTO, AppStoreDTO, AppViewDTO};
-pub use item::ItemStoreDTO;
-pub use kind::KindStoreDTO;
-pub use morph::MorphInstanceStoreDTO;
+pub use item::{ItemQueryDTO, ItemStoreDTO, ItemViewDTO};
+pub use kind::{KindQueryDTO, KindStoreDTO, KindViewDTO};
+pub use morph::{MorphInstanceQueryDTO, MorphInstanceStoreDTO};

@@ -36,7 +36,7 @@ pub struct KindStoreDTO {
     pub is_multiple: Option<bool>,
 
     /// 排序编号
-    pub sort: Option<i64>,
+    pub sort: Option<i16>,
 
     /// 是否启用
     pub is_enabled: Option<bool>,
@@ -136,7 +136,7 @@ impl From<&KindPaginateQuery> for KindQueryDTO {
 // 查看
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
-pub struct AppViewDTO {
+pub struct KindViewDTO {
     /// 主键
     pub id: i64,
 

@@ -6,7 +6,7 @@ use crate::{
     domain::{
         entity::editor::{Column as EditorColumn, Entity as EditorEntity},
         handle_ok,
-        vo::EditorVO,
+        vo::EditorLoadVO,
         HandleResult,
     },
 };
@@ -14,7 +14,8 @@ use crate::{
 pub struct EditorService {}
 
 impl EditorService {
-    pub async fn load_by_id(id: i64, state: &AppState) -> HandleResult<Option<EditorVO>> {
+    /// 查询关联的单个记录
+    pub async fn load_by_id(id: i64, state: &AppState) -> HandleResult<Option<EditorLoadVO>> {
         let db = &state.db;
         let opt = EditorEntity::find_by_id(id).one(db).await?;
         if let Some(editor) = opt {
@@ -24,13 +25,14 @@ impl EditorService {
         }
     }
 
+    /// 批量查询关联的记录
     pub async fn batch_load_by_ids(
         ids: &Vec<i64>,
         state: &AppState,
-    ) -> HandleResult<HashMap<i64, EditorVO>> {
+    ) -> HandleResult<HashMap<i64, EditorLoadVO>> {
         let filted_ids: Vec<i64> = ids.into_iter().filter(|&&id| id > 0).cloned().collect();
         if filted_ids.is_empty() {
-            return handle_ok(HashMap::<i64, EditorVO>::new());
+            return handle_ok(HashMap::<i64, EditorLoadVO>::new());
         }
 
         let db = &state.db;
@@ -39,7 +41,7 @@ impl EditorService {
             .all(db)
             .await?;
 
-        let map: HashMap<i64, EditorVO> = models
+        let map: HashMap<i64, EditorLoadVO> = models
             .into_iter()
             .map(|model| (model.id, model.into()))
             .collect();

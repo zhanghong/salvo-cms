@@ -1,10 +1,10 @@
-use cms_core::domain::vo::EditorVO;
+use cms_core::domain::vo::EditorLoadVO;
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
 use cms_core::domain::SelectOptionItem;
 
-use super::app::AppMasterVo;
+use super::app::AppMasterVO;
 use super::kind::KindMasterVO;
 use crate::domain::entity::item::Model;
 
@@ -178,11 +178,11 @@ pub struct ItemMasterVO {
 
     /// 详情信息
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub editor: Option<EditorVO>,
+    pub editor: Option<EditorLoadVO>,
 
     /// 模块
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub app: Option<AppMasterVo>,
+    pub app: Option<AppMasterVO>,
 
     /// 类型
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -1,9 +1,10 @@
 use sea_orm::prelude::Expr;
 use sea_orm::*;
+use std::collections::HashMap;
 
 use cms_core::config::AppState;
 use cms_core::domain::{
-    HandleResult,
+    HandleResult, SelectOptionItem,
     dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO},
     handle_ok,
     vo::PaginateResultVO,
@@ -13,19 +14,18 @@ use cms_core::error::AppError;
 use cms_core::service::EditorService;
 use cms_core::utils::time;
 
-use crate::domain::dto::{ModuleQueryDTO, ModuleStoreDTO, ModuleViewDTO};
-use crate::domain::entity::module::{
-    ActiveModel as ModuleActiveModel, Column as ModuleColumn, Entity as ModuleEntity,
-    Model as ModuleModel,
+use crate::domain::dto::{AppQueryDTO, AppStoreDTO, AppViewDTO};
+use crate::domain::entity::app::{
+    ActiveModel as AppActiveModel, Column as AppColumn, Entity as AppEntity, Model as AppModel,
 };
-use crate::domain::vo::{ModuleFormOptionVO, ModuleVO};
-use crate::enums::ModuleLoadEnum;
+use crate::domain::vo::{AppFormOptionVO, AppLoadVO, AppMasterVO, AppQueryOptionVO};
+use crate::enums::AppLoadEnum;
 
-pub struct ModuleService {}
+pub struct AppService {}
 
-impl ModuleService {
+impl AppService {
     /// 创建/更新
-    pub async fn store(dto: &ModuleStoreDTO, state: &AppState) -> HandleResult<ModuleModel> {
+    pub async fn store(dto: &AppStoreDTO, state: &AppState) -> HandleResult<AppModel> {
         let mut id: i64 = 0;
         let mut is_create = true;
         if dto.id.is_some() {
@@ -33,7 +33,7 @@ impl ModuleService {
             is_create = false;
         }
         let mut model = if is_create {
-            ModuleActiveModel {
+            AppActiveModel {
                 ..Default::default()
             }
         } else {
@@ -45,7 +45,7 @@ impl ModuleService {
         if let Some(name) = dto.name.clone() {
             let is_exists = Self::is_column_exist(
                 id,
-                ModuleColumn::Name,
+                AppColumn::Name,
                 sea_orm::Value::from(name.to_owned()),
                 db,
             )
@@ -60,7 +60,7 @@ impl ModuleService {
         if let Some(title) = dto.title.clone() {
             let is_exists = Self::is_column_exist(
                 id,
-                ModuleColumn::Title,
+                AppColumn::Title,
                 sea_orm::Value::from(title.to_owned()),
                 db,
             )
@@ -109,28 +109,19 @@ impl ModuleService {
     /// 检查字段值是否唯一（查询）
     async fn is_column_exist(
         id: i64,
-        column: ModuleColumn,
+        column: AppColumn,
         value: sea_orm::Value,
         db: &DatabaseConnection,
     ) -> HandleResult<bool> {
         let count = Self::scope_active_query()
             .select_only()
-            .column(ModuleColumn::Id)
+            .column(AppColumn::Id)
             .filter(column.eq(value))
-            .filter(ModuleColumn::Id.ne(id))
+            .filter(AppColumn::Id.ne(id))
             .count(db)
             .await?;
 
         handle_ok(count > 0)
-    }
-
-    /// 表单选项
-    pub fn form_options() -> HandleResult<ModuleFormOptionVO> {
-        let enables = EnableEnum::to_option_list();
-
-        let vo = ModuleFormOptionVO { enables };
-
-        handle_ok(vo)
     }
 
     /// 检查字段值是否唯一
@@ -140,8 +131,8 @@ impl ModuleService {
 
         let field_name = dto.field_name.to_owned();
         let column = match field_name.to_lowercase().as_str() {
-            "name" => ModuleColumn::Name,
-            "title" => ModuleColumn::Title,
+            "name" => AppColumn::Name,
+            "title" => AppColumn::Title,
             _ => {
                 let err = AppError::BadRequest(String::from("无效的字段"));
                 return Err(err);
@@ -155,6 +146,36 @@ impl ModuleService {
         handle_ok(exist != true)
     }
 
+    /// 查询选项
+    pub fn query_options(
+        platform: &PlatformEnum,
+        _state: &AppState,
+    ) -> HandleResult<AppQueryOptionVO> {
+        let mut vo = AppQueryOptionVO { enables: None };
+
+        if *platform == PlatformEnum::Manager {
+            let enables = EnableEnum::to_option_list();
+            vo.enables = Some(enables);
+        }
+
+        handle_ok(vo)
+    }
+
+    /// 表单选项
+    pub fn form_options(
+        platform: &PlatformEnum,
+        _state: &AppState,
+    ) -> HandleResult<AppFormOptionVO> {
+        let mut vo = AppFormOptionVO { enables: None };
+
+        if *platform == PlatformEnum::Manager {
+            let enables = EnableEnum::to_option_list();
+            vo.enables = Some(enables);
+        }
+
+        handle_ok(vo)
+    }
+
     /// 修改布尔值字段
     pub async fn update_bool_field(
         dto: &FieldBoolUpdateDTO,
@@ -162,23 +183,23 @@ impl ModuleService {
     ) -> HandleResult<bool> {
         let id = dto.id;
         if id < 1 {
-            let err = AppError::BadRequest(String::from("无效的用户ID"));
+            let err = AppError::BadRequest(String::from("参数ID错误"));
             return Err(err);
         }
         let db = &state.db;
 
         let field_name = dto.field_name.to_owned();
         let column = match field_name.to_lowercase().as_str() {
-            "is_enabled" => ModuleColumn::IsEnabled,
+            "is_enabled" => AppColumn::IsEnabled,
             _ => {
-                let err = AppError::BadRequest(String::from("无效的字段"));
+                let err = AppError::NotFound(String::from("操作记录不存在"));
                 return Err(err);
             }
         };
 
-        let _update_rows_count = ModuleEntity::update_many()
+        let _update_rows_count = AppEntity::update_many()
             .col_expr(column, Expr::value(dto.field_value))
-            .filter(ModuleColumn::Id.eq(id))
+            .filter(AppColumn::Id.eq(id))
             .exec(db)
             .await?;
 
@@ -188,28 +209,28 @@ impl ModuleService {
     /// 查看
     pub async fn view(
         platform: &PlatformEnum,
-        dto: &ModuleViewDTO,
+        dto: &AppViewDTO,
         state: &AppState,
-    ) -> HandleResult<ModuleVO> {
+    ) -> HandleResult<AppMasterVO> {
         let id = dto.id;
         if id < 1 {
-            let err = AppError::BadRequest(String::from("访问记录不存在"));
+            let err = AppError::BadRequest(String::from("参数ID错误"));
             return Err(err);
         }
 
         let model = Self::fetch_by_id(id, state).await?;
         if *platform == PlatformEnum::Open {
             if !model.is_enabled {
-                let err = AppError::BadRequest(String::from("访问记录不存在"));
+                let err = AppError::NotFound(String::from("访问记录不存在"));
                 return Err(err);
             }
         }
 
-        let mut vo: ModuleVO = model.into();
+        let mut vo: AppMasterVO = model.into();
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
-                    ModuleLoadEnum::Editor => {
+                    AppLoadEnum::Editor => {
                         vo.editor = EditorService::load_by_id(vo.editor_id.clone(), state).await?;
                     }
                     _ => {}
@@ -223,9 +244,9 @@ impl ModuleService {
     /// 分页查询
     pub async fn paginage(
         platform: &PlatformEnum,
-        dto: &ModuleQueryDTO,
+        dto: &AppQueryDTO,
         state: &AppState,
-    ) -> HandleResult<PaginateResultVO<ModuleVO>> {
+    ) -> HandleResult<PaginateResultVO<AppMasterVO>> {
         let db = &state.db;
         let mut page = dto.page.unwrap_or(1);
         if page < 1 {
@@ -243,22 +264,21 @@ impl ModuleService {
         let total = paginator.num_items_and_pages().await?;
         let models = paginator.fetch_page(page - 1).await?;
         let len = models.len();
-        let mut list: Vec<ModuleVO> = Vec::with_capacity(len);
+        let mut list: Vec<AppMasterVO> = Vec::with_capacity(len);
         let mut editor_ids: Vec<i64> = Vec::with_capacity(len);
         for model in models.iter() {
             editor_ids.push(model.editor_id);
-            let vo: ModuleVO = model.into();
+            let vo: AppMasterVO = model.into();
             list.push(vo);
         }
 
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
-                    ModuleLoadEnum::Editor => {
+                    AppLoadEnum::Editor => {
                         let map = EditorService::batch_load_by_ids(&editor_ids, state).await?;
                         for vo in list.iter_mut() {
-                            let editor = map.get(&vo.editor_id).cloned();
-                            vo.editor = editor;
+                            vo.editor = map.get(&vo.editor_id).cloned();
                         }
                     }
                     _ => {}
@@ -283,52 +303,52 @@ impl ModuleService {
     /// 构建列表查询器
     async fn query_builder(
         platform: &PlatformEnum,
-        dto: &ModuleQueryDTO,
-    ) -> HandleResult<Select<ModuleEntity>> {
+        dto: &AppQueryDTO,
+    ) -> HandleResult<Select<AppEntity>> {
         let mut query = Self::scope_active_query();
-        query = query.order_by_desc(ModuleColumn::Id);
+        query = query.order_by_desc(AppColumn::Id);
 
         if let Some(keyword) = dto.keyword.clone() {
             let condition = Condition::any()
-                .add(ModuleColumn::Name.contains(&keyword))
-                .add(ModuleColumn::Title.contains(&keyword));
+                .add(AppColumn::Name.contains(&keyword))
+                .add(AppColumn::Title.contains(&keyword));
             query = query.filter(condition);
         }
 
         if let Some(title) = dto.title.clone() {
-            query = query.filter(ModuleColumn::Title.contains(&title));
+            query = query.filter(AppColumn::Title.contains(&title));
         }
 
         if *platform == PlatformEnum::Open {
-            query = query.filter(ModuleColumn::IsEnabled.eq(true));
+            query = query.filter(AppColumn::IsEnabled.eq(true));
         } else if let Some(enabled) = dto.is_enabled {
-            query = query.filter(ModuleColumn::IsEnabled.eq(enabled));
+            query = query.filter(AppColumn::IsEnabled.eq(enabled));
         }
 
         if let Some(time) = dto.created_start_time.clone() {
-            query = query.filter(ModuleColumn::CreatedAt.gte(time));
+            query = query.filter(AppColumn::CreatedAt.gte(time));
         }
 
         if let Some(time) = dto.created_end_time.clone() {
-            query = query.filter(ModuleColumn::CreatedAt.lte(time));
+            query = query.filter(AppColumn::CreatedAt.lte(time));
         }
 
         handle_ok(query)
     }
 
     /// 构建查询器
-    fn scope_active_query() -> Select<ModuleEntity> {
-        ModuleEntity::find().filter(ModuleColumn::IsDeleted.eq(false))
+    fn scope_active_query() -> Select<AppEntity> {
+        AppEntity::find().filter(AppColumn::IsDeleted.eq(false))
     }
 
     /// 根据ID查询
-    async fn fetch_by_id(id: i64, state: &AppState) -> HandleResult<ModuleModel> {
+    pub async fn fetch_by_id(id: i64, state: &AppState) -> HandleResult<AppModel> {
         let db = &state.db;
         let model = Self::scope_active_query()
-            .filter(ModuleColumn::Id.eq(id))
+            .filter(AppColumn::Id.eq(id))
             .one(db)
             .await?
-            .ok_or_else(|| AppError::BadRequest(String::from("无效的ID")))?;
+            .ok_or_else(|| AppError::NotFound(String::from("访问记录不存在")))?;
 
         handle_ok(model)
     }
@@ -342,7 +362,7 @@ impl ModuleService {
         let db = &state.db;
         let result = Self::fetch_by_id(id, state).await;
         if let Ok(model) = result {
-            let mut model: ModuleActiveModel = model.into();
+            let mut model: AppActiveModel = model.into();
             model.is_deleted = Set(true);
             let now = time::current_time();
             model.deleted_at = Set(Some(now));
@@ -350,5 +370,63 @@ impl ModuleService {
         }
 
         handle_ok(())
+    }
+
+    /// SelectOptionItem 列表
+    pub async fn fetch_option_list(
+        platform: &PlatformEnum,
+        state: &AppState,
+    ) -> HandleResult<Vec<SelectOptionItem>> {
+        let db = &state.db;
+        let mut query = Self::scope_active_query();
+        if *platform == PlatformEnum::Open {
+            query = query.filter(AppColumn::IsEnabled.eq(true));
+        }
+        let models = query.all(db).await?;
+        let list: Vec<SelectOptionItem> = models.into_iter().map(|model| model.into()).collect();
+        handle_ok(list)
+    }
+
+    /// 查询关联的单个记录
+    pub async fn load_by_id(id: i64, state: &AppState) -> HandleResult<Option<AppLoadVO>> {
+        if id < 1 {
+            return handle_ok(None);
+        }
+
+        let db = &state.db;
+        let model = AppEntity::find()
+            .filter(AppColumn::Id.eq(id))
+            .one(db)
+            .await?;
+        if let Some(model) = model {
+            let vo: AppLoadVO = model.into();
+            handle_ok(Some(vo))
+        } else {
+            handle_ok(None)
+        }
+    }
+
+    /// 批量查询关联的记录
+    pub async fn batch_load_by_ids(
+        ids: &Vec<i64>,
+        state: &AppState,
+    ) -> HandleResult<HashMap<i64, AppLoadVO>> {
+        let filted_ids: Vec<i64> = ids.into_iter().filter(|&&id| id > 0).cloned().collect();
+        if filted_ids.is_empty() {
+            return handle_ok(HashMap::<i64, AppLoadVO>::new());
+        }
+
+        let db = &state.db;
+        let models = AppEntity::find()
+            .filter(AppColumn::Id.is_in(filted_ids))
+            .all(db)
+            .await?;
+
+        let map: HashMap<i64, AppLoadVO> = models
+            .into_iter()
+            .map(|model| (model.id, model.into()))
+            .collect();
+
+        handle_ok(map)
     }
 }
