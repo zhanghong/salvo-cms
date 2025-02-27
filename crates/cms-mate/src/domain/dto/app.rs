@@ -1,6 +1,8 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
+use cms_core::enums::EditorTypeEnum;
+
 use crate::{
     domain::{form::AppStoreForm, query::AppPaginateQuery},
     enums::AppLoadEnum,
@@ -9,13 +11,13 @@ use crate::{
 // ------------------------------------
 // 创建/更新
 // ------------------------------------
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct AppStoreDTO {
     /// 主键
     pub id: i64,
 
     /// 编辑用户类型
-    pub editor_type: String,
+    pub editor_type: EditorTypeEnum,
 
     /// 编辑用户ID
     pub editor_id: i64,
@@ -49,22 +51,6 @@ impl AppStoreDTO {
             sort: model.sort.clone(),
             is_enabled: model.is_enabled.clone(),
             ..Default::default()
-        }
-    }
-}
-
-impl Default for AppStoreDTO {
-    fn default() -> Self {
-        Self {
-            id: 0,
-            editor_type: String::from("system"),
-            editor_id: 0,
-            name: None,
-            title: None,
-            description: None,
-            icon: None,
-            sort: None,
-            is_enabled: None,
         }
     }
 }

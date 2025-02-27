@@ -1,6 +1,8 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
+use cms_core::enums::EditorTypeEnum;
+
 use crate::{
     domain::{form::KindStoreForm, query::KindPaginateQuery},
     enums::KindLoadEnum,
@@ -9,13 +11,13 @@ use crate::{
 // ------------------------------------
 // 创建/更新
 // ------------------------------------
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct KindStoreDTO {
     /// 主键
     pub id: i64,
 
     /// 编辑用户类型
-    pub editor_type: String,
+    pub editor_type: EditorTypeEnum,
 
     /// 编辑用户ID
     pub editor_id: i64,
@@ -61,25 +63,6 @@ impl KindStoreDTO {
             sort: model.sort.clone(),
             is_enabled: model.is_enabled.clone(),
             ..Default::default()
-        }
-    }
-}
-
-impl Default for KindStoreDTO {
-    fn default() -> Self {
-        Self {
-            id: 0,
-            editor_type: String::from("system"),
-            editor_id: 0,
-            app_id: None,
-            name: None,
-            title: None,
-            max_level: None,
-            description: None,
-            icon: None,
-            is_multiple: None,
-            sort: None,
-            is_enabled: None,
         }
     }
 }

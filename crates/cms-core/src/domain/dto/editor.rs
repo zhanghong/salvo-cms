@@ -12,8 +12,8 @@ pub struct EditorCurrent {
 impl EditorCurrent {
     fn from_claims(claims: &JwtClaimsDTO) -> Self {
         Self {
-            editor_id: claims.editor_id,
-            editor_type: claims.editor_type.clone(),
+            editor_id: claims.user_id,
+            editor_type: EditorTypeEnum::from_string(claims.user_type.as_str()),
         }
     }
 

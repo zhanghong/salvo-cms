@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use cms_core::config::AppState;
 use cms_core::domain::{
     HandleResult, SelectOptionItem,
-    dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO},
+    dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO},
     handle_ok,
     vo::PaginateResultVO,
 };
@@ -98,6 +98,9 @@ impl AppService {
         if is_create {
             model.created_at = Set(time);
         }
+
+        model.editor_type = Set(dto.editor_type.as_value());
+        model.editor_id = Set(dto.editor_id);
 
         let txn = db.begin().await?;
 
@@ -363,15 +366,17 @@ impl AppService {
     }
 
     /// 软删除记录
-    pub async fn destroy(id: i64, state: &AppState) -> HandleResult<()> {
-        if id < 1 {
+    pub async fn logic_delete(dto: &ModelLogicDeleteDTO, state: &AppState) -> HandleResult<()> {
+        if dto.id < 1 {
             return handle_ok(());
         }
 
         let db = &state.db;
-        let result = Self::fetch_by_id(id, state).await;
+        let result = Self::fetch_by_id(dto.id, state).await;
         if let Ok(model) = result {
             let mut model: AppActiveModel = model.into();
+            model.editor_type = Set(dto.editor_type.as_value());
+            model.editor_id = Set(dto.editor_id);
             model.is_deleted = Set(true);
             let now = time::current_time();
             model.deleted_at = Set(Some(now));

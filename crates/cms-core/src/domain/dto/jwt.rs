@@ -1,12 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-use crate::enums::EditorTypeEnum;
-
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct JwtClaimsDTO {
     pub uuid: String,
-    pub editor_id: i64,
-    pub editor_type: EditorTypeEnum,
+    pub user_id: i64,
+    pub user_type: String,
     pub token_type: String,
     pub exp: i64,
 }
