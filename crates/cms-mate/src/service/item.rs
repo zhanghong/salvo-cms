@@ -1,11 +1,10 @@
-use sea_orm::prelude::Expr;
 use sea_orm::*;
 use std::collections::HashMap;
 
 use cms_core::config::AppState;
 use cms_core::domain::{
     HandleResult, SelectOptionItem,
-    dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO},
+    dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO},
     handle_ok,
     vo::PaginateResultVO,
 };
@@ -162,6 +161,9 @@ impl ItemService {
             model.created_at = Set(time);
         }
 
+        model.editor_type = Set(dto.editor_type.as_value());
+        model.editor_id = Set(dto.editor_id);
+
         let txn = db.begin().await?;
 
         let model = model.save(&txn).await?;
@@ -294,20 +296,27 @@ impl ItemService {
         }
         let db = &state.db;
 
+        let model = Self::fetch_by_id(id, state).await?;
+        let mut model: ItemActiveModel = model.into();
+
         let field_name = dto.field_name.to_owned();
-        let column = match field_name.to_lowercase().as_str() {
-            "is_enabled" => ItemColumn::IsEnabled,
+        let bool_value = dto.field_value;
+        match field_name.to_lowercase().as_str() {
+            "is_enabled" | "enabled" => {
+                model.is_enabled = Set(bool_value);
+            }
             _ => {
-                let err = AppError::NotFound(String::from("操作记录不存在"));
+                let err = AppError::BadRequest(String::from("更新字段错误"));
                 return Err(err);
             }
         };
 
-        let _update_rows_count = ItemEntity::update_many()
-            .col_expr(column, Expr::value(dto.field_value))
-            .filter(ItemColumn::Id.eq(id))
-            .exec(db)
-            .await?;
+        let now = time::current_time();
+        model.updated_at = Set(now);
+        model.editor_type = Set(dto.editor_type.as_value());
+        model.editor_id = Set(dto.editor_id);
+
+        let _ = model.save(db).await?;
 
         handle_ok(true)
     }
@@ -502,15 +511,17 @@ impl ItemService {
     }
 
     /// 软删除记录
-    pub async fn destroy(id: i64, state: &AppState) -> HandleResult<()> {
-        if id < 1 {
+    pub async fn logic_delete(dto: &ModelLogicDeleteDTO, state: &AppState) -> HandleResult<()> {
+        if dto.id < 1 {
             return handle_ok(());
         }
 
         let db = &state.db;
-        let result = Self::fetch_by_id(id, state).await;
+        let result = Self::fetch_by_id(dto.id, state).await;
         if let Ok(model) = result {
             let mut model: ItemActiveModel = model.into();
+            model.editor_type = Set(dto.editor_type.as_value());
+            model.editor_id = Set(dto.editor_id);
             model.is_deleted = Set(true);
             let now = time::current_time();
             model.deleted_at = Set(Some(now));

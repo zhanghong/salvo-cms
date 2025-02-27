@@ -108,9 +108,9 @@ pub async fn manager_update(
     )
 )]
 pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<bool> {
+    let id = id.into_inner();
     let editor = get_current_editor(depot);
     let state = depot.obtain::<AppState>().unwrap();
-    let id = id.into_inner();
 
     let dto = ModelLogicDeleteDTO {
         id,

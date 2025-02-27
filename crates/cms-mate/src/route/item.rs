@@ -6,12 +6,13 @@ use cms_core::{
     config::AppState,
     domain::{
         AppResult,
-        dto::FieldBoolUpdateDTO,
+        dto::{FieldBoolUpdateDTO, ModelLogicDeleteDTO},
         form::{FieldBoolUpdateForm, FieldValueUniqueForm},
         result_ok,
         vo::PaginateResultVO,
     },
     enums::PlatformEnum,
+    utils::get_current_editor,
 };
 
 use crate::{
@@ -58,8 +59,13 @@ pub async fn manager_paginate(
 pub async fn manager_create(depot: &mut Depot, json: JsonBody<ItemStoreForm>) -> AppResult<String> {
     let form = json.into_inner();
     form.validate()?;
+
+    let editor = get_current_editor(depot);
     let state = depot.obtain::<AppState>().unwrap();
-    let dto = form.into();
+    let mut dto: ItemStoreDTO = form.into();
+    dto.editor_type = editor.editor_type;
+    dto.editor_id = editor.editor_id;
+
     ItemService::store(&PlatformEnum::Manager, &dto, state).await?;
     result_ok("oK".to_string())
 }
@@ -80,9 +86,14 @@ pub async fn manager_update(
 ) -> AppResult<String> {
     let form = json.into_inner();
     form.validate()?;
+
+    let editor = get_current_editor(depot);
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: ItemStoreDTO = form.into();
     dto.id = id.into_inner();
+    dto.editor_type = editor.editor_type;
+    dto.editor_id = editor.editor_id;
+
     ItemService::store(&PlatformEnum::Manager, &dto, state).await?;
     result_ok("oK".to_string())
 }
@@ -97,9 +108,17 @@ pub async fn manager_update(
     )
 )]
 pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<bool> {
-    let state = depot.obtain::<AppState>().unwrap();
     let id = id.into_inner();
-    ItemService::destroy(id, state).await?;
+    let editor = get_current_editor(depot);
+    let state = depot.obtain::<AppState>().unwrap();
+
+    let dto = ModelLogicDeleteDTO {
+        id,
+        editor_type: editor.editor_type,
+        editor_id: editor.editor_id,
+    };
+
+    ItemService::logic_delete(&dto, state).await?;
     result_ok(true)
 }
 
@@ -170,9 +189,13 @@ pub async fn update_bool_field(
 ) -> AppResult<bool> {
     let form = json.into_inner();
     form.validate()?;
-    // 因为设置 id 所以必须指定 dto 类型
+
+    let editor = get_current_editor(depot);
     let mut dto: FieldBoolUpdateDTO = form.into();
     dto.id = id.into_inner();
+    dto.editor_type = editor.editor_type;
+    dto.editor_id = editor.editor_id;
+
     let state = depot.obtain::<AppState>().unwrap();
     let value = ItemService::update_bool_field(&dto, state).await?;
     result_ok(value)
