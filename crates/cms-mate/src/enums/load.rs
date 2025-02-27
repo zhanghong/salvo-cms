@@ -71,6 +71,7 @@ pub enum ItemLoadEnum {
     Editor,
     App,
     Kind,
+    Parent,
 }
 
 // 实现默认值
@@ -91,6 +92,7 @@ impl<'de> Deserialize<'de> for ItemLoadEnum {
             "editor" => Ok(ItemLoadEnum::Editor),
             "app" => Ok(ItemLoadEnum::App),
             "kind" => Ok(ItemLoadEnum::Kind),
+            "parent" => Ok(ItemLoadEnum::Parent),
             _ => Ok(ItemLoadEnum::None),
         }
     }

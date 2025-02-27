@@ -2,7 +2,7 @@ use cms_core::domain::vo::EditorLoadVO;
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
-use super::item::ItemRelatedVO;
+use super::ItemLoadVO;
 use crate::domain::entity::morph::Model;
 
 // ------------------------------------
@@ -36,7 +36,7 @@ pub struct MorphInstanceVO {
     pub editor: Option<EditorLoadVO>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub item: Option<ItemRelatedVO>,
+    pub item: Option<ItemLoadVO>,
 }
 
 impl MorphInstanceVO {

@@ -398,7 +398,7 @@ impl KindService {
     }
 
     /// 根据ID查询
-    async fn fetch_by_id(id: i64, state: &AppState) -> HandleResult<KindModel> {
+    pub async fn fetch_by_id(id: i64, state: &AppState) -> HandleResult<KindModel> {
         let db = &state.db;
         let model = Self::scope_active_query()
             .filter(KindColumn::Id.eq(id))

@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use cms_core::domain::SelectOptionItem;
 
-use super::app::AppMasterVO;
-use super::kind::KindMasterVO;
+use super::app::AppLoadVO;
+use super::kind::KindLoadVO;
 use crate::domain::entity::item::Model;
 
 // ------------------------------------
@@ -14,13 +14,20 @@ use crate::domain::entity::item::Model;
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 pub struct ItemFormOptionVO {
     /// App 选项
-    pub apps: Vec<SelectOptionItem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub apps: Option<Vec<SelectOptionItem>>,
+
+    /// 类型
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kinds: Option<Vec<SelectOptionItem>>,
 
     /// 父级
-    pub parents: Vec<SelectOptionItem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parents: Option<Vec<SelectOptionItem>>,
 
     /// 启用状态
-    pub enables: Vec<SelectOptionItem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enables: Option<Vec<SelectOptionItem>>,
 }
 
 // ------------------------------------
@@ -29,74 +36,20 @@ pub struct ItemFormOptionVO {
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 pub struct ItemQueryOptionVO {
     /// App 选项
-    pub apps: Vec<SelectOptionItem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub apps: Option<Vec<SelectOptionItem>>,
+
+    /// 类型
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kinds: Option<Vec<SelectOptionItem>>,
 
     /// 父级
-    pub parents: Vec<SelectOptionItem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parents: Option<Vec<SelectOptionItem>>,
 
     /// 启用状态
-    pub enables: Vec<SelectOptionItem>,
-}
-
-// ------------------------------------
-// 详情视图
-// ------------------------------------
-// Service 层创建/更新用户使用的结构体
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
-pub struct ItemRelatedVO {
-    /// 主键
-    pub id: i64,
-
-    /// 名称
-    pub name: String,
-
-    /// 标题
-    pub title: String,
-
-    /// 图标
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub icon: Option<String>,
-
-    /// PC详情URL
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub pc_detail_url: Option<String>,
-
-    /// WAP详情URL
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub wap_detail_url: Option<String>,
-
-    /// 父级
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub parent: Option<Box<ItemRelatedVO>>,
-}
-
-impl ItemRelatedVO {
-    fn from_model_inner(model: &Model) -> Self {
-        let pc_detail_url = model.pc_detail_url();
-        let wap_detail_url = model.wap_detail_url();
-
-        Self {
-            id: model.id,
-            name: model.name.to_owned(),
-            title: model.title.to_owned(),
-            icon: Some(model.icon.to_owned()),
-            pc_detail_url: Some(pc_detail_url),
-            wap_detail_url: Some(wap_detail_url),
-            ..Default::default()
-        }
-    }
-}
-
-impl From<Model> for ItemRelatedVO {
-    fn from(model: Model) -> Self {
-        Self::from_model_inner(&model)
-    }
-}
-
-impl From<&Model> for ItemRelatedVO {
-    fn from(model: &Model) -> Self {
-        Self::from_model_inner(model)
-    }
+    pub enables: Option<Vec<SelectOptionItem>>,
 }
 
 // ------------------------------------
@@ -117,12 +70,10 @@ pub struct ItemMasterVO {
     pub editor_id: i64,
 
     /// App ID
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub app_id: Option<i64>,
+    pub app_id: i64,
 
     /// 类型ID
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub kind_id: Option<i64>,
+    pub kind_id: i64,
 
     /// 名称
     pub name: String,
@@ -151,8 +102,7 @@ pub struct ItemMasterVO {
     pub wap_detail_url: Option<String>,
 
     /// 父级ID
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub parent_id: Option<i64>,
+    pub parent_id: i64,
 
     /// 级别
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -182,19 +132,19 @@ pub struct ItemMasterVO {
 
     /// 模块
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub app: Option<AppMasterVO>,
+    pub app: Option<AppLoadVO>,
 
     /// 类型
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub kind: Option<KindMasterVO>,
+    pub kind: Option<KindLoadVO>,
 
     /// 父级
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub parent: Option<ItemRelatedVO>,
+    pub parent: Option<ItemLoadVO>,
 
     /// 子级
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub children: Option<Vec<ItemRelatedVO>>,
+    pub children: Option<Vec<ItemLoadVO>>,
 }
 
 impl ItemMasterVO {
@@ -208,8 +158,8 @@ impl ItemMasterVO {
             id: model.id,
             editor_type: model.editor_type.to_owned(),
             editor_id: model.editor_id,
-            app_id: Some(model.app_id),
-            kind_id: Some(model.kind_id),
+            app_id: model.app_id,
+            kind_id: model.kind_id,
             name: model.name.to_owned(),
             title: model.title.to_owned(),
             description: Some(model.description.to_owned()),
@@ -217,7 +167,7 @@ impl ItemMasterVO {
             icon: Some(model.icon.to_owned()),
             pc_detail_url: Some(pc_detail_url),
             wap_detail_url: Some(wap_detail_url),
-            parent_id: Some(model.parent_id),
+            parent_id: model.parent_id,
             level: Some(model.level),
             is_directory: Some(model.is_directory),
             sort: Some(model.sort),
@@ -236,6 +186,74 @@ impl From<Model> for ItemMasterVO {
 }
 
 impl From<&Model> for ItemMasterVO {
+    fn from(model: &Model) -> Self {
+        Self::from_model_inner(model)
+    }
+}
+
+// ------------------------------------
+// 关联视图
+// ------------------------------------
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
+pub struct ItemLoadVO {
+    /// 主键
+    pub id: i64,
+
+    /// App ID
+    #[serde(skip_serializing)]
+    pub app_id: i64,
+
+    /// 类型ID
+    #[serde(skip_serializing)]
+    pub kind_id: i64,
+
+    /// 名称
+    pub name: String,
+
+    /// 标题
+    pub title: String,
+
+    /// 图标
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub icon: Option<String>,
+
+    /// PC详情URL
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pc_detail_url: Option<String>,
+
+    /// WAP详情URL
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wap_detail_url: Option<String>,
+
+    /// 模块
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub app: Option<AppLoadVO>,
+
+    /// 类型
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kind: Option<KindLoadVO>,
+}
+
+impl ItemLoadVO {
+    fn from_model_inner(model: &Model) -> Self {
+        Self {
+            id: model.id,
+            app_id: model.app_id,
+            kind_id: model.kind_id,
+            name: model.name.to_owned(),
+            title: model.title.to_owned(),
+            ..Default::default()
+        }
+    }
+}
+
+impl From<Model> for ItemLoadVO {
+    fn from(model: Model) -> Self {
+        Self::from_model_inner(&model)
+    }
+}
+
+impl From<&Model> for ItemLoadVO {
     fn from(model: &Model) -> Self {
         Self::from_model_inner(model)
     }

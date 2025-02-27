@@ -75,30 +75,36 @@ impl Model {
     pub fn updated_time(&self) -> String {
         time::to_db_time(&self.updated_at)
     }
-}
 
-impl Into<SelectOptionItem> for Model {
-    fn into(self) -> SelectOptionItem {
+    pub fn to_option_item(&self) -> SelectOptionItem {
+        let group = format!("app-{}", self.app_id);
         SelectOptionItem {
-            label: self.title,
+            label: self.title.clone(),
             value: SelectValueEnum::BigNum(self.id),
             disabled: Some(!self.is_enabled),
-            alias: Some(vec![self.name]),
-            group: Some(self.app_id.to_string()),
+            alias: Some(vec![self.name.clone()]),
+            group: Some(group),
             children: None,
             ..Default::default()
         }
     }
 }
 
+impl Into<SelectOptionItem> for Model {
+    fn into(self) -> SelectOptionItem {
+        self.to_option_item()
+    }
+}
+
 impl Into<SelectOptionItem> for &Model {
     fn into(self) -> SelectOptionItem {
+        let group = format!("app-{}", self.app_id);
         SelectOptionItem {
             label: self.title.clone(),
             value: SelectValueEnum::BigNum(self.id),
             disabled: Some(!self.is_enabled),
             alias: Some(vec![self.name.clone()]),
-            group: Some(self.app_id.to_string()),
+            group: Some(group),
             children: None,
             ..Default::default()
         }

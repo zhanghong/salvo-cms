@@ -4,7 +4,10 @@ use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use cms_core::utils::time;
+use cms_core::{
+    domain::{SelectOptionItem, SelectValueEnum},
+    utils::time,
+};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "mate_item")]
@@ -91,5 +94,39 @@ impl Model {
 
     pub fn updated_time(&self) -> String {
         time::to_db_time(&self.updated_at)
+    }
+
+    pub fn to_option_item(&self) -> SelectOptionItem {
+        let group = format!("kind-{}-prt-{}", self.kind_id, self.parent_id);
+        SelectOptionItem {
+            label: self.title.clone(),
+            value: SelectValueEnum::BigNum(self.id),
+            disabled: Some(!self.is_enabled),
+            alias: Some(vec![self.name.clone()]),
+            group: Some(group),
+            children: None,
+            ..Default::default()
+        }
+    }
+}
+
+impl Into<SelectOptionItem> for Model {
+    fn into(self) -> SelectOptionItem {
+        self.to_option_item()
+    }
+}
+
+impl Into<SelectOptionItem> for &Model {
+    fn into(self) -> SelectOptionItem {
+        let group = format!("{}-{}", self.kind_id, self.parent_id);
+        SelectOptionItem {
+            label: self.title.clone(),
+            value: SelectValueEnum::BigNum(self.id),
+            disabled: Some(!self.is_enabled),
+            alias: Some(vec![self.name.clone()]),
+            group: Some(group),
+            children: None,
+            ..Default::default()
+        }
     }
 }

@@ -137,7 +137,7 @@ impl From<&Model> for KindMasterVO {
 }
 
 // ------------------------------------
-// SelectOptionItem 视图
+// 关联视图
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
 pub struct KindLoadVO {
