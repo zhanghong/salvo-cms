@@ -25,7 +25,11 @@ pub struct AppService {}
 
 impl AppService {
     /// 创建/更新
-    pub async fn store(dto: &AppStoreDTO, state: &AppState) -> HandleResult<AppModel> {
+    pub async fn store(
+        _platform: &PlatformEnum,
+        dto: &AppStoreDTO,
+        state: &AppState,
+    ) -> HandleResult<AppModel> {
         let mut id: i64 = 0;
         let mut is_create = true;
         if dto.id.is_some() {
@@ -42,11 +46,13 @@ impl AppService {
         };
         let db = &state.db;
 
+        let filter_extends = HashMap::<String, String>::new();
         if let Some(name) = dto.name.clone() {
             let is_exists = Self::is_column_exist(
                 id,
                 AppColumn::Name,
                 sea_orm::Value::from(name.to_owned()),
+                &filter_extends,
                 db,
             )
             .await?;
@@ -62,6 +68,7 @@ impl AppService {
                 id,
                 AppColumn::Title,
                 sea_orm::Value::from(title.to_owned()),
+                &filter_extends,
                 db,
             )
             .await?;
@@ -111,6 +118,7 @@ impl AppService {
         id: i64,
         column: AppColumn,
         value: sea_orm::Value,
+        _extends: &HashMap<String, String>,
         db: &DatabaseConnection,
     ) -> HandleResult<bool> {
         let count = Self::scope_active_query()
@@ -142,12 +150,16 @@ impl AppService {
         let field_value = dto.field_value.to_owned();
         let value = sea_orm::Value::from(field_value);
 
-        let exist = Self::is_column_exist(id, column, value, db).await?;
+        let filter_extends = dto
+            .extends
+            .clone()
+            .unwrap_or(HashMap::<String, String>::new());
+        let exist = Self::is_column_exist(id, column, value, &filter_extends, db).await?;
         handle_ok(exist != true)
     }
 
     /// 查询选项
-    pub fn query_options(
+    pub async fn query_options(
         platform: &PlatformEnum,
         _state: &AppState,
     ) -> HandleResult<AppQueryOptionVO> {
@@ -162,7 +174,7 @@ impl AppService {
     }
 
     /// 表单选项
-    pub fn form_options(
+    pub async fn form_options(
         platform: &PlatformEnum,
         _state: &AppState,
     ) -> HandleResult<AppFormOptionVO> {

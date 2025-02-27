@@ -27,7 +27,11 @@ pub struct ItemService {}
 
 impl ItemService {
     /// 创建/更新
-    pub async fn store(dto: &ItemStoreDTO, state: &AppState) -> HandleResult<ItemModel> {
+    pub async fn store(
+        _platform: &PlatformEnum,
+        dto: &ItemStoreDTO,
+        state: &AppState,
+    ) -> HandleResult<ItemModel> {
         let mut id: i64 = 0;
         let mut is_create = true;
         if dto.id.is_some() {

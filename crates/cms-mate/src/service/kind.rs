@@ -27,7 +27,11 @@ pub struct KindService {}
 
 impl KindService {
     /// 创建/更新
-    pub async fn store(dto: &KindStoreDTO, state: &AppState) -> HandleResult<KindModel> {
+    pub async fn store(
+        _platform: &PlatformEnum,
+        dto: &KindStoreDTO,
+        state: &AppState,
+    ) -> HandleResult<KindModel> {
         let mut id: i64 = 0;
         let mut is_create = true;
         if dto.id.is_some() {
@@ -59,12 +63,14 @@ impl KindService {
         }
         model.app_id = Set(app_id);
 
+        let mut filter_extends = HashMap::<String, String>::new();
         if let Some(name) = dto.name.clone() {
+            filter_extends.insert("app_id".to_string(), "0".to_string());
             let is_exists = Self::is_column_exist(
                 id,
                 KindColumn::Name,
                 sea_orm::Value::from(name.to_owned()),
-                0,
+                &filter_extends,
                 db,
             )
             .await?;
@@ -75,12 +81,13 @@ impl KindService {
             model.name = Set(name);
         }
 
+        filter_extends.insert("app_id".to_string(), app_id.to_string());
         if let Some(title) = dto.title.clone() {
             let is_exists = Self::is_column_exist(
                 id,
                 KindColumn::Title,
                 sea_orm::Value::from(title.to_owned()),
-                app_id,
+                &filter_extends,
                 db,
             )
             .await?;
@@ -134,7 +141,7 @@ impl KindService {
         id: i64,
         column: KindColumn,
         value: sea_orm::Value,
-        app_id: i64,
+        extends: &HashMap<String, String>,
         db: &DatabaseConnection,
     ) -> HandleResult<bool> {
         let mut query = Self::scope_active_query()
@@ -142,9 +149,13 @@ impl KindService {
             .column(KindColumn::Id)
             .filter(column.eq(value));
 
-        if app_id > 0 {
-            query = query.filter(KindColumn::AppId.eq(app_id));
+        if let Some(id_str) = extends.get("app_id") {
+            let app_id = id_str.parse::<i64>().unwrap_or(0);
+            if app_id > 0 {
+                query = query.filter(KindColumn::AppId.eq(app_id));
+            }
         }
+
         if id > 0 {
             query = query.filter(KindColumn::Id.ne(id));
         }
@@ -171,14 +182,11 @@ impl KindService {
         let field_value = dto.field_value.to_owned();
         let value = sea_orm::Value::from(field_value);
 
-        let mut app_id: i64 = 0;
-        if let Some(map) = dto.extends.clone() {
-            if let Some(app_id_str) = map.get("app_id") {
-                app_id = app_id_str.parse::<i64>().unwrap_or(0);
-            }
-        }
-
-        let exist = Self::is_column_exist(id, column, value, app_id, db).await?;
+        let filter_extends = dto
+            .extends
+            .clone()
+            .unwrap_or(HashMap::<String, String>::new());
+        let exist = Self::is_column_exist(id, column, value, &filter_extends, db).await?;
         handle_ok(exist != true)
     }
 
