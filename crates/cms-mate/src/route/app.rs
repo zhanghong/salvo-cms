@@ -12,7 +12,7 @@ use cms_core::{
         vo::PaginateResultVO,
     },
     enums::PlatformEnum,
-    utils::editor,
+    utils::get_current_editor,
 };
 
 use crate::{
@@ -60,7 +60,7 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<AppStoreForm>) -> 
     let form = json.into_inner();
     form.validate()?;
 
-    let editor = editor::get_current(depot);
+    let editor = get_current_editor(depot);
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: AppStoreDTO = form.into();
     dto.editor_type = editor.editor_type;
@@ -87,7 +87,7 @@ pub async fn manager_update(
     let form = json.into_inner();
     form.validate()?;
 
-    let editor = editor::get_current(depot);
+    let editor = get_current_editor(depot);
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: AppStoreDTO = form.into();
     dto.id = id.into_inner();
@@ -108,7 +108,7 @@ pub async fn manager_update(
     )
 )]
 pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<bool> {
-    let editor = editor::get_current(depot);
+    let editor = get_current_editor(depot);
     let state = depot.obtain::<AppState>().unwrap();
     let id = id.into_inner();
 
@@ -191,7 +191,7 @@ pub async fn update_bool_field(
     form.validate()?;
 
     // 因为设置 id 所以必须指定 dto 类型
-    let editor = editor::get_current(depot);
+    let editor = get_current_editor(depot);
     let mut dto: FieldBoolUpdateDTO = form.into();
     dto.id = id.into_inner();
     dto.editor_type = editor.editor_type;
