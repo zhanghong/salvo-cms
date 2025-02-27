@@ -25,7 +25,7 @@ impl EditorTypeEnum {
             EditorTypeEnum::Admin => "admin",
             EditorTypeEnum::Member => "member",
             EditorTypeEnum::Guest => "guest",
-            _ => "",
+            _ => "system",
         };
         str.to_string()
     }
@@ -35,7 +35,7 @@ impl EditorTypeEnum {
             EditorTypeEnum::Admin => "管理员",
             EditorTypeEnum::Member => "会员",
             EditorTypeEnum::Guest => "游客",
-            _ => "异常",
+            _ => "系统",
         };
         str.to_string()
     }
@@ -47,6 +47,15 @@ impl EditorTypeEnum {
             EditorTypeEnum::Member.into(),
             EditorTypeEnum::Guest.into(),
         ]
+    }
+
+    pub fn from_string(s: &str) -> Self {
+        match s.to_lowercase().as_str() {
+            "admin" => EditorTypeEnum::Admin,
+            "member" => EditorTypeEnum::Member,
+            "guest" => EditorTypeEnum::Guest,
+            _ => EditorTypeEnum::None,
+        }
     }
 
     /// 将逗号分隔的字符串转换为 EditorTypeEnum 向量

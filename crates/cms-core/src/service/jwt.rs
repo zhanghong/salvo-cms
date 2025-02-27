@@ -10,7 +10,7 @@ use crate::domain::entity::certificate::{
     Entity as CertificateEntity, Model as CertificateModel,
 };
 use crate::domain::{handle_ok, HandleResult};
-use crate::enums::TokenTypeEnum;
+use crate::enums::{EditorTypeEnum, TokenTypeEnum};
 use crate::error::AppError;
 use crate::utils::time;
 
@@ -21,19 +21,20 @@ pub struct JwtService {}
 impl JwtService {
     /// 用户登录
     pub async fn create(
-        user_id: i64,
-        user_type: &str,
+        editor_id: i64,
+        editor_type_str: &str,
         state: &AppState,
     ) -> HandleResult<CertificateModel> {
         let uuid: String = uuid::Uuid::new_v4().to_string();
-        let access = Self::generate_access_token(&uuid, user_id, user_type).unwrap();
-        let refresh = Self::generate_refresh_token(&uuid, user_id, user_type).unwrap();
+        let editor_type = EditorTypeEnum::from_string(editor_type_str);
+        let access = Self::generate_access_token(&uuid, editor_id, &editor_type).unwrap();
+        let refresh = Self::generate_refresh_token(&uuid, editor_id, &editor_type).unwrap();
 
         let now = time::current_time();
         let model = CertificateActiveModel {
             id: Set(uuid.to_owned()),
-            user_id: Set(user_id),
-            user_type: Set(user_type.to_owned()),
+            user_id: Set(editor_id),
+            user_type: Set(editor_type.as_value()),
             access_token: Set(access.token_value.to_owned()),
             access_expired_at: Set(time::from_timestamp(access.expired_time)),
             refresh_token: Set(refresh.token_value.to_owned()),
@@ -81,16 +82,16 @@ impl JwtService {
             return Err(err);
         }
 
-        let user_id = model.user_id;
+        let editor_id = model.user_id;
         let user_type = model.user_type.to_owned();
-        let user_type = user_type.as_str();
+        let editor_type = EditorTypeEnum::from_string(user_type.as_str());
         let mut model: CertificateActiveModel = model.into();
-        let access = Self::generate_access_token(&uuid, user_id, user_type).unwrap();
+        let access = Self::generate_access_token(&uuid, editor_id, &editor_type).unwrap();
         model.access_token = Set(access.token_value.to_owned());
         model.access_expired_at = Set(time::from_timestamp(access.expired_time));
 
         if current_timestamp + (3 * 24 * 60 * 60) > refresh_expired_time {
-            let refresh = Self::generate_refresh_token(&uuid, user_id, user_type).unwrap();
+            let refresh = Self::generate_refresh_token(&uuid, editor_id, &editor_type).unwrap();
             model.refresh_token = Set(refresh.token_value.to_owned());
             model.refresh_expired_at = Set(time::from_timestamp(refresh.expired_time));
         }
@@ -104,8 +105,8 @@ impl JwtService {
     /// 生成 Access Token
     fn generate_access_token(
         uuid: &String,
-        user_id: i64,
-        user_type: &str,
+        editor_id: i64,
+        editor_type: &EditorTypeEnum,
     ) -> HandleResult<JwtTokenDTO> {
         let cfg = JwtConfig::from_env().expect("Failed to load jwt config");
         let secret_bytes = cfg.secret_bytes();
@@ -115,8 +116,8 @@ impl JwtService {
 
         let claims = JwtClaimsDTO {
             uuid: uuid.to_owned(),
-            user_id: user_id,
-            user_type: user_type.to_owned(),
+            editor_id: editor_id,
+            editor_type: editor_type.to_owned(),
             token_type: TokenTypeEnum::AccessToken.as_value(),
             exp: expired_time,
         };
@@ -171,8 +172,8 @@ impl JwtService {
     /// 生成 Refresh Token
     fn generate_refresh_token(
         uuid: &String,
-        user_id: i64,
-        user_type: &str,
+        editor_id: i64,
+        editor_type: &EditorTypeEnum,
     ) -> HandleResult<JwtTokenDTO> {
         let cfg = JwtConfig::from_env().expect("Failed to load jwt config");
         let secret_bytes = cfg.secret_bytes();
@@ -182,8 +183,8 @@ impl JwtService {
 
         let claims = JwtClaimsDTO {
             uuid: uuid.to_owned(),
-            user_id: user_id,
-            user_type: user_type.to_owned(),
+            editor_id: editor_id,
+            editor_type: editor_type.to_owned(),
             token_type: TokenTypeEnum::RefreshToken.as_value(),
             exp: expired_time,
         };
