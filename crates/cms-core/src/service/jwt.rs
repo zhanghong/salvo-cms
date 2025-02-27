@@ -4,7 +4,7 @@ use salvo::prelude::*;
 use sea_orm::*;
 
 use crate::config::{AppState, JwtConfig};
-use crate::domain::dto::{JwtClaimsDTO, JwtTokenDTO};
+use crate::domain::dto::{EditorCurrent, JwtClaimsDTO, JwtTokenDTO};
 use crate::domain::entity::certificate::{
     ActiveModel as CertificateActiveModel, Column as CertificateColummn,
     Entity as CertificateEntity, Model as CertificateModel,
@@ -133,7 +133,7 @@ impl JwtService {
     }
 
     /// 验证 AccessToken
-    pub fn verify_access_token(depot: &Depot) -> HandleResult<()> {
+    pub fn verify_access_token(depot: &mut Depot) -> HandleResult<()> {
         let claims: JwtClaimsDTO;
         match depot.jwt_auth_state() {
             JwtAuthState::Authorized => {
@@ -161,6 +161,9 @@ impl JwtService {
                 return Err(err);
             }
         }
+
+        let editor: EditorCurrent = claims.into();
+        depot.insert("current_editor", editor);
 
         handle_ok(())
     }
