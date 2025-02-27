@@ -46,9 +46,9 @@ pub async fn manager_paginate(
     result_ok(vo)
 }
 
-/// 创建用户
+/// 创建应用
 ///
-/// 管理端创建用户
+/// 管理端创建应用
 #[endpoint(
     tags("Mate模块/管理端/应用管理"),
     responses(
@@ -64,9 +64,9 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<AppStoreForm>) -> 
     result_ok("oK".to_string())
 }
 
-/// 更新用户
+/// 更新应用
 ///
-/// 管理端更新用户
+/// 管理端更新应用
 #[endpoint(
     tags("Mate模块/管理端/应用管理"),
     responses(
@@ -82,14 +82,14 @@ pub async fn manager_update(
     form.validate()?;
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: AppStoreDTO = form.into();
-    dto.id = Some(id.into_inner());
+    dto.id = id.into_inner();
     AppService::store(&PlatformEnum::Manager, &dto, state).await?;
     result_ok("oK".to_string())
 }
 
-/// 删除用户
+/// 删除应用
 ///
-/// 管理端删除用户
+/// 管理端删除应用
 #[endpoint(
     tags("Mate模块/管理端/应用管理"),
     responses(

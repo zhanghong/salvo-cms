@@ -9,10 +9,16 @@ use crate::{
 // ------------------------------------
 // 创建/更新
 // ------------------------------------
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct KindStoreDTO {
     /// 主键
-    pub id: Option<i64>,
+    pub id: i64,
+
+    /// 编辑用户类型
+    pub editor_type: String,
+
+    /// 编辑用户ID
+    pub editor_id: i64,
 
     /// 模块ID
     pub app_id: Option<i64>,
@@ -55,6 +61,25 @@ impl KindStoreDTO {
             sort: model.sort.clone(),
             is_enabled: model.is_enabled.clone(),
             ..Default::default()
+        }
+    }
+}
+
+impl Default for KindStoreDTO {
+    fn default() -> Self {
+        Self {
+            id: 0,
+            editor_type: String::from("system"),
+            editor_id: 0,
+            app_id: None,
+            name: None,
+            title: None,
+            max_level: None,
+            description: None,
+            icon: None,
+            is_multiple: None,
+            sort: None,
+            is_enabled: None,
         }
     }
 }
@@ -105,7 +130,7 @@ pub struct KindQueryDTO {
 }
 
 impl KindQueryDTO {
-    fn form_inner(model: &KindPaginateQuery) -> Self {
+    fn from_inner(model: &KindPaginateQuery) -> Self {
         Self {
             page: model.page.clone(),
             page_size: model.page_size.clone(),
@@ -122,13 +147,13 @@ impl KindQueryDTO {
 
 impl From<KindPaginateQuery> for KindQueryDTO {
     fn from(model: KindPaginateQuery) -> Self {
-        Self::form_inner(&model)
+        Self::from_inner(&model)
     }
 }
 
 impl From<&KindPaginateQuery> for KindQueryDTO {
     fn from(model: &KindPaginateQuery) -> Self {
-        Self::form_inner(model)
+        Self::from_inner(model)
     }
 }
 

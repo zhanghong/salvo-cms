@@ -9,10 +9,16 @@ use crate::{
 // ------------------------------------
 // 创建/更新
 // ------------------------------------
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct ItemStoreDTO {
     /// 主键
-    pub id: Option<i64>,
+    pub id: i64,
+
+    /// 编辑用户类型
+    pub editor_type: String,
+
+    /// 编辑用户ID
+    pub editor_id: i64,
 
     /// 模块ID
     pub app_id: Option<i64>,
@@ -71,6 +77,28 @@ impl ItemStoreDTO {
     }
 }
 
+impl Default for ItemStoreDTO {
+    fn default() -> Self {
+        Self {
+            id: 0,
+            editor_type: String::from("system"),
+            editor_id: 0,
+            app_id: None,
+            kind_id: None,
+            name: None,
+            title: None,
+            description: None,
+            introduction: None,
+            icon: None,
+            pc_detail_path: None,
+            wap_detail_path: None,
+            parent_id: None,
+            sort: None,
+            is_enabled: None,
+        }
+    }
+}
+
 impl From<ItemStoreForm> for ItemStoreDTO {
     fn from(model: ItemStoreForm) -> Self {
         Self::by_store_form(&model)
@@ -123,7 +151,7 @@ pub struct ItemQueryDTO {
 }
 
 impl ItemQueryDTO {
-    fn form_inner(model: &ItemPaginateQuery) -> Self {
+    fn from_inner(model: &ItemPaginateQuery) -> Self {
         Self {
             page: model.page.clone(),
             page_size: model.page_size.clone(),
@@ -142,13 +170,13 @@ impl ItemQueryDTO {
 
 impl From<ItemPaginateQuery> for ItemQueryDTO {
     fn from(model: ItemPaginateQuery) -> Self {
-        Self::form_inner(&model)
+        Self::from_inner(&model)
     }
 }
 
 impl From<&ItemPaginateQuery> for ItemQueryDTO {
     fn from(model: &ItemPaginateQuery) -> Self {
-        Self::form_inner(model)
+        Self::from_inner(model)
     }
 }
 

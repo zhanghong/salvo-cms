@@ -46,9 +46,9 @@ pub async fn manager_paginate(
     result_ok(vo)
 }
 
-/// 创建用户
+/// 创建类型
 ///
-/// 管理端创建用户
+/// 管理端创建类型
 #[endpoint(
     tags("Mate模块/管理端/类型管理"),
     responses(
@@ -64,9 +64,9 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<KindStoreForm>) ->
     result_ok("oK".to_string())
 }
 
-/// 更新用户
+/// 更新类型
 ///
-/// 管理端更新用户
+/// 管理端更新类型
 #[endpoint(
     tags("Mate模块/管理端/类型管理"),
     responses(
@@ -82,14 +82,14 @@ pub async fn manager_update(
     form.validate()?;
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: KindStoreDTO = form.into();
-    dto.id = Some(id.into_inner());
+    dto.id = id.into_inner();
     KindService::store(&PlatformEnum::Manager, &dto, state).await?;
     result_ok("oK".to_string())
 }
 
-/// 删除用户
+/// 删除类型
 ///
-/// 管理端删除用户
+/// 管理端删除类型
 #[endpoint(
     tags("Mate模块/管理端/类型管理"),
     responses(

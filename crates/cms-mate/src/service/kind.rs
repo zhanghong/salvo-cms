@@ -32,12 +32,9 @@ impl KindService {
         dto: &KindStoreDTO,
         state: &AppState,
     ) -> HandleResult<KindModel> {
-        let mut id: i64 = 0;
-        let mut is_create = true;
-        if dto.id.is_some() {
-            id = dto.id.unwrap();
-            is_create = false;
-        }
+        let id: i64 = dto.id;
+        let is_create = if id > 0 { false } else { true };
+
         let mut model = if is_create {
             KindActiveModel {
                 ..Default::default()

@@ -9,10 +9,16 @@ use crate::{
 // ------------------------------------
 // 创建/更新
 // ------------------------------------
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct AppStoreDTO {
     /// 主键
-    pub id: Option<i64>,
+    pub id: i64,
+
+    /// 编辑用户类型
+    pub editor_type: String,
+
+    /// 编辑用户ID
+    pub editor_id: i64,
 
     /// 名称
     pub name: Option<String>,
@@ -34,7 +40,7 @@ pub struct AppStoreDTO {
 }
 
 impl AppStoreDTO {
-    fn form_inner(model: &AppStoreForm) -> Self {
+    fn from_inner(model: &AppStoreForm) -> Self {
         Self {
             name: model.name.clone(),
             title: model.title.clone(),
@@ -47,15 +53,31 @@ impl AppStoreDTO {
     }
 }
 
+impl Default for AppStoreDTO {
+    fn default() -> Self {
+        Self {
+            id: 0,
+            editor_type: String::from("system"),
+            editor_id: 0,
+            name: None,
+            title: None,
+            description: None,
+            icon: None,
+            sort: None,
+            is_enabled: None,
+        }
+    }
+}
+
 impl From<AppStoreForm> for AppStoreDTO {
     fn from(model: AppStoreForm) -> Self {
-        Self::form_inner(&model)
+        Self::from_inner(&model)
     }
 }
 
 impl From<&AppStoreForm> for AppStoreDTO {
     fn from(model: &AppStoreForm) -> Self {
-        Self::form_inner(model)
+        Self::from_inner(model)
     }
 }
 
@@ -90,7 +112,7 @@ pub struct AppQueryDTO {
 }
 
 impl AppQueryDTO {
-    fn form_inner(model: &AppPaginateQuery) -> Self {
+    fn from_inner(model: &AppPaginateQuery) -> Self {
         Self {
             page: model.page.clone(),
             page_size: model.page_size.clone(),
@@ -106,13 +128,13 @@ impl AppQueryDTO {
 
 impl From<AppPaginateQuery> for AppQueryDTO {
     fn from(model: AppPaginateQuery) -> Self {
-        Self::form_inner(&model)
+        Self::from_inner(&model)
     }
 }
 
 impl From<&AppPaginateQuery> for AppQueryDTO {
     fn from(model: &AppPaginateQuery) -> Self {
-        Self::form_inner(model)
+        Self::from_inner(model)
     }
 }
 

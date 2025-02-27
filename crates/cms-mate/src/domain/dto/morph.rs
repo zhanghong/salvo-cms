@@ -63,7 +63,7 @@ pub struct MorphInstanceQueryDTO {
 }
 
 impl MorphInstanceQueryDTO {
-    fn form_inner(model: &MorphInstanceQuery) -> Self {
+    fn from_inner(model: &MorphInstanceQuery) -> Self {
         Self {
             instance_type: model.instance_type.clone(),
             instance_id: model.instance_id.clone(),
@@ -75,12 +75,12 @@ impl MorphInstanceQueryDTO {
 
 impl From<MorphInstanceQuery> for MorphInstanceQueryDTO {
     fn from(model: MorphInstanceQuery) -> Self {
-        Self::form_inner(&model)
+        Self::from_inner(&model)
     }
 }
 
 impl From<&MorphInstanceQuery> for MorphInstanceQueryDTO {
     fn from(model: &MorphInstanceQuery) -> Self {
-        Self::form_inner(model)
+        Self::from_inner(model)
     }
 }
