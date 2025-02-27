@@ -200,20 +200,27 @@ impl AppService {
         }
         let db = &state.db;
 
+        let model = Self::fetch_by_id(id, state).await?;
+        let mut model: AppActiveModel = model.into();
+
         let field_name = dto.field_name.to_owned();
-        let column = match field_name.to_lowercase().as_str() {
-            "is_enabled" => AppColumn::IsEnabled,
+        let bool_value = dto.field_value;
+        match field_name.to_lowercase().as_str() {
+            "is_enabled" | "enabled" => {
+                model.is_enabled = Set(bool_value);
+            }
             _ => {
-                let err = AppError::NotFound(String::from("操作记录不存在"));
+                let err = AppError::BadRequest(String::from("更新字段错误"));
                 return Err(err);
             }
         };
 
-        let _update_rows_count = AppEntity::update_many()
-            .col_expr(column, Expr::value(dto.field_value))
-            .filter(AppColumn::Id.eq(id))
-            .exec(db)
-            .await?;
+        let now = time::current_time();
+        model.updated_at = Set(now);
+        model.editor_type = Set(dto.editor_type.as_value());
+        model.editor_id = Set(dto.editor_id);
+
+        let _ = model.save(db).await?;
 
         handle_ok(true)
     }
