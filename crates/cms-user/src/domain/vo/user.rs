@@ -2,10 +2,10 @@ use cms_core::domain::vo::EditorLoadVO;
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
-use cms_core::domain::SelectOptionItem;
+use cms_core::{domain::SelectOptionItem, enums::EditorTypeEnum};
 
 use crate::domain::entity::user::Model;
-use crate::enums::{GenderEnum, UserTypeEnum};
+use crate::enums::GenderEnum;
 
 use super::DetailVO;
 
@@ -54,7 +54,7 @@ pub struct UserItemVO {
 
     /// 角色类型
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub user_types: Option<Vec<UserTypeEnum>>,
+    pub user_types: Option<Vec<EditorTypeEnum>>,
 
     /// 性别
     #[serde(skip_serializing_if = "Option::is_none")]

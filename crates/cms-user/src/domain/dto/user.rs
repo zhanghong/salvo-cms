@@ -1,12 +1,14 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
+use cms_core::enums::EditorTypeEnum;
+
 use crate::{
     domain::{
         form::{UserCreateForm, UserUpdateForm, UserUpdatePasswordForm},
         query::UserPaginateQuery,
     },
-    enums::{GenderEnum, UserLoadEnum, UserTypeEnum},
+    enums::{GenderEnum, UserLoadEnum},
 };
 
 use super::DetailStoreDTO;
@@ -33,7 +35,7 @@ pub struct UserStoreDTO {
     pub nickname: Option<String>,
 
     /// 角色类型
-    pub types_list: Option<Vec<UserTypeEnum>>,
+    pub types_list: Option<Vec<EditorTypeEnum>>,
 
     /// 性别
     pub gender: Option<GenderEnum>,
@@ -70,13 +72,13 @@ pub struct UserStoreDTO {
 }
 
 impl UserStoreDTO {
-    fn str_to_type_vec(opt: &Option<String>) -> Option<Vec<UserTypeEnum>> {
+    fn str_to_type_vec(opt: &Option<String>) -> Option<Vec<EditorTypeEnum>> {
         if opt.is_none() {
             return None;
         }
 
         let str = opt.clone().unwrap();
-        let list = UserTypeEnum::from_comma_str(str.as_str());
+        let list = EditorTypeEnum::from_comma_str(str.as_str());
         if list.is_empty() {
             None
         } else {
@@ -179,7 +181,7 @@ pub struct UserViewDTO {
     pub id: i64,
 
     /// 当前密码
-    pub user_type: Option<UserTypeEnum>,
+    pub user_type: Option<EditorTypeEnum>,
 
     /// 是否启用
     pub enabled: Option<bool>,
@@ -201,7 +203,7 @@ pub struct UserQueryDTO {
     pub page_size: Option<u64>,
 
     /// 用户类型
-    pub user_type: Option<UserTypeEnum>,
+    pub user_type: Option<EditorTypeEnum>,
 
     /// 关键字
     pub keyword: Option<String>,

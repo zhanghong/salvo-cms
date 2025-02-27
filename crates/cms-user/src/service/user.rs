@@ -8,7 +8,7 @@ use cms_core::domain::{
     vo::PaginateResultVO,
     HandleResult,
 };
-use cms_core::enums::PlatformEnum;
+use cms_core::enums::{EditorTypeEnum, PlatformEnum};
 use cms_core::error::AppError;
 use cms_core::service::EditorService;
 use cms_core::utils::{encrypt::encrypt_password, random, time};
@@ -23,7 +23,7 @@ use crate::domain::entity::user::{
     ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity, Model as UserModel,
 };
 use crate::domain::vo::{UserFormOptionVO, UserItemVO};
-use crate::enums::{GenderEnum, UserLoadEnum, UserTypeEnum};
+use crate::enums::{GenderEnum, UserLoadEnum};
 
 pub struct UserService {}
 
@@ -81,14 +81,14 @@ impl UserService {
 
         let user_type = dto.types_list.clone();
         if user_type.is_some() {
-            let list: Vec<UserTypeEnum> = user_type.unwrap();
+            let list: Vec<EditorTypeEnum> = user_type.unwrap();
             match platform {
                 PlatformEnum::Open => {
-                    let type_name = UserTypeEnum::Member.as_value();
+                    let type_name = EditorTypeEnum::Member.as_value();
                     model.user_type = Set(type_name);
                 }
                 _ => {
-                    let type_names = UserTypeEnum::to_comma_str(&list);
+                    let type_names = EditorTypeEnum::to_comma_str(&list);
                     model.user_type = Set(type_names);
                 }
             };
@@ -339,7 +339,7 @@ impl UserService {
     /// 表单选项
     pub fn form_options() -> HandleResult<UserFormOptionVO> {
         let genders = GenderEnum::to_option_list();
-        let types = UserTypeEnum::to_option_list();
+        let types = EditorTypeEnum::to_option_list();
 
         let vo = UserFormOptionVO {
             genders: Some(genders),
