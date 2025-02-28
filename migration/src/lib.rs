@@ -9,6 +9,7 @@ mod m20250225_040901_create_table_mate_app;
 mod m20250225_040906_create_table_mate_kind;
 mod m20250225_040909_create_table_mate_item;
 mod m20250225_040913_create_table_mate_morph;
+mod m20250228_005123_add_count_columns_to_mate_table;
 
 pub struct Migrator;
 
@@ -25,6 +26,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20250225_040906_create_table_mate_kind::Migration),
             Box::new(m20250225_040909_create_table_mate_item::Migration),
             Box::new(m20250225_040913_create_table_mate_morph::Migration),
+            Box::new(m20250228_005123_add_count_columns_to_mate_table::Migration),
         ]
     }
 }
