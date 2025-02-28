@@ -52,6 +52,9 @@ pub struct ItemStoreDTO {
     /// 父级ID
     pub parent_id: Option<i64>,
 
+    /// 版本号
+    pub version_no: Option<i32>,
+
     /// 排序编号
     pub sort: Option<i16>,
 
@@ -72,6 +75,7 @@ impl ItemStoreDTO {
             pc_detail_path: model.pc_detail_path.clone(),
             wap_detail_path: model.wap_detail_path.clone(),
             parent_id: model.parent_id.clone(),
+            version_no: model.version_no.clone(),
             sort: model.sort.clone(),
             is_enabled: model.is_enabled.clone(),
             ..Default::default()

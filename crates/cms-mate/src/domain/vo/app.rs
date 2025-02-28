@@ -57,6 +57,10 @@ pub struct AppMasterVO {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub icon: Option<String>,
 
+    /// 版本号
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version_no: Option<i32>,
+
     /// 排序编号
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort: Option<i16>,
@@ -91,6 +95,7 @@ impl AppMasterVO {
             title: model.title.to_owned(),
             description: Some(model.description.to_owned()),
             icon: Some(model.icon.to_owned()),
+            version_no: Some(model.version_no),
             sort: Some(model.sort),
             is_enabled: Some(model.is_enabled),
             created_time: Some(created_time),

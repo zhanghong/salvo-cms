@@ -43,6 +43,9 @@ pub struct KindStoreDTO {
     /// 是否多选
     pub is_multiple: Option<bool>,
 
+    /// 版本号
+    pub version_no: Option<i32>,
+
     /// 排序编号
     pub sort: Option<i16>,
 
@@ -60,6 +63,7 @@ impl KindStoreDTO {
             description: model.description.clone(),
             icon: model.icon.clone(),
             is_multiple: model.is_multiple.clone(),
+            version_no: model.version_no.clone(),
             sort: model.sort.clone(),
             is_enabled: model.is_enabled.clone(),
             ..Default::default()

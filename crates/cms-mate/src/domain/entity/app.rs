@@ -20,6 +20,8 @@ pub struct Model {
     pub title: String,
     pub description: String,
     pub icon: String,
+    pub version_no: i32,
+    pub kind_count: i16,
     pub sort: i16,
     pub is_enabled: bool,
     pub is_deleted: bool,

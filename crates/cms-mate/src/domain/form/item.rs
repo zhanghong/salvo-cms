@@ -109,6 +109,9 @@ pub struct ItemStoreForm {
     /// 父级ID
     pub parent_id: Option<i64>,
 
+    /// 版本号
+    pub version_no: Option<i32>,
+
     /// 排序编号
     #[validate(custom(function = "validate_field_sort", message = "排序编号必须在0-9999之间"))]
     pub sort: Option<i16>,

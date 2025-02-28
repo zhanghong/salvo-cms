@@ -10,7 +10,7 @@ use cms_core::utils::validate;
 fn validate_field_name(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_length(str, true, 5, 30)
+    validate::string_length(str, true, 2, 30)
 }
 
 fn validate_field_title(ptr: &&String) -> Result<(), ValidationError> {
@@ -42,7 +42,7 @@ fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
 pub struct AppStoreForm {
     /// 名称
-    #[validate(custom(function = "validate_field_name", message = "名称长度为5-20位"))]
+    #[validate(custom(function = "validate_field_name", message = "名称长度为2-20位"))]
     pub name: Option<String>,
 
     /// 标题
@@ -59,6 +59,9 @@ pub struct AppStoreForm {
     /// 图标
     #[validate(custom(function = "validate_field_icon", message = "图标长度不能超过30个字符"))]
     pub icon: Option<String>,
+
+    /// 版本号
+    pub version_no: Option<i32>,
 
     /// 排序编号
     #[validate(custom(function = "validate_field_sort", message = "排序编号必须在0-9999之间"))]

@@ -34,6 +34,9 @@ pub struct AppStoreDTO {
     /// 图标
     pub icon: Option<String>,
 
+    /// 版本号
+    pub version_no: Option<i32>,
+
     /// 排序编号
     pub sort: Option<i16>,
 
@@ -48,6 +51,7 @@ impl AppStoreDTO {
             title: model.title.clone(),
             description: model.description.clone(),
             icon: model.icon.clone(),
+            version_no: model.version_no.clone(),
             sort: model.sort.clone(),
             is_enabled: model.is_enabled.clone(),
             ..Default::default()

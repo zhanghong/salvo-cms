@@ -76,6 +76,10 @@ pub struct KindMasterVO {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_multiple: Option<bool>,
 
+    /// 版本号
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version_no: Option<i32>,
+
     /// 排序编号
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort: Option<i16>,
@@ -115,6 +119,7 @@ impl KindMasterVO {
             description: Some(model.description.to_owned()),
             icon: Some(model.icon.to_owned()),
             is_multiple: Some(model.is_multiple),
+            version_no: Some(model.version_no),
             sort: Some(model.sort),
             is_enabled: Some(model.is_enabled),
             created_time,

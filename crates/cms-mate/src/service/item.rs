@@ -34,14 +34,26 @@ impl ItemService {
         let id: i64 = dto.id;
         let is_create = if id > 0 { false } else { true };
 
+        let mut current_version_no = 0;
         let mut model = if is_create {
             ItemActiveModel {
                 ..Default::default()
             }
         } else {
             let model = Self::fetch_by_id(id, state).await?;
+            current_version_no = model.version_no;
             model.into()
         };
+
+        // 检查版本号
+        if let Some(version_no) = dto.version_no.clone() {
+            if !is_create && version_no.ne(&current_version_no) {
+                let err = AppError::BadRequest(String::from("版本号错误"));
+                return Err(err);
+            }
+        }
+        model.version_no = Set(current_version_no + 1);
+
         let db = &state.db;
 
         let mut app_id: i64 = 0;

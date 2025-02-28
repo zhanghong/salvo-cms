@@ -112,6 +112,10 @@ pub struct ItemMasterVO {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_directory: Option<bool>,
 
+    /// 版本号
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version_no: Option<i32>,
+
     /// 排序编号
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort: Option<i16>,
@@ -170,6 +174,7 @@ impl ItemMasterVO {
             parent_id: model.parent_id,
             level: Some(model.level),
             is_directory: Some(model.is_directory),
+            version_no: Some(model.version_no),
             sort: Some(model.sort),
             is_enabled: Some(model.is_enabled),
             created_time,
