@@ -1,10 +1,11 @@
+use sea_orm::prelude::Expr;
 use sea_orm::*;
 use std::collections::HashMap;
 
 use cms_core::config::AppState;
 use cms_core::domain::{
     HandleResult, SelectOptionItem, SelectValueEnum,
-    dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO},
+    dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO, ModelRelationCountDTO},
     handle_ok,
     vo::PaginateResultVO,
 };
@@ -14,6 +15,7 @@ use cms_core::service::EditorService;
 use cms_core::utils::time;
 
 use crate::domain::dto::{KindQueryDTO, KindStoreDTO, KindViewDTO};
+use crate::domain::entity::app::{Column as AppColumn, Entity as AppEntity};
 use crate::domain::entity::kind::{
     ActiveModel as KindActiveModel, Column as KindColumn, Entity as KindEntity, Model as KindModel,
 };
@@ -34,6 +36,7 @@ impl KindService {
         let id: i64 = dto.id;
         let is_create = if id > 0 { false } else { true };
 
+        let mut old_app_id = 0;
         let mut current_version_no = 0;
         let mut model = if is_create {
             KindActiveModel {
@@ -41,6 +44,7 @@ impl KindService {
             }
         } else {
             let model = Self::fetch_by_id(id, state).await?;
+            old_app_id = model.app_id;
             current_version_no = model.version_no;
             model.into()
         };
@@ -48,23 +52,23 @@ impl KindService {
         // 检查版本号
         if let Some(version_no) = dto.version_no.clone() {
             if !is_create && version_no.ne(&current_version_no) {
-                let err = AppError::BadRequest(String::from("版本号错误"));
-                return Err(err);
+                // let err = AppError::BadRequest(String::from("版本号错误"));
+                // return Err(err);
             }
         }
         model.version_no = Set(current_version_no + 1);
 
         let db = &state.db;
 
-        let mut app_id: i64 = 0;
+        let mut new_app_id: i64 = 0;
         if let Some(opt_app_id) = dto.app_id.clone() {
-            app_id = opt_app_id;
+            new_app_id = opt_app_id;
         }
-        if app_id < 1 {
+        if new_app_id < 1 {
             let err = AppError::BadRequest(String::from("参数 app_id 必须大于0"));
             return Err(err);
         }
-        let app = AppService::fetch_by_id(app_id, state).await;
+        let app = AppService::fetch_by_id(new_app_id, state).await;
         if app.is_err() {
             let err = AppError::BadRequest(String::from("App 不存在"));
             return Err(err);
@@ -74,7 +78,9 @@ impl KindService {
             let err = AppError::BadRequest(String::from("App 未启用"));
             return Err(err);
         }
-        model.app_id = Set(app_id);
+        if old_app_id.ne(&new_app_id) {
+            model.app_id = Set(new_app_id);
+        }
 
         let mut filter_extends = HashMap::<String, String>::new();
         if let Some(name) = dto.name.clone() {
@@ -94,7 +100,7 @@ impl KindService {
             model.name = Set(name);
         }
 
-        filter_extends.insert("app_id".to_string(), app_id.to_string());
+        filter_extends.insert("app_id".to_string(), new_app_id.to_string());
         if let Some(title) = dto.title.clone() {
             let is_exists = Self::is_column_exist(
                 id,
@@ -141,12 +147,13 @@ impl KindService {
         model.editor_type = Set(dto.editor_type.as_value());
         model.editor_id = Set(dto.editor_id);
 
-        let txn = db.begin().await?;
-
-        let model = model.save(&txn).await?;
-        let model = model.try_into_model()?;
+        let app_ids = vec![old_app_id, new_app_id];
 
         // 提交事务
+        let txn = db.begin().await?;
+        let model = model.save(&txn).await?;
+        let model = model.try_into_model()?;
+        let _ = Self::batch_upload_count_in_apps(app_ids, state).await?;
         txn.commit().await?;
 
         handle_ok(model)
@@ -556,5 +563,39 @@ impl KindService {
             .collect();
 
         handle_ok(map)
+    }
+
+    /// 批量更新应用的记录数量
+    async fn batch_upload_count_in_apps(app_ids: Vec<i64>, state: &AppState) -> HandleResult<()> {
+        let app_ids: Vec<i64> = app_ids.iter().filter(|&&id| id > 0).cloned().collect();
+        if app_ids.is_empty() {
+            return handle_ok(());
+        }
+        let db = &state.db;
+        let models: Vec<ModelRelationCountDTO> = Self::scope_active_query()
+            .select_only()
+            .column_as(KindColumn::AppId, "relation_id")
+            .column_as(KindColumn::Id.count(), "item_count")
+            .filter(KindColumn::AppId.is_in(app_ids.clone()))
+            .group_by(KindColumn::AppId)
+            .into_model::<ModelRelationCountDTO>()
+            .all(db)
+            .await?;
+        let map: HashMap<i64, i16> = models
+            .into_iter()
+            .map(|model| (model.relation_id, model.item_count))
+            .collect();
+
+        for id in app_ids.iter() {
+            let count = map.get(id).unwrap_or(&0);
+
+            let _ = AppEntity::update_many()
+                .col_expr(AppColumn::KindCount, Expr::value(*count))
+                .filter(AppColumn::Id.eq(*id))
+                .exec(db)
+                .await?;
+        }
+
+        handle_ok(())
     }
 }

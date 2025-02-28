@@ -1,10 +1,11 @@
+use sea_orm::prelude::Expr;
 use sea_orm::*;
 use std::collections::HashMap;
 
 use cms_core::config::AppState;
 use cms_core::domain::{
     HandleResult, SelectOptionItem,
-    dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO},
+    dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO, ModelRelationCountDTO},
     handle_ok,
     vo::PaginateResultVO,
 };
@@ -17,6 +18,7 @@ use crate::domain::dto::{ItemQueryDTO, ItemStoreDTO, ItemViewDTO};
 use crate::domain::entity::item::{
     ActiveModel as ItemActiveModel, Column as ItemColumn, Entity as ItemEntity, Model as ItemModel,
 };
+use crate::domain::entity::kind::{Column as KindColumn, Entity as KindEntity};
 use crate::domain::vo::{ItemFormOptionVO, ItemLoadVO, ItemMasterVO, ItemQueryOptionVO};
 use crate::enums::ItemLoadEnum;
 
@@ -34,6 +36,8 @@ impl ItemService {
         let id: i64 = dto.id;
         let is_create = if id > 0 { false } else { true };
 
+        let mut old_parent_id = 0;
+        let mut old_kind_id = 0;
         let mut current_version_no = 0;
         let mut model = if is_create {
             ItemActiveModel {
@@ -42,6 +46,8 @@ impl ItemService {
         } else {
             let model = Self::fetch_by_id(id, state).await?;
             current_version_no = model.version_no;
+            old_kind_id = model.kind_id;
+            old_parent_id = model.parent_id;
             model.into()
         };
 
@@ -56,15 +62,15 @@ impl ItemService {
 
         let db = &state.db;
 
-        let mut kind_id: i64 = 0;
+        let mut new_kind_id: i64 = 0;
         if let Some(opt_kind_id) = dto.kind_id.clone() {
-            kind_id = opt_kind_id;
+            new_kind_id = opt_kind_id;
         }
-        if kind_id < 1 {
+        if new_kind_id < 1 {
             let err = AppError::BadRequest(String::from("参数 kind_id 必须大于0"));
             return Err(err);
         }
-        let kind = KindService::fetch_by_id(kind_id, state).await;
+        let kind = KindService::fetch_by_id(new_kind_id, state).await;
         if kind.is_err() {
             let err = AppError::BadRequest(String::from("类型不存在"));
             return Err(err);
@@ -75,27 +81,27 @@ impl ItemService {
             return Err(err);
         }
         model.app_id = Set(kind.app_id);
-        model.kind_id = Set(kind_id);
+        model.kind_id = Set(new_kind_id);
 
-        let mut parent_id: i64 = 0;
+        let mut new_parent_id: i64 = 0;
         if let Some(pid) = dto.parent_id.clone() {
-            parent_id = pid;
-            if parent_id > 0 {
-                let parent = Self::fetch_by_id(parent_id, state).await?;
+            new_parent_id = pid;
+            if new_parent_id > 0 {
+                let parent = Self::fetch_by_id(new_parent_id, state).await?;
                 if parent.is_enabled == false {
                     let err = AppError::BadRequest(String::from("父级 未启用"));
                     return Err(err);
                 }
-                model.parent_id = Set(parent_id);
+                model.parent_id = Set(new_parent_id);
             } else {
-                parent_id = 0;
+                new_parent_id = 0;
                 model.parent_id = Set(0);
             }
         }
 
         let mut filter_extends = HashMap::<String, String>::new();
-        filter_extends.insert("kind_id".to_string(), kind_id.to_string());
-        filter_extends.insert("parent_id".to_string(), parent_id.to_string());
+        filter_extends.insert("kind_id".to_string(), new_kind_id.to_string());
+        filter_extends.insert("parent_id".to_string(), new_parent_id.to_string());
 
         if let Some(name) = dto.name.clone() {
             let is_exists = Self::is_column_exist(
@@ -167,12 +173,14 @@ impl ItemService {
         model.editor_type = Set(dto.editor_type.as_value());
         model.editor_id = Set(dto.editor_id);
 
-        let txn = db.begin().await?;
+        let kind_ids = vec![old_kind_id, new_kind_id];
+        let parent_ids = vec![old_parent_id, new_parent_id];
 
+        let txn = db.begin().await?;
         let model = model.save(&txn).await?;
         let model = model.try_into_model()?;
-
-        // 提交事务
+        Self::batch_upload_count_in_parents(parent_ids, state).await?;
+        Self::batch_upload_count_in_kinds(kind_ids, state).await?;
         txn.commit().await?;
 
         handle_ok(model)
@@ -606,5 +614,76 @@ impl ItemService {
             .collect();
 
         handle_ok(map)
+    }
+
+    /// 批量更新Kind的记录数量
+    async fn batch_upload_count_in_parents(
+        parent_ids: Vec<i64>,
+        state: &AppState,
+    ) -> HandleResult<()> {
+        let parent_ids: Vec<i64> = parent_ids.iter().filter(|&&id| id > 0).cloned().collect();
+        if parent_ids.is_empty() {
+            return handle_ok(());
+        }
+        let db = &state.db;
+        let models: Vec<ModelRelationCountDTO> = Self::scope_active_query()
+            .select_only()
+            .column_as(ItemColumn::ParentId, "relation_id")
+            .column_as(ItemColumn::Id.count(), "item_count")
+            .filter(ItemColumn::ParentId.is_in(parent_ids.clone()))
+            .group_by(ItemColumn::ParentId)
+            .into_model::<ModelRelationCountDTO>()
+            .all(db)
+            .await?;
+        let map: HashMap<i64, i16> = models
+            .into_iter()
+            .map(|model| (model.relation_id, model.item_count))
+            .collect();
+
+        for id in parent_ids.iter() {
+            let count = map.get(id).unwrap_or(&0);
+
+            let _ = ItemEntity::update_many()
+                .col_expr(ItemColumn::ChildrenCount, Expr::value(*count))
+                .filter(ItemColumn::ParentId.eq(*id))
+                .exec(db)
+                .await?;
+        }
+
+        handle_ok(())
+    }
+
+    /// 批量更新Kind的记录数量
+    async fn batch_upload_count_in_kinds(kind_ids: Vec<i64>, state: &AppState) -> HandleResult<()> {
+        let kind_ids: Vec<i64> = kind_ids.iter().filter(|&&id| id > 0).cloned().collect();
+        if kind_ids.is_empty() {
+            return handle_ok(());
+        }
+        let db = &state.db;
+        let models: Vec<ModelRelationCountDTO> = Self::scope_active_query()
+            .select_only()
+            .column_as(ItemColumn::KindId, "relation_id")
+            .column_as(ItemColumn::Id.count(), "item_count")
+            .filter(ItemColumn::KindId.is_in(kind_ids.clone()))
+            .group_by(ItemColumn::KindId)
+            .into_model::<ModelRelationCountDTO>()
+            .all(db)
+            .await?;
+        let map: HashMap<i64, i16> = models
+            .into_iter()
+            .map(|model| (model.relation_id, model.item_count))
+            .collect();
+
+        for id in kind_ids.iter() {
+            let count = map.get(id).unwrap_or(&0);
+
+            let _ = KindEntity::update_many()
+                .col_expr(KindColumn::ItemCount, Expr::value(*count))
+                .filter(KindColumn::Id.eq(*id))
+                .exec(db)
+                .await?;
+        }
+
+        handle_ok(())
     }
 }
