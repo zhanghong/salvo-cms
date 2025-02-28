@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use cms_core::enums::EditorTypeEnum;
+use cms_core::domain::dto::EditorCurrent;
 
 use crate::{
     domain::{form::MorphInstanceStoreForm, query::MorphInstanceQuery},
@@ -14,11 +14,8 @@ use crate::{
 // Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct MorphInstanceStoreDTO {
-    /// 编辑用户类型
-    pub editor_type: EditorTypeEnum,
-
-    /// 编辑用户ID
-    pub editor_id: i64,
+    /// 编辑用户
+    pub editor: EditorCurrent,
 
     /// 名称
     pub instance_type: Option<String>,
@@ -57,6 +54,9 @@ impl From<&MorphInstanceStoreForm> for MorphInstanceStoreDTO {
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct MorphInstanceQueryDTO {
+    /// 编辑用户
+    pub editor: EditorCurrent,
+
     /// 实例类型
     pub instance_type: Option<String>,
 

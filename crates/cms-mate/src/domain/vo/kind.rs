@@ -88,6 +88,14 @@ pub struct KindMasterVO {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_enabled: Option<bool>,
 
+    /// 是否可以更新
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub can_update: Option<bool>,
+
+    /// 是否可以删除
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub can_delete: Option<bool>,
+
     /// 创建时间
     pub created_time: String,
 

@@ -5,11 +5,14 @@ use std::collections::HashMap;
 use cms_core::config::AppState;
 use cms_core::domain::{
     HandleResult, SelectOptionItem,
-    dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO, ModelRelationCountDTO},
+    dto::{
+        EditorCurrent, FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO,
+        ModelRelationCountDTO,
+    },
     handle_ok,
     vo::PaginateResultVO,
 };
-use cms_core::enums::{EnableEnum, PlatformEnum};
+use cms_core::enums::{EditorTypeEnum, EnableEnum, PlatformEnum};
 use cms_core::error::AppError;
 use cms_core::service::EditorService;
 use cms_core::utils::time;
@@ -170,8 +173,9 @@ impl ItemService {
             model.created_at = Set(time);
         }
 
-        model.editor_type = Set(dto.editor_type.as_value());
-        model.editor_id = Set(dto.editor_id);
+        let editor = dto.editor.clone();
+        model.editor_type = Set(editor.editor_type.as_value());
+        model.editor_id = Set(editor.editor_id);
 
         let kind_ids = vec![old_kind_id, new_kind_id];
         let parent_ids = vec![old_parent_id, new_parent_id];
@@ -324,8 +328,10 @@ impl ItemService {
 
         let now = time::current_time();
         model.updated_at = Set(now);
-        model.editor_type = Set(dto.editor_type.as_value());
-        model.editor_id = Set(dto.editor_id);
+
+        let editor = dto.editor.clone();
+        model.editor_type = Set(editor.editor_type.as_value());
+        model.editor_id = Set(editor.editor_id);
 
         let _ = model.save(db).await?;
 
@@ -352,7 +358,7 @@ impl ItemService {
             }
         }
 
-        let mut vo: ItemMasterVO = model.into();
+        let mut vo: ItemMasterVO = (&model).into();
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
@@ -373,6 +379,13 @@ impl ItemService {
             }
         }
 
+        let editor = dto.editor.clone();
+
+        if *platform == PlatformEnum::Manager {
+            vo.can_update = Some(true);
+            vo.can_delete = Some(Self::can_delete(&editor, &model));
+        }
+
         handle_ok(vo)
     }
 
@@ -387,6 +400,7 @@ impl ItemService {
         if page < 1 {
             page = 1;
         }
+        let editor = dto.editor.clone();
 
         let mut page_size = dto.page_size.unwrap_or(20);
         if page_size < 1 {
@@ -409,7 +423,11 @@ impl ItemService {
             app_ids.push(model.app_id);
             kind_ids.push(model.kind_id);
             parent_ids.push(model.parent_id);
-            let vo: ItemMasterVO = model.into();
+            let mut vo: ItemMasterVO = model.into();
+            if *platform == PlatformEnum::Manager {
+                vo.can_update = Some(true);
+                vo.can_delete = Some(Self::can_delete(&editor, &model));
+            }
             list.push(vo);
         }
 
@@ -529,15 +547,22 @@ impl ItemService {
 
         let db = &state.db;
         let result = Self::fetch_by_id(dto.id, state).await;
-        if let Ok(model) = result {
-            let mut model: ItemActiveModel = model.into();
-            model.editor_type = Set(dto.editor_type.as_value());
-            model.editor_id = Set(dto.editor_id);
-            model.is_deleted = Set(true);
-            let now = time::current_time();
-            model.deleted_at = Set(Some(now));
-            let _ = model.save(db).await?;
+        if result.is_err() {
+            return handle_ok(());
         }
+        let model = result.unwrap();
+        let editor = dto.editor.clone();
+        if Self::can_delete(&editor, &model) == false {
+            let err = AppError::BadRequest(String::from("无权限删除"));
+            return Err(err);
+        }
+        let mut model: ItemActiveModel = model.into();
+        model.editor_type = Set(editor.editor_type.as_value());
+        model.editor_id = Set(editor.editor_id);
+        model.is_deleted = Set(true);
+        let now = time::current_time();
+        model.deleted_at = Set(Some(now));
+        let _ = model.save(db).await?;
 
         handle_ok(())
     }
@@ -685,5 +710,16 @@ impl ItemService {
         }
 
         handle_ok(())
+    }
+
+    /// 是否可以删除记录
+    pub fn can_delete(editor: &EditorCurrent, model: &ItemModel) -> bool {
+        if model.children_count > 0 {
+            return false;
+        } else if model.morph_count > 0 {
+            return false;
+        }
+
+        return editor.editor_type == EditorTypeEnum::Admin;
     }
 }

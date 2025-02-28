@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-use cms_core::enums::EditorTypeEnum;
+use cms_core::domain::dto::EditorCurrent;
 
 use crate::{
     domain::{form::AppStoreForm, query::AppPaginateQuery},
@@ -16,11 +16,8 @@ pub struct AppStoreDTO {
     /// 主键
     pub id: i64,
 
-    /// 编辑用户类型
-    pub editor_type: EditorTypeEnum,
-
-    /// 编辑用户ID
-    pub editor_id: i64,
+    /// 编辑用户
+    pub editor: EditorCurrent,
 
     /// 名称
     pub name: Option<String>,
@@ -76,6 +73,9 @@ impl From<&AppStoreForm> for AppStoreDTO {
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct AppQueryDTO {
+    /// 编辑用户
+    pub editor: EditorCurrent,
+
     /// 页码
     pub page: Option<u64>,
 
@@ -135,6 +135,9 @@ impl From<&AppPaginateQuery> for AppQueryDTO {
 pub struct AppViewDTO {
     /// 主键
     pub id: i64,
+
+    /// 编辑用户
+    pub editor: EditorCurrent,
 
     /// 是否启用
     pub enabled: Option<bool>,

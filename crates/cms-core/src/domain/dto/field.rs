@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::domain::dto::EditorCurrent;
 use crate::domain::form::{FieldBoolUpdateForm, FieldValueUniqueForm};
-use crate::enums::EditorTypeEnum;
 
 // ------------------------------------
 // 创建/更新用户
@@ -42,11 +42,8 @@ impl From<FieldValueUniqueForm> for FieldValueUniqueDTO {
 pub struct FieldBoolUpdateDTO {
     pub id: i64,
 
-    /// 编辑用户类型
-    pub editor_type: EditorTypeEnum,
-
-    /// 编辑用户ID
-    pub editor_id: i64,
+    /// 编辑用户
+    pub editor: EditorCurrent,
 
     /// 字段名
     pub field_name: String,

@@ -41,8 +41,11 @@ pub async fn manager_paginate(
     query: ItemPaginateQuery,
 ) -> AppResult<PaginateResultVO<ItemMasterVO>> {
     let state = depot.obtain::<AppState>().unwrap();
+
     let mut dto: ItemQueryDTO = query.into();
     dto.load_models = Some(vec![ItemLoadEnum::Editor]);
+    dto.editor = get_current_editor(depot);
+
     let vo = ItemService::paginage(&PlatformEnum::Manager, &dto, state).await?;
     result_ok(vo)
 }
@@ -60,11 +63,9 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<ItemStoreForm>) ->
     let form = json.into_inner();
     form.validate()?;
 
-    let editor = get_current_editor(depot);
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: ItemStoreDTO = form.into();
-    dto.editor_type = editor.editor_type;
-    dto.editor_id = editor.editor_id;
+    dto.editor = get_current_editor(depot);
 
     ItemService::store(&PlatformEnum::Manager, &dto, state).await?;
     result_ok("oK".to_string())
@@ -87,12 +88,10 @@ pub async fn manager_update(
     let form = json.into_inner();
     form.validate()?;
 
-    let editor = get_current_editor(depot);
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: ItemStoreDTO = form.into();
     dto.id = id.into_inner();
-    dto.editor_type = editor.editor_type;
-    dto.editor_id = editor.editor_id;
+    dto.editor = get_current_editor(depot);
 
     ItemService::store(&PlatformEnum::Manager, &dto, state).await?;
     result_ok("oK".to_string())
@@ -109,13 +108,11 @@ pub async fn manager_update(
 )]
 pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<bool> {
     let id = id.into_inner();
-    let editor = get_current_editor(depot);
     let state = depot.obtain::<AppState>().unwrap();
 
     let dto = ModelLogicDeleteDTO {
         id,
-        editor_type: editor.editor_type,
-        editor_id: editor.editor_id,
+        editor: get_current_editor(depot),
     };
 
     ItemService::logic_delete(&dto, state).await?;
@@ -190,11 +187,9 @@ pub async fn update_bool_field(
     let form = json.into_inner();
     form.validate()?;
 
-    let editor = get_current_editor(depot);
     let mut dto: FieldBoolUpdateDTO = form.into();
     dto.id = id.into_inner();
-    dto.editor_type = editor.editor_type;
-    dto.editor_id = editor.editor_id;
+    dto.editor = get_current_editor(depot);
 
     let state = depot.obtain::<AppState>().unwrap();
     let value = ItemService::update_bool_field(&dto, state).await?;
@@ -215,6 +210,7 @@ pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<It
     let dto = ItemViewDTO {
         id: id.into_inner(),
         load_models: Some(load_models),
+        editor: get_current_editor(depot),
         ..Default::default()
     };
     let state = depot.obtain::<AppState>().unwrap();

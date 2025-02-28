@@ -41,8 +41,11 @@ pub async fn manager_paginate(
     query: KindPaginateQuery,
 ) -> AppResult<PaginateResultVO<KindMasterVO>> {
     let state = depot.obtain::<AppState>().unwrap();
+
     let mut dto: KindQueryDTO = query.into();
     dto.load_models = Some(vec![KindLoadEnum::Editor]);
+    dto.editor = get_current_editor(depot);
+
     let vo = KindService::paginage(&PlatformEnum::Manager, &dto, state).await?;
     result_ok(vo)
 }
@@ -60,11 +63,9 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<KindStoreForm>) ->
     let form = json.into_inner();
     form.validate()?;
 
-    let editor = get_current_editor(depot);
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: KindStoreDTO = form.into();
-    dto.editor_type = editor.editor_type;
-    dto.editor_id = editor.editor_id;
+    dto.editor = get_current_editor(depot);
 
     KindService::store(&PlatformEnum::Manager, &dto, state).await?;
     result_ok("oK".to_string())
@@ -87,12 +88,10 @@ pub async fn manager_update(
     let form = json.into_inner();
     form.validate()?;
 
-    let editor = get_current_editor(depot);
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: KindStoreDTO = form.into();
     dto.id = id.into_inner();
-    dto.editor_type = editor.editor_type;
-    dto.editor_id = editor.editor_id;
+    dto.editor = get_current_editor(depot);
 
     KindService::store(&PlatformEnum::Manager, &dto, state).await?;
     result_ok("oK".to_string())
@@ -109,13 +108,11 @@ pub async fn manager_update(
 )]
 pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<bool> {
     let id = id.into_inner();
-    let editor = get_current_editor(depot);
     let state = depot.obtain::<AppState>().unwrap();
 
     let dto = ModelLogicDeleteDTO {
         id,
-        editor_type: editor.editor_type,
-        editor_id: editor.editor_id,
+        editor: get_current_editor(depot),
     };
 
     KindService::logic_delete(&dto, state).await?;
@@ -190,11 +187,9 @@ pub async fn update_bool_field(
     let form = json.into_inner();
     form.validate()?;
 
-    let editor = get_current_editor(depot);
     let mut dto: FieldBoolUpdateDTO = form.into();
     dto.id = id.into_inner();
-    dto.editor_type = editor.editor_type;
-    dto.editor_id = editor.editor_id;
+    dto.editor = get_current_editor(depot);
 
     let state = depot.obtain::<AppState>().unwrap();
     let value = KindService::update_bool_field(&dto, state).await?;
@@ -212,12 +207,14 @@ pub async fn update_bool_field(
 )]
 pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<KindMasterVO> {
     let load_models: Vec<KindLoadEnum> = vec![];
+    let state = depot.obtain::<AppState>().unwrap();
+
     let dto = KindViewDTO {
         id: id.into_inner(),
         load_models: Some(load_models),
+        editor: get_current_editor(depot),
         ..Default::default()
     };
-    let state = depot.obtain::<AppState>().unwrap();
     let model = KindService::view(&PlatformEnum::Manager, &dto, state).await?;
     result_ok(model)
 }

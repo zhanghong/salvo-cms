@@ -32,6 +32,14 @@ pub struct MorphInstanceVO {
     /// 类型ID
     pub item_id: i64,
 
+    /// 是否可以更新
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub can_update: Option<bool>,
+
+    /// 是否可以删除
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub can_delete: Option<bool>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub editor: Option<EditorLoadVO>,
 

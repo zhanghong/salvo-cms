@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-use cms_core::enums::EditorTypeEnum;
+use cms_core::domain::dto::EditorCurrent;
 
 use crate::{
     domain::{form::KindStoreForm, query::KindPaginateQuery},
@@ -16,11 +16,8 @@ pub struct KindStoreDTO {
     /// 主键
     pub id: i64,
 
-    /// 编辑用户类型
-    pub editor_type: EditorTypeEnum,
-
-    /// 编辑用户ID
-    pub editor_id: i64,
+    /// 编辑用户
+    pub editor: EditorCurrent,
 
     /// 模块ID
     pub app_id: Option<i64>,
@@ -88,6 +85,9 @@ impl From<&KindStoreForm> for KindStoreDTO {
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct KindQueryDTO {
+    /// 编辑用户
+    pub editor: EditorCurrent,
+
     /// 页码
     pub page: Option<u64>,
 
@@ -151,6 +151,9 @@ impl From<&KindPaginateQuery> for KindQueryDTO {
 pub struct KindViewDTO {
     /// 主键
     pub id: i64,
+
+    /// 编辑用户
+    pub editor: EditorCurrent,
 
     /// 是否启用
     pub enabled: Option<bool>,
