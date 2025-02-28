@@ -64,7 +64,12 @@ impl KindService {
             let err = AppError::BadRequest(String::from("参数 app_id 必须大于0"));
             return Err(err);
         }
-        let app = AppService::fetch_by_id(app_id, state).await.unwrap();
+        let app = AppService::fetch_by_id(app_id, state).await;
+        if app.is_err() {
+            let err = AppError::BadRequest(String::from("App 不存在"));
+            return Err(err);
+        }
+        let app = app.unwrap();
         if app.is_enabled == false {
             let err = AppError::BadRequest(String::from("App 未启用"));
             return Err(err);

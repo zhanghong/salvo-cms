@@ -56,21 +56,6 @@ impl ItemService {
 
         let db = &state.db;
 
-        let mut app_id: i64 = 0;
-        if let Some(opt_app_id) = dto.app_id.clone() {
-            app_id = opt_app_id;
-        }
-        if app_id < 1 {
-            let err = AppError::BadRequest(String::from("参数 app_id 必须大于0"));
-            return Err(err);
-        }
-        let app = AppService::fetch_by_id(app_id, state).await.unwrap();
-        if app.is_enabled == false {
-            let err = AppError::BadRequest(String::from("App 未启用"));
-            return Err(err);
-        }
-        model.app_id = Set(app_id);
-
         let mut kind_id: i64 = 0;
         if let Some(opt_kind_id) = dto.kind_id.clone() {
             kind_id = opt_kind_id;
@@ -79,11 +64,17 @@ impl ItemService {
             let err = AppError::BadRequest(String::from("参数 kind_id 必须大于0"));
             return Err(err);
         }
-        let kind = KindService::fetch_by_id(kind_id, state).await.unwrap();
+        let kind = KindService::fetch_by_id(kind_id, state).await;
+        if kind.is_err() {
+            let err = AppError::BadRequest(String::from("类型不存在"));
+            return Err(err);
+        }
+        let kind = kind.unwrap();
         if kind.is_enabled == false {
             let err = AppError::BadRequest(String::from("类型 未启用"));
             return Err(err);
         }
+        model.app_id = Set(kind.app_id);
         model.kind_id = Set(kind_id);
 
         let mut parent_id: i64 = 0;
