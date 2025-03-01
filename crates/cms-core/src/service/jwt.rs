@@ -9,7 +9,7 @@ use crate::domain::entity::certificate::{
     ActiveModel as CertificateActiveModel, Column as CertificateColummn,
     Entity as CertificateEntity, Model as CertificateModel,
 };
-use crate::domain::{handle_ok, HandleResult};
+use crate::domain::{HandleResult, handle_ok};
 use crate::enums::TokenTypeEnum;
 use crate::error::AppError;
 use crate::utils::time;
