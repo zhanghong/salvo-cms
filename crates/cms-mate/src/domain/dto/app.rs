@@ -127,21 +127,3 @@ impl From<&AppPaginateQuery> for AppQueryDTO {
         Self::from_inner(model)
     }
 }
-
-// ------------------------------------
-// 查看
-// ------------------------------------
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
-pub struct AppViewDTO {
-    /// 主键
-    pub id: i64,
-
-    /// 编辑用户
-    pub editor: EditorCurrent,
-
-    /// 是否启用
-    pub enabled: Option<bool>,
-
-    /// 加载关联数据
-    pub load_models: Option<Vec<AppLoadEnum>>,
-}

@@ -6,7 +6,7 @@ use cms_core::{
     config::AppState,
     domain::{
         AppResult,
-        dto::{FieldBoolUpdateDTO, ModelLogicDeleteDTO},
+        dto::{FieldBoolUpdateDTO, ModelLogicDeleteDTO, ModelViewDTO},
         form::{FieldBoolUpdateForm, FieldValueUniqueForm},
         result_ok,
         vo::PaginateResultVO,
@@ -17,7 +17,7 @@ use cms_core::{
 
 use crate::{
     domain::{
-        dto::{KindQueryDTO, KindStoreDTO, KindViewDTO},
+        dto::{KindQueryDTO, KindStoreDTO},
         form::KindStoreForm,
         query::KindPaginateQuery,
         vo::{KindFormOptionVO, KindMasterVO, KindQueryOptionVO},
@@ -209,7 +209,7 @@ pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<Ki
     let load_models: Vec<KindLoadEnum> = vec![];
     let state = depot.obtain::<AppState>().unwrap();
 
-    let dto = KindViewDTO {
+    let dto = ModelViewDTO {
         id: id.into_inner(),
         load_models: Some(load_models),
         editor: get_current_editor(depot),

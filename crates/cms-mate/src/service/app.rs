@@ -4,7 +4,9 @@ use std::collections::HashMap;
 use cms_core::config::AppState;
 use cms_core::domain::{
     HandleResult, SelectOptionItem,
-    dto::{EditorCurrent, FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO},
+    dto::{
+        EditorCurrent, FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO, ModelViewDTO,
+    },
     handle_ok,
     vo::PaginateResultVO,
 };
@@ -13,7 +15,7 @@ use cms_core::error::AppError;
 use cms_core::service::EditorService;
 use cms_core::utils::time;
 
-use crate::domain::dto::{AppQueryDTO, AppStoreDTO, AppViewDTO};
+use crate::domain::dto::{AppQueryDTO, AppStoreDTO};
 use crate::domain::entity::app::{
     ActiveModel as AppActiveModel, Column as AppColumn, Entity as AppEntity, Model as AppModel,
 };
@@ -242,7 +244,7 @@ impl AppService {
     /// 查看
     pub async fn view(
         platform: &PlatformEnum,
-        dto: &AppViewDTO,
+        dto: &ModelViewDTO<AppLoadEnum>,
         state: &AppState,
     ) -> HandleResult<AppMasterVO> {
         let id = dto.id;

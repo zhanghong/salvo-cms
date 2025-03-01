@@ -7,7 +7,7 @@ use cms_core::domain::{
     HandleResult, SelectOptionItem, SelectValueEnum,
     dto::{
         EditorCurrent, FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO,
-        ModelRelationCountDTO,
+        ModelRelationCountDTO, ModelViewDTO,
     },
     handle_ok,
     vo::PaginateResultVO,
@@ -17,7 +17,7 @@ use cms_core::error::AppError;
 use cms_core::service::EditorService;
 use cms_core::utils::time;
 
-use crate::domain::dto::{KindQueryDTO, KindStoreDTO, KindViewDTO};
+use crate::domain::dto::{KindQueryDTO, KindStoreDTO};
 use crate::domain::entity::app::{Column as AppColumn, Entity as AppEntity};
 use crate::domain::entity::kind::{
     ActiveModel as KindActiveModel, Column as KindColumn, Entity as KindEntity, Model as KindModel,
@@ -298,7 +298,7 @@ impl KindService {
     /// 查看
     pub async fn view(
         platform: &PlatformEnum,
-        dto: &KindViewDTO,
+        dto: &ModelViewDTO<KindLoadEnum>,
         state: &AppState,
     ) -> HandleResult<KindMasterVO> {
         let id = dto.id;

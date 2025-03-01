@@ -7,7 +7,7 @@ use cms_core::domain::{
     HandleResult, SelectOptionItem,
     dto::{
         EditorCurrent, FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO,
-        ModelRelationCountDTO,
+        ModelRelationCountDTO, ModelViewDTO,
     },
     handle_ok,
     vo::PaginateResultVO,
@@ -17,7 +17,7 @@ use cms_core::error::AppError;
 use cms_core::service::EditorService;
 use cms_core::utils::time;
 
-use crate::domain::dto::{ItemQueryDTO, ItemStoreDTO, ItemViewDTO};
+use crate::domain::dto::{ItemQueryDTO, ItemStoreDTO};
 use crate::domain::entity::item::{
     ActiveModel as ItemActiveModel, Column as ItemColumn, Entity as ItemEntity, Model as ItemModel,
 };
@@ -341,7 +341,7 @@ impl ItemService {
     /// 查看
     pub async fn view(
         platform: &PlatformEnum,
-        dto: &ItemViewDTO,
+        dto: &ModelViewDTO<ItemLoadEnum>,
         state: &AppState,
     ) -> HandleResult<ItemMasterVO> {
         let id = dto.id;

@@ -6,7 +6,7 @@ use cms_core::{
     config::AppState,
     domain::{
         AppResult,
-        dto::{FieldBoolUpdateDTO, ModelLogicDeleteDTO},
+        dto::{FieldBoolUpdateDTO, ModelLogicDeleteDTO, ModelViewDTO},
         form::{FieldBoolUpdateForm, FieldValueUniqueForm},
         result_ok,
         vo::PaginateResultVO,
@@ -17,7 +17,7 @@ use cms_core::{
 
 use crate::{
     domain::{
-        dto::{AppQueryDTO, AppStoreDTO, AppViewDTO},
+        dto::{AppQueryDTO, AppStoreDTO},
         form::AppStoreForm,
         query::AppPaginateQuery,
         vo::{AppFormOptionVO, AppMasterVO, AppQueryOptionVO},
@@ -209,7 +209,7 @@ pub async fn update_bool_field(
 pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<AppMasterVO> {
     let load_models: Vec<AppLoadEnum> = vec![];
     let state = depot.obtain::<AppState>().unwrap();
-    let dto = AppViewDTO {
+    let dto = ModelViewDTO {
         id: id.into_inner(),
         load_models: Some(load_models),
         editor: get_current_editor(depot),
