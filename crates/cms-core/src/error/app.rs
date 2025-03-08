@@ -62,6 +62,7 @@ impl Writer for AppError {
         let mut code = 500;
         let mut message = String::from("Internal Server Error");
         let mut data: Option<HashMap<String, String>> = None;
+        println!("{:}", self);
         match self {
             AppError::BadRequest(msg) => {
                 code = 400;

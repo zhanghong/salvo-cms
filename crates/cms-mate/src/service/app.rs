@@ -10,7 +10,7 @@ use cms_core::domain::{
     handle_ok,
     vo::PaginateResultVO,
 };
-use cms_core::enums::{EditorTypeEnum, EnableEnum, PlatformEnum};
+use cms_core::enums::{EditorTypeEnum, EnableEnum, PlatformEnum, ViewMode};
 use cms_core::error::AppError;
 use cms_core::service::EditorService;
 use cms_core::utils::time;
@@ -41,7 +41,9 @@ impl AppService {
             }
         } else {
             let model = Self::fetch_by_id(id, state).await?;
-            current_version_no = model.version_no;
+            if let Some(no) = model.version_no.clone() {
+                current_version_no = no;
+            }
             model.into()
         };
 
@@ -52,7 +54,7 @@ impl AppService {
                 return Err(err);
             }
         }
-        model.version_no = Set(current_version_no + 1);
+        model.version_no = Set(Some(current_version_no + 1));
 
         let db = &state.db;
 
@@ -106,10 +108,10 @@ impl AppService {
         }
 
         let time = time::current_time();
-        model.updated_at = Set(time);
+        model.updated_at = Set(Some(time));
 
         if is_create {
-            model.created_at = Set(time);
+            model.created_at = Set(Some(time));
         }
 
         let editor = dto.editor.clone();
@@ -230,7 +232,7 @@ impl AppService {
         };
 
         let now = time::current_time();
-        model.updated_at = Set(now);
+        model.updated_at = Set(Some(now));
 
         let editor = dto.editor.clone();
         model.editor_type = Set(editor.editor_type.as_value());
@@ -254,14 +256,16 @@ impl AppService {
         }
 
         let model = Self::fetch_by_id(id, state).await?;
-        if *platform == PlatformEnum::Open {
+
+        let view_mode = ViewMode::platform_to_detail_mode(platform);
+        if view_mode == ViewMode::ManagerDetail {
             if !model.is_enabled {
                 let err = AppError::NotFound(String::from("访问记录不存在"));
                 return Err(err);
             }
         }
 
-        let mut vo: AppMasterVO = (&model).into();
+        let mut vo: AppMasterVO = AppMasterVO::mode_into(&view_mode, &model);
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
@@ -274,7 +278,7 @@ impl AppService {
         }
 
         let editor = dto.editor.clone();
-        if *platform == PlatformEnum::Manager {
+        if view_mode == ViewMode::ManagerDetail {
             vo.can_update = Some(true);
             vo.can_delete = Some(Self::can_delete(&editor, &model));
         }
@@ -302,7 +306,25 @@ impl AppService {
         }
         let editor = dto.editor.clone();
 
-        let query = Self::query_builder(platform, dto).await?;
+        let view_mode = ViewMode::platform_to_list_mode(platform);
+
+        let mut cols = vec![
+            AppColumn::Id,
+            AppColumn::EditorId,
+            AppColumn::EditorType,
+            AppColumn::Name,
+            AppColumn::Title,
+            AppColumn::Description,
+            AppColumn::Icon,
+            AppColumn::Sort,
+            AppColumn::IsEnabled,
+        ];
+        if view_mode == ViewMode::ManagerList {
+            cols.push(AppColumn::CreatedAt);
+            cols.push(AppColumn::UpdatedAt);
+        }
+        let mut query = Self::query_builder(platform, dto).await?;
+        query = query.select_only().columns(cols);
         let paginator = query.paginate(db, page_size);
         let total = paginator.num_items_and_pages().await?;
         let models = paginator.fetch_page(page - 1).await?;
@@ -311,8 +333,8 @@ impl AppService {
         let mut editor_ids: Vec<i64> = Vec::with_capacity(len);
         for model in models.iter() {
             editor_ids.push(model.editor_id);
-            let mut vo: AppMasterVO = model.into();
-            if *platform == PlatformEnum::Manager {
+            let mut vo: AppMasterVO = AppMasterVO::mode_into(&view_mode, &model);
+            if view_mode == ViewMode::ManagerList {
                 vo.can_update = Some(true);
                 vo.can_delete = Some(Self::can_delete(&editor, &model));
             }
@@ -340,10 +362,6 @@ impl AppService {
             list: list,
         };
 
-        // let editor_ids = models
-        //     .into_iter()
-        //     .map(|model| model.editor_id)
-        //     .collect::<Vec<i64>>();
         handle_ok(vo)
     }
 
@@ -420,7 +438,7 @@ impl AppService {
         let mut model: AppActiveModel = model.into();
         model.editor_type = Set(editor.editor_type.as_value());
         model.editor_id = Set(editor.editor_id);
-        model.is_deleted = Set(true);
+        model.is_deleted = Set(Some(true));
         let now = time::current_time();
         model.deleted_at = Set(Some(now));
         let _ = model.save(db).await?;
@@ -488,7 +506,11 @@ impl AppService {
 
     /// 是否可以删除记录
     pub fn can_delete(editor: &EditorCurrent, model: &AppModel) -> bool {
-        if model.kind_count > 0 {
+        if let Some(num) = model.kind_count.clone() {
+            if num > 0 {
+                return false;
+            }
+        } else {
             return false;
         }
 

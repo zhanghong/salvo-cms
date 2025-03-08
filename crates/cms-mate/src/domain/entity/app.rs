@@ -20,13 +20,13 @@ pub struct Model {
     pub title: String,
     pub description: String,
     pub icon: String,
-    pub version_no: i32,
-    pub kind_count: i16,
+    pub version_no: Option<i32>,
+    pub kind_count: Option<i16>,
     pub sort: i16,
     pub is_enabled: bool,
-    pub is_deleted: bool,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
+    pub is_deleted: Option<bool>,
+    pub created_at: Option<NaiveDateTime>,
+    pub updated_at: Option<NaiveDateTime>,
     pub deleted_at: Option<NaiveDateTime>,
 }
 
@@ -63,12 +63,20 @@ impl Related<super::morph::Entity> for Entity {
 impl ActiveModelBehavior for ActiveModel {}
 
 impl Model {
-    pub fn created_time(&self) -> String {
-        time::to_db_time(&self.created_at)
+    pub fn created_time(&self) -> Option<String> {
+        if let Some(time) = (&self).created_at.clone() {
+            Some(time::to_db_time(&time))
+        } else {
+            None
+        }
     }
 
-    pub fn updated_time(&self) -> String {
-        time::to_db_time(&self.updated_at)
+    pub fn updated_time(&self) -> Option<String> {
+        if let Some(time) = (&self).updated_at.clone() {
+            Some(time::to_db_time(&time))
+        } else {
+            None
+        }
     }
 }
 
