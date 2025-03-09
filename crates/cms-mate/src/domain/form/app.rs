@@ -42,22 +42,25 @@ fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
 pub struct AppStoreForm {
     /// 名称
-    #[validate(custom(function = "validate_field_name", message = "名称长度为2-20位"))]
+    #[validate(custom(function = "validate_field_name", message = "模块名称长度为2-20位"))]
     pub name: Option<String>,
 
     /// 标题
-    #[validate(custom(function = "validate_field_title", message = "标题长度为2-30位"))]
+    #[validate(custom(function = "validate_field_title", message = "模块标题长度为2-30位"))]
     pub title: Option<String>,
 
     /// 描述
     #[validate(custom(
         function = "validate_field_description",
-        message = "描述长度不能超过200个字符"
+        message = "模块简介长度不能超过200个字符"
     ))]
     pub description: Option<String>,
 
     /// 图标
-    #[validate(custom(function = "validate_field_icon", message = "图标长度不能超过30个字符"))]
+    #[validate(custom(
+        function = "validate_field_icon",
+        message = "模块图标长度不能超过30个字符"
+    ))]
     pub icon: Option<String>,
 
     /// 版本号

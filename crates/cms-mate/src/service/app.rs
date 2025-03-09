@@ -258,7 +258,7 @@ impl AppService {
         let model = Self::fetch_by_id(id, state).await?;
 
         let view_mode = ViewMode::platform_to_detail_mode(platform);
-        if view_mode == ViewMode::ManagerDetail {
+        if view_mode == ViewMode::OpenDetail {
             if !model.is_enabled {
                 let err = AppError::NotFound(String::from("访问记录不存在"));
                 return Err(err);
