@@ -29,3 +29,7 @@ uuid = { workspace = true }
 # validator
 regex = { workspace = true }
 validator = { workspace = true }
+
+# redis
+redis = { workspace = true }
+redis-macros = { workspace = true }

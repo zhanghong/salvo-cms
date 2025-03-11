@@ -40,3 +40,4 @@ jsonwebtoken = { workspace = true }
 
 # Redis
 redis = { workspace = true }
+redis-macros = { workspace = true }

@@ -1,5 +1,9 @@
+use redis::{Commands, JsonCommands, RedisError};
 use sea_orm::*;
 use std::collections::HashMap;
+use redis_macros::Json;
+use redis_macros::{FromRedisValue, ToRedisArgs};
+use serde::{Deserialize, Serialize};
 
 use cms_core::config::AppState;
 use cms_core::domain::{

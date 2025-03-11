@@ -4,6 +4,7 @@ mod app;
 mod checker;
 mod item;
 mod kind;
+mod address;
 
 use cms_core::middleware::jwt_verify_access;
 
@@ -22,6 +23,8 @@ pub fn init_router() -> Router {
                 .push(Router::with_path("/apps").post(app::manager_create))
                 .push(Router::with_path("/apps/query").get(app::manager_query))
                 .push(Router::with_path("/apps/form").get(app::manager_form))
+                .push(Router::with_path("/apps/redis_store").get(address::redis_store))
+                .push(Router::with_path("/apps/redis_load").get(address::redis_load))
                 .push(Router::with_path("/apps/{id}/bool").post(app::update_bool_field))
                 .push(Router::with_path("/apps/{id}").get(app::manager_view))
                 .push(Router::with_path("/apps/{id}").patch(app::manager_update))

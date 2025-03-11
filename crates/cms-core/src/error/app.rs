@@ -48,6 +48,13 @@ impl From<sea_orm::DbErr> for AppError {
     }
 }
 
+// 修改 From 实现
+impl From<redis::RedisError> for AppError {
+    fn from(err: redis::RedisError) -> Self {
+        AppError::Database(err.to_string()) // 将 DbErr 转换为字符串
+    }
+}
+
 // impl From<ValidationErrors> for AppError {
 //     fn from(err: ValidationErrors) -> Self {
 //         AppError::Validation(err.to_string())

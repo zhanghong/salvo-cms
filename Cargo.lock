@@ -637,6 +637,7 @@ dependencies = [
  "md5",
  "rand 0.9.0",
  "redis",
+ "redis-macros",
  "regex",
  "salvo",
  "sea-orm",
@@ -658,6 +659,8 @@ dependencies = [
  "cms-core",
  "dotenvy",
  "envy",
+ "redis",
+ "redis-macros",
  "regex",
  "salvo",
  "sea-orm",
@@ -682,6 +685,8 @@ dependencies = [
  "dotenvy",
  "envy",
  "jsonwebtoken",
+ "redis",
+ "redis-macros",
  "salvo",
  "sea-orm",
  "serde",
@@ -2559,11 +2564,36 @@ dependencies = [
  "pin-project-lite",
  "r2d2",
  "ryu",
+ "serde",
+ "serde_json",
  "sha1_smol",
  "socket2",
  "tokio",
  "tokio-util",
  "url",
+]
+
+[[package]]
+name = "redis-macros"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0887a0ff58093e610a414c44101707382a559a7aff3edd2d2d2a514d6c4db00f"
+dependencies = [
+ "redis",
+ "redis-macros-derive",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "redis-macros-derive"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5897310e5c51a7e94c4219062c2c61740a90dc1dd6bd61583fe16e5e544f324"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.98",
 ]
 
 [[package]]
