@@ -10,7 +10,7 @@ use cms_core::domain::{
     handle_ok,
     vo::PaginateResultVO,
 };
-use cms_core::enums::{EditorTypeEnum, EnableEnum, PlatformEnum, ViewMode};
+use cms_core::enums::{EditorTypeEnum, EnableEnum, PlatformEnum, ViewModeEnum};
 use cms_core::error::AppError;
 use cms_core::service::EditorService;
 use cms_core::utils::time;
@@ -257,15 +257,15 @@ impl AppService {
 
         let model = Self::fetch_by_id(id, state).await?;
 
-        let view_mode = ViewMode::platform_to_detail_mode(platform);
-        if view_mode == ViewMode::OpenDetail {
+        let view_enum = ViewModeEnum::platform_to_detail_mode(platform);
+        if view_enum == ViewModeEnum::OpenDetail {
             if !model.is_enabled {
                 let err = AppError::NotFound(String::from("访问记录不存在"));
                 return Err(err);
             }
         }
 
-        let mut vo: AppMasterVO = AppMasterVO::mode_into(&view_mode, &model);
+        let mut vo: AppMasterVO = AppMasterVO::mode_into(&view_enum, &model);
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
@@ -278,7 +278,7 @@ impl AppService {
         }
 
         let editor = dto.editor.clone();
-        if view_mode == ViewMode::ManagerDetail {
+        if view_enum == ViewModeEnum::ManagerDetail {
             vo.can_update = Some(true);
             vo.can_delete = Some(Self::can_delete(&editor, &model));
         }
@@ -306,7 +306,7 @@ impl AppService {
         }
         let editor = dto.editor.clone();
 
-        let view_mode = ViewMode::platform_to_list_mode(platform);
+        let view_enum = ViewModeEnum::platform_to_list_mode(platform);
 
         let mut cols = vec![
             AppColumn::Id,
@@ -319,7 +319,7 @@ impl AppService {
             AppColumn::Sort,
             AppColumn::IsEnabled,
         ];
-        if view_mode == ViewMode::ManagerList {
+        if view_enum == ViewModeEnum::ManagerList {
             cols.push(AppColumn::CreatedAt);
             cols.push(AppColumn::UpdatedAt);
         }
@@ -333,8 +333,8 @@ impl AppService {
         let mut editor_ids: Vec<i64> = Vec::with_capacity(len);
         for model in models.iter() {
             editor_ids.push(model.editor_id);
-            let mut vo: AppMasterVO = AppMasterVO::mode_into(&view_mode, &model);
-            if view_mode == ViewMode::ManagerList {
+            let mut vo: AppMasterVO = AppMasterVO::mode_into(&view_enum, &model);
+            if view_enum == ViewModeEnum::ManagerList {
                 vo.can_update = Some(true);
                 vo.can_delete = Some(Self::can_delete(&editor, &model));
             }

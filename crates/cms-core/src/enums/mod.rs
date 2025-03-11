@@ -8,4 +8,4 @@ pub use editor_type::EditorTypeEnum;
 pub use enable::EnableEnum;
 pub use platform::PlatformEnum;
 pub use token_type::TokenTypeEnum;
-pub use view_mode::ViewMode;
+pub use view_mode::ViewModeEnum;

@@ -12,6 +12,9 @@ cms-mate = { version = "0.1.0", path = "../cms-mate" }
 salvo = { workspace = true }
 tokio = { workspace = true }
 
+redis = { workspace = true }
+redis-macros = { workspace = true }
+
 # logging
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }

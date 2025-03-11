@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use cms_core::{
     domain::{SelectOptionItem, vo::EditorLoadVO},
-    enums::ViewMode,
+    enums::ViewModeEnum,
 };
 
 use crate::domain::entity::app::Model;
@@ -89,7 +89,7 @@ pub struct AppMasterVO {
 }
 
 impl AppMasterVO {
-    pub fn mode_into(view: &ViewMode, model: &Model) -> Self {
+    pub fn mode_into(view_enum: &ViewModeEnum, model: &Model) -> Self {
         let mut vo = Self {
             id: model.id,
             name: model.name.to_owned(),
@@ -99,8 +99,8 @@ impl AppMasterVO {
             ..Default::default()
         };
 
-        match *view {
-            ViewMode::ManagerDetail | ViewMode::ManagerList => {
+        match *view_enum {
+            ViewModeEnum::ManagerDetail | ViewModeEnum::ManagerList => {
                 vo.editor_type = model.editor_type.to_owned();
                 vo.editor_id = model.editor_id;
                 vo.version_no = model.version_no;

@@ -4,14 +4,14 @@ use serde::{Deserialize, Serialize};
 use super::PlatformEnum;
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, ToSchema)]
-pub enum ViewMode {
+pub enum ViewModeEnum {
     ManagerList,
     ManagerDetail,
     OpenList,
     OpenDetail,
 }
 
-impl ViewMode {
+impl ViewModeEnum {
     pub fn platform_to_list_mode(platform: &PlatformEnum) -> Self {
         match *platform {
             PlatformEnum::Open => Self::OpenList,
