@@ -1,4 +1,10 @@
-use redis::{Client, Commands, Connection, FromRedisValue, ToRedisArgs};
+use redis::JsonAsyncCommands;
+use redis::{
+    Client, Commands, Connection, FromRedisValue, ToRedisArgs, aio::MultiplexedConnection,
+};
+use redis_macros::Json;
+use serde::{Deserialize, Serialize};
+use std::marker::{Send, Sync};
 
 use crate::utils::time;
 
@@ -7,6 +13,10 @@ pub struct RedisService {}
 impl RedisService {
     fn get_connection(client: &Client) -> Connection {
         client.get_connection().unwrap()
+    }
+
+    async fn get_async_connection(client: &Client) -> MultiplexedConnection {
+        client.get_multiplexed_async_connection().await.unwrap()
     }
 
     pub fn set<K: ToRedisArgs, V: ToRedisArgs>(client: &Client, key: K, value: V) -> () {
@@ -53,5 +63,24 @@ impl RedisService {
     pub fn del_jwt_key(client: &Client, uuid: &String) {
         let key = format!("jwt:{}", uuid);
         Self::del(client, key);
+    }
+
+    pub async fn set_json_list<T: Serialize + Send + Sync>(
+        client: &Client,
+        key: &str,
+        list: &Vec<T>,
+    ) {
+        let mut con = Self::get_async_connection(client).await;
+        let _: () = con.json_set(key, "$", list).await.unwrap();
+    }
+
+    pub async fn get_json_list<T: for<'a> Deserialize<'a>>(client: &Client, key: &str) -> Vec<T> {
+        let mut con = Self::get_async_connection(client).await;
+        let stored_list: Vec<T> = match con.json_get(key, "$").await {
+            Ok(Json(list)) => list,
+            Err(_) => Vec::new(),
+        };
+
+        stored_list
     }
 }
