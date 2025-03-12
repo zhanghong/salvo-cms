@@ -12,7 +12,7 @@ use cms_core::domain::{
     handle_ok,
     vo::PaginateResultVO,
 };
-use cms_core::enums::{EditorTypeEnum, EnableEnum, PlatformEnum};
+use cms_core::enums::{EditorTypeEnum, EnableEnum, PlatformEnum, ViewModeEnum};
 use cms_core::error::AppError;
 use cms_core::service::EditorService;
 use cms_core::utils::time;
@@ -48,7 +48,9 @@ impl ItemService {
             }
         } else {
             let model = Self::fetch_by_id(id, state).await?;
-            current_version_no = model.version_no;
+            if let Some(no) = model.version_no.clone() {
+                current_version_no = no;
+            }
             old_kind_id = model.kind_id;
             old_parent_id = model.parent_id;
             model.into()
@@ -61,7 +63,7 @@ impl ItemService {
                 return Err(err);
             }
         }
-        model.version_no = Set(current_version_no + 1);
+        model.version_no = Set(Some(current_version_no + 1));
 
         let db = &state.db;
 
@@ -150,12 +152,12 @@ impl ItemService {
             model.icon = Set(icon);
         }
 
-        if let Some(pc_detail_path) = dto.pc_detail_path.clone() {
-            model.pc_detail_path = Set(pc_detail_path);
+        if dto.pc_detail_path.is_some() {
+            model.pc_detail_path = Set(dto.pc_detail_path.clone());
         }
 
-        if let Some(wap_detail_path) = dto.wap_detail_path.clone() {
-            model.wap_detail_path = Set(wap_detail_path);
+        if dto.wap_detail_path.is_some() {
+            model.wap_detail_path = Set(dto.wap_detail_path.clone());
         }
 
         if let Some(sort) = dto.sort.clone() {
@@ -167,10 +169,10 @@ impl ItemService {
         }
 
         let time = time::current_time();
-        model.updated_at = Set(time);
+        model.updated_at = Set(Some(time));
 
         if is_create {
-            model.created_at = Set(time);
+            model.created_at = Set(Some(time));
         }
 
         let editor = dto.editor.clone();
@@ -327,7 +329,7 @@ impl ItemService {
         };
 
         let now = time::current_time();
-        model.updated_at = Set(now);
+        model.updated_at = Set(Some(now));
 
         let editor = dto.editor.clone();
         model.editor_type = Set(editor.editor_type.as_value());
@@ -351,14 +353,16 @@ impl ItemService {
         }
 
         let model = Self::fetch_by_id(id, state).await?;
-        if *platform == PlatformEnum::Open {
+
+        let view_enum = ViewModeEnum::platform_to_detail_mode(platform);
+        if view_enum == ViewModeEnum::OpenDetail {
             if !model.is_enabled {
                 let err = AppError::NotFound(String::from("访问记录不存在"));
                 return Err(err);
             }
         }
 
-        let mut vo: ItemMasterVO = (&model).into();
+        let mut vo: ItemMasterVO = ItemMasterVO::mode_into(&view_enum, &model);
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
@@ -400,7 +404,6 @@ impl ItemService {
         if page < 1 {
             page = 1;
         }
-        let editor = dto.editor.clone();
 
         let mut page_size = dto.page_size.unwrap_or(20);
         if page_size < 1 {
@@ -408,6 +411,31 @@ impl ItemService {
         } else if page_size > 50 {
             page_size = 50;
         }
+
+        let editor = dto.editor.clone();
+        let view_enum = ViewModeEnum::platform_to_list_mode(platform);
+
+        let mut cols = vec![
+            ItemColumn::Id,
+            ItemColumn::EditorId,
+            ItemColumn::EditorType,
+            ItemColumn::AppId,
+            ItemColumn::KindId,
+            ItemColumn::Name,
+            ItemColumn::Title,
+            ItemColumn::Description,
+            ItemColumn::Icon,
+            ItemColumn::ParentId,
+            ItemColumn::Level,
+            ItemColumn::IsDirectory,
+            ItemColumn::Sort,
+            ItemColumn::IsEnabled,
+        ];
+        if view_enum == ViewModeEnum::ManagerList {
+            cols.push(ItemColumn::CreatedAt);
+            cols.push(ItemColumn::UpdatedAt);
+        }
+
         let query = Self::query_builder(platform, dto).await?;
         let paginator = query.paginate(db, page_size);
         let total = paginator.num_items_and_pages().await?;
@@ -423,7 +451,7 @@ impl ItemService {
             app_ids.push(model.app_id);
             kind_ids.push(model.kind_id);
             parent_ids.push(model.parent_id);
-            let mut vo: ItemMasterVO = model.into();
+            let mut vo: ItemMasterVO = ItemMasterVO::mode_into(&view_enum, &model);
             if *platform == PlatformEnum::Manager {
                 vo.can_update = Some(true);
                 vo.can_delete = Some(Self::can_delete(&editor, &model));
@@ -559,7 +587,7 @@ impl ItemService {
         let mut model: ItemActiveModel = model.into();
         model.editor_type = Set(editor.editor_type.as_value());
         model.editor_id = Set(editor.editor_id);
-        model.is_deleted = Set(true);
+        model.is_deleted = Set(Some(true));
         let now = time::current_time();
         model.deleted_at = Set(Some(now));
         let _ = model.save(db).await?;
@@ -714,9 +742,19 @@ impl ItemService {
 
     /// 是否可以删除记录
     pub fn can_delete(editor: &EditorCurrent, model: &ItemModel) -> bool {
-        if model.children_count > 0 {
+        let has_children = match model.children_count {
+            Some(count) => count > 0,
+            None => true,
+        };
+        if has_children {
             return false;
-        } else if model.morph_count > 0 {
+        }
+
+        let has_morphs = match model.morph_count {
+            Some(count) => count > 0,
+            None => true,
+        };
+        if has_morphs {
             return false;
         }
 

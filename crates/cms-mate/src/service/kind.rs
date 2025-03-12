@@ -654,7 +654,7 @@ impl KindService {
     pub fn can_delete(editor: &EditorCurrent, model: &KindModel) -> bool {
         let has_item = match model.item_count {
             Some(count) => count > 0,
-            None => false,
+            None => true,
         };
         if has_item {
             return false;

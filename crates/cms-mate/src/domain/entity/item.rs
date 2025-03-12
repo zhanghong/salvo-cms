@@ -9,7 +9,7 @@ use cms_core::{
     utils::time,
 };
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "mate_item")]
 pub struct Model {
     #[sea_orm(primary_key)]
@@ -24,21 +24,21 @@ pub struct Model {
     #[sea_orm(column_type = "Text", nullable)]
     pub introduction: Option<String>,
     pub icon: String,
-    pub pc_detail_path: String,
-    pub wap_detail_path: String,
+    pub pc_detail_path: Option<String>,
+    pub wap_detail_path: Option<String>,
     pub parent_id: i64,
     pub level: i32,
     pub is_directory: bool,
-    pub path: String,
+    pub path: Option<String>,
     pub extends: Option<Json>,
-    pub version_no: i32,
-    pub children_count: i16,
-    pub morph_count: i16,
+    pub version_no: Option<i32>,
+    pub children_count: Option<i16>,
+    pub morph_count: Option<i16>,
     pub sort: i16,
     pub is_enabled: bool,
-    pub is_deleted: bool,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
+    pub is_deleted: Option<bool>,
+    pub created_at: Option<NaiveDateTime>,
+    pub updated_at: Option<NaiveDateTime>,
     pub deleted_at: Option<NaiveDateTime>,
 }
 
@@ -83,20 +83,28 @@ impl Related<super::morph::Entity> for Entity {
 impl ActiveModelBehavior for ActiveModel {}
 
 impl Model {
-    pub fn pc_detail_url(&self) -> String {
-        self.pc_detail_path.to_owned()
+    pub fn pc_detail_url(&self) -> Option<String> {
+        self.pc_detail_path.clone()
     }
 
-    pub fn wap_detail_url(&self) -> String {
-        self.wap_detail_path.to_owned()
+    pub fn wap_detail_url(&self) -> Option<String> {
+        self.wap_detail_path.clone()
     }
 
-    pub fn created_time(&self) -> String {
-        time::to_db_time(&self.created_at)
+    pub fn created_time(&self) -> Option<String> {
+        if let Some(time) = (&self).created_at.clone() {
+            Some(time::to_db_time(&time))
+        } else {
+            None
+        }
     }
 
-    pub fn updated_time(&self) -> String {
-        time::to_db_time(&self.updated_at)
+    pub fn updated_time(&self) -> Option<String> {
+        if let Some(time) = (&self).updated_at.clone() {
+            Some(time::to_db_time(&time))
+        } else {
+            None
+        }
     }
 
     pub fn to_option_item(&self) -> SelectOptionItem {

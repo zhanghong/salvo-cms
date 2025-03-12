@@ -78,15 +78,32 @@ impl Model {
             None
         }
     }
+
+    pub fn to_option_item(&self) -> SelectOptionItem {
+        SelectOptionItem {
+            label: self.title.clone(),
+            value: SelectValueEnum::Number(self.id),
+            disabled: Some(!self.is_enabled),
+            alias: Some(vec![self.name.clone()]),
+            children: None,
+            ..Default::default()
+        }
+    }
 }
 
 impl Into<SelectOptionItem> for Model {
     fn into(self) -> SelectOptionItem {
+        self.to_option_item()
+    }
+}
+
+impl Into<SelectOptionItem> for &Model {
+    fn into(self) -> SelectOptionItem {
         SelectOptionItem {
-            label: self.title,
+            label: self.title.clone(),
             value: SelectValueEnum::Number(self.id),
             disabled: Some(!self.is_enabled),
-            alias: Some(vec![self.name]),
+            alias: Some(vec![self.name.clone()]),
             children: None,
             ..Default::default()
         }

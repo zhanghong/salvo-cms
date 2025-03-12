@@ -99,6 +99,8 @@ impl AppMasterVO {
             title: model.title.to_owned(),
             description: model.description.to_owned(),
             icon: model.icon.to_owned(),
+            sort: model.sort,
+            is_enabled: model.is_enabled,
             ..Default::default()
         };
 
