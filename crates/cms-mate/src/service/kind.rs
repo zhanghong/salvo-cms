@@ -12,7 +12,7 @@ use cms_core::domain::{
     handle_ok,
     vo::PaginateResultVO,
 };
-use cms_core::enums::{EditorTypeEnum, EnableEnum, PlatformEnum};
+use cms_core::enums::{EditorTypeEnum, EnableEnum, PlatformEnum, ViewModeEnum};
 use cms_core::error::AppError;
 use cms_core::service::EditorService;
 use cms_core::utils::time;
@@ -48,18 +48,20 @@ impl KindService {
         } else {
             let model = Self::fetch_by_id(id, state).await?;
             old_app_id = model.app_id;
-            current_version_no = model.version_no;
+            if let Some(no) = model.version_no.clone() {
+                current_version_no = no;
+            }
             model.into()
         };
 
         // 检查版本号
         if let Some(version_no) = dto.version_no.clone() {
             if !is_create && version_no.ne(&current_version_no) {
-                // let err = AppError::BadRequest(String::from("版本号错误"));
-                // return Err(err);
+                let err = AppError::BadRequest(String::from("版本号错误"));
+                return Err(err);
             }
         }
-        model.version_no = Set(current_version_no + 1);
+        model.version_no = Set(Some(current_version_no + 1));
 
         let db = &state.db;
 
@@ -141,10 +143,10 @@ impl KindService {
         }
 
         let time = time::current_time();
-        model.updated_at = Set(time);
+        model.updated_at = Set(Some(time));
 
         if is_create {
-            model.created_at = Set(time);
+            model.created_at = Set(Some(time));
         }
 
         let editor = dto.editor.clone();
@@ -284,7 +286,7 @@ impl KindService {
         };
 
         let now = time::current_time();
-        model.updated_at = Set(now);
+        model.updated_at = Set(Some(now));
 
         let editor = dto.editor.clone();
         model.editor_type = Set(editor.editor_type.as_value());
@@ -308,14 +310,16 @@ impl KindService {
         }
 
         let model = Self::fetch_by_id(id, state).await?;
-        if *platform == PlatformEnum::Open {
+
+        let view_enum = ViewModeEnum::platform_to_detail_mode(platform);
+        if view_enum == ViewModeEnum::OpenDetail {
             if !model.is_enabled {
                 let err = AppError::NotFound(String::from("访问记录不存在"));
                 return Err(err);
             }
         }
 
-        let mut vo: KindMasterVO = (&model).into();
+        let mut vo: KindMasterVO = KindMasterVO::mode_into(&view_enum, &model);
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
@@ -350,7 +354,6 @@ impl KindService {
         if page < 1 {
             page = 1;
         }
-        let editor = dto.editor.clone();
 
         let mut page_size = dto.page_size.unwrap_or(20);
         if page_size < 1 {
@@ -358,7 +361,31 @@ impl KindService {
         } else if page_size > 50 {
             page_size = 50;
         }
-        let query = Self::query_builder(platform, dto).await?;
+
+        let editor = dto.editor.clone();
+        let view_enum = ViewModeEnum::platform_to_list_mode(platform);
+
+        let mut cols = vec![
+            KindColumn::Id,
+            KindColumn::EditorId,
+            KindColumn::EditorType,
+            KindColumn::AppId,
+            KindColumn::Name,
+            KindColumn::Title,
+            KindColumn::MaxLevel,
+            KindColumn::Description,
+            KindColumn::Icon,
+            KindColumn::IsMultiple,
+            KindColumn::Sort,
+            KindColumn::IsEnabled,
+        ];
+        if view_enum == ViewModeEnum::ManagerList {
+            cols.push(KindColumn::CreatedAt);
+            cols.push(KindColumn::UpdatedAt);
+        }
+
+        let mut query = Self::query_builder(platform, dto).await?;
+        query = query.select_only().columns(cols);
         let paginator = query.paginate(db, page_size);
         let total = paginator.num_items_and_pages().await?;
         let models = paginator.fetch_page(page - 1).await?;
@@ -369,7 +396,7 @@ impl KindService {
         for model in models.iter() {
             editor_ids.push(model.editor_id);
             app_ids.push(model.app_id);
-            let mut vo: KindMasterVO = model.into();
+            let mut vo: KindMasterVO = KindMasterVO::mode_into(&view_enum, &model);
             if *platform == PlatformEnum::Manager {
                 vo.can_update = Some(true);
                 vo.can_delete = Some(Self::can_delete(&editor, &model));
@@ -484,7 +511,7 @@ impl KindService {
         let mut model: KindActiveModel = model.into();
         model.editor_type = Set(editor.editor_type.as_value());
         model.editor_id = Set(editor.editor_id);
-        model.is_deleted = Set(true);
+        model.is_deleted = Set(Some(true));
         let now = time::current_time();
         model.deleted_at = Set(Some(now));
         let _ = model.save(db).await?;
@@ -625,7 +652,11 @@ impl KindService {
 
     /// 是否可以删除记录
     pub fn can_delete(editor: &EditorCurrent, model: &KindModel) -> bool {
-        if model.item_count > 0 {
+        let has_item = match model.item_count {
+            Some(count) => count > 0,
+            None => false,
+        };
+        if has_item {
             return false;
         }
 

@@ -304,8 +304,8 @@ impl AppService {
         } else if page_size > 50 {
             page_size = 50;
         }
-        let editor = dto.editor.clone();
 
+        let editor = dto.editor.clone();
         let view_enum = ViewModeEnum::platform_to_list_mode(platform);
 
         let mut cols = vec![
@@ -323,6 +323,7 @@ impl AppService {
             cols.push(AppColumn::CreatedAt);
             cols.push(AppColumn::UpdatedAt);
         }
+
         let mut query = Self::query_builder(platform, dto).await?;
         query = query.select_only().columns(cols);
         let paginator = query.paginate(db, page_size);

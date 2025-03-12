@@ -1,6 +1,6 @@
+use redis_macros::{FromRedisValue, ToRedisArgs};
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
-use redis_macros::{FromRedisValue, ToRedisArgs};
 
 use cms_core::{
     domain::{SelectOptionItem, vo::EditorLoadVO},
@@ -33,7 +33,9 @@ pub struct AppQueryOptionVO {
 // 详情视图
 // ------------------------------------
 // Service 层创建/更新用户使用的结构体
-#[derive(Deserialize, Serialize, FromRedisValue, ToRedisArgs, Debug, Clone, PartialEq, Default, ToSchema)]
+#[derive(
+    Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
+)]
 pub struct AppMasterVO {
     /// 主键
     pub id: i64,
@@ -119,7 +121,9 @@ impl AppMasterVO {
 // 详情视图
 // ------------------------------------
 // Service 层创建/更新用户使用的结构体
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
+#[derive(
+    Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
+)]
 pub struct AppLoadVO {
     /// 主键
     pub id: i64,

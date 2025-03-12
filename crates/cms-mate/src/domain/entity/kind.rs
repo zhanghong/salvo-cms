@@ -9,7 +9,7 @@ use cms_core::{
     utils::time,
 };
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "mate_kind")]
 pub struct Model {
     #[sea_orm(primary_key)]
@@ -23,13 +23,13 @@ pub struct Model {
     pub description: String,
     pub icon: String,
     pub is_multiple: bool,
-    pub version_no: i32,
-    pub item_count: i16,
+    pub version_no: Option<i32>,
+    pub item_count: Option<i16>,
     pub sort: i16,
     pub is_enabled: bool,
-    pub is_deleted: bool,
-    pub created_at: NaiveDateTime,
-    pub updated_at: NaiveDateTime,
+    pub is_deleted: Option<bool>,
+    pub created_at: Option<NaiveDateTime>,
+    pub updated_at: Option<NaiveDateTime>,
     pub deleted_at: Option<NaiveDateTime>,
 }
 
@@ -70,12 +70,20 @@ impl Related<super::morph::Entity> for Entity {
 impl ActiveModelBehavior for ActiveModel {}
 
 impl Model {
-    pub fn created_time(&self) -> String {
-        time::to_db_time(&self.created_at)
+    pub fn created_time(&self) -> Option<String> {
+        if let Some(time) = (&self).created_at.clone() {
+            Some(time::to_db_time(&time))
+        } else {
+            None
+        }
     }
 
-    pub fn updated_time(&self) -> String {
-        time::to_db_time(&self.updated_at)
+    pub fn updated_time(&self) -> Option<String> {
+        if let Some(time) = (&self).updated_at.clone() {
+            Some(time::to_db_time(&time))
+        } else {
+            None
+        }
     }
 
     pub fn to_option_item(&self) -> SelectOptionItem {

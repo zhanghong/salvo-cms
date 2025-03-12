@@ -1,8 +1,11 @@
-use cms_core::domain::vo::EditorLoadVO;
+use redis_macros::{FromRedisValue, ToRedisArgs};
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
-use cms_core::domain::SelectOptionItem;
+use cms_core::{
+    domain::{SelectOptionItem, vo::EditorLoadVO},
+    enums::ViewModeEnum,
+};
 
 use crate::domain::entity::kind::Model;
 
@@ -38,7 +41,9 @@ pub struct KindQueryOptionVO {
 // ------------------------------------
 // 详情视图
 // ------------------------------------
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
+#[derive(
+    Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
+)]
 pub struct KindMasterVO {
     /// 主键
     pub id: i64,
@@ -65,28 +70,23 @@ pub struct KindMasterVO {
     pub max_level: Option<i8>,
 
     /// 描述
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<String>,
+    pub description: String,
 
     /// 图标
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub icon: Option<String>,
+    pub icon: String,
 
     /// 是否多选
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub is_multiple: Option<bool>,
+    pub is_multiple: bool,
 
     /// 版本号
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version_no: Option<i32>,
 
     /// 排序编号
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<i16>,
+    pub sort: i16,
 
     /// 是否启用
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub is_enabled: Option<bool>,
+    pub is_enabled: bool,
 
     /// 是否可以更新
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -97,10 +97,12 @@ pub struct KindMasterVO {
     pub can_delete: Option<bool>,
 
     /// 创建时间
-    pub created_time: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created_time: Option<String>,
 
     /// 更新时间
-    pub updated_time: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub updated_time: Option<String>,
 
     /// 详情信息
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -112,47 +114,38 @@ pub struct KindMasterVO {
 }
 
 impl KindMasterVO {
-    fn from_model_inner(model: &Model) -> Self {
-        let created_time = model.created_time();
-        let updated_time = model.updated_time();
-
-        Self {
+    pub fn mode_into(view_enum: &ViewModeEnum, model: &Model) -> Self {
+        let mut vo = Self {
             id: model.id,
-            editor_type: model.editor_type.to_owned(),
-            editor_id: model.editor_id,
-            app_id: model.app_id,
             name: model.name.to_owned(),
             title: model.title.to_owned(),
-            max_level: Some(model.max_level),
-            description: Some(model.description.to_owned()),
-            icon: Some(model.icon.to_owned()),
-            is_multiple: Some(model.is_multiple),
-            version_no: Some(model.version_no),
-            sort: Some(model.sort),
-            is_enabled: Some(model.is_enabled),
-            created_time,
-            updated_time,
+            description: model.description.to_owned(),
+            icon: model.icon.to_owned(),
             ..Default::default()
+        };
+
+        match *view_enum {
+            ViewModeEnum::ManagerDetail | ViewModeEnum::ManagerList => {
+                vo.editor_type = model.editor_type.to_owned();
+                vo.editor_id = model.editor_id;
+                vo.version_no = model.version_no;
+                vo.is_multiple = model.is_multiple;
+                vo.created_time = model.created_time();
+                vo.updated_time = model.updated_time();
+            }
+            _ => {}
         }
-    }
-}
 
-impl From<Model> for KindMasterVO {
-    fn from(model: Model) -> Self {
-        Self::from_model_inner(&model)
-    }
-}
-
-impl From<&Model> for KindMasterVO {
-    fn from(model: &Model) -> Self {
-        Self::from_model_inner(model)
+        vo
     }
 }
 
 // ------------------------------------
 // 关联视图
 // ------------------------------------
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
+#[derive(
+    Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
+)]
 pub struct KindLoadVO {
     /// 主键
     pub id: i64,

@@ -9,7 +9,7 @@ use cms_core::{
     utils::time,
 };
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, Default, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "mate_app")]
 pub struct Model {
     #[sea_orm(primary_key)]
