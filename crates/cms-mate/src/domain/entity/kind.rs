@@ -82,7 +82,7 @@ impl Model {
         let group = format!("app-{}", self.app_id);
         SelectOptionItem {
             label: self.title.clone(),
-            value: SelectValueEnum::BigNum(self.id),
+            value: SelectValueEnum::Number(self.id),
             disabled: Some(!self.is_enabled),
             alias: Some(vec![self.name.clone()]),
             group: Some(group),
@@ -103,7 +103,7 @@ impl Into<SelectOptionItem> for &Model {
         let group = format!("app-{}", self.app_id);
         SelectOptionItem {
             label: self.title.clone(),
-            value: SelectValueEnum::BigNum(self.id),
+            value: SelectValueEnum::Number(self.id),
             disabled: Some(!self.is_enabled),
             alias: Some(vec![self.name.clone()]),
             group: Some(group),

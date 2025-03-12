@@ -1,18 +1,16 @@
 use salvo::oapi::ToSchema;
-use serde::{Deserialize, Serialize};
+use serde::de::Error;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-#[derive(Debug, Clone, Deserialize, ToSchema)]
+#[derive(Debug, PartialEq, Clone, ToSchema)]
 pub enum SelectValueEnum {
-    TinyNum(i8),
-    SmallNum(i16),
-    MiddleNum(i32),
-    BigNum(i64),
+    Number(i64),
     String(String),
 }
 
 impl Default for SelectValueEnum {
     fn default() -> Self {
-        Self::TinyNum(0)
+        Self::Number(0)
     }
 }
 
@@ -20,20 +18,37 @@ impl Default for SelectValueEnum {
 impl Serialize for SelectValueEnum {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: Serializer,
     {
         match self {
-            SelectValueEnum::TinyNum(n) => n.serialize(serializer),
-            SelectValueEnum::SmallNum(n) => n.serialize(serializer),
-            SelectValueEnum::MiddleNum(n) => n.serialize(serializer),
-            SelectValueEnum::BigNum(n) => n.serialize(serializer),
+            SelectValueEnum::Number(n) => n.serialize(serializer),
             SelectValueEnum::String(s) => s.serialize(serializer),
         }
     }
 }
 
+// 为 SelectValueEnum 实现自定义反序列化
+impl<'de> Deserialize<'de> for SelectValueEnum {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        // 使用 serde_json::Value 作为中间值
+        let value = serde_json::Value::deserialize(deserializer)?;
+
+        match value {
+            serde_json::Value::String(s) => Ok(SelectValueEnum::String(s)),
+            serde_json::Value::Number(n) => n
+                .as_i64()
+                .map(SelectValueEnum::Number)
+                .ok_or_else(|| Error::custom("Number must be an integer")),
+            _ => Err(Error::custom("Expected string or number")),
+        }
+    }
+}
+
 /// 通用的选择项结构体，用于下拉选择等场景
-#[derive(Debug, Clone, Default, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct SelectOptionItem {
     /// 显示标签
     pub label: String,

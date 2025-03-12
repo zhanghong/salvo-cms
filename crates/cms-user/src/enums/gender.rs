@@ -85,10 +85,10 @@ impl<'de> Deserialize<'de> for GenderEnum {
 /// 转成 SelectOptionItem
 impl Into<SelectOptionItem> for GenderEnum {
     fn into(self) -> SelectOptionItem {
-        let value = self.as_value();
+        let value = self.as_value() as i64;
         SelectOptionItem {
             label: self.as_title(),
-            value: SelectValueEnum::SmallNum(value),
+            value: SelectValueEnum::Number(value),
             ..Default::default()
         }
     }

@@ -1,9 +1,9 @@
-use redis::{Commands, JsonCommands, RedisError};
-use sea_orm::*;
-use std::collections::HashMap;
+use redis::JsonAsyncCommands;
 use redis_macros::Json;
-use redis_macros::{FromRedisValue, ToRedisArgs};
+// use redis_macros::{FromRedisValue, ToRedisArgs};
+use sea_orm::*;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 use cms_core::config::AppState;
 use cms_core::domain::{
@@ -25,6 +25,20 @@ use crate::domain::entity::app::{
 };
 use crate::domain::vo::{AppFormOptionVO, AppLoadVO, AppMasterVO, AppQueryOptionVO};
 use crate::enums::AppLoadEnum;
+
+/// Define structs to hold the data
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub enum Address {
+    Street(String),
+    Road(String),
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct User {
+    id: u32,
+    name: String,
+    addresses: Vec<Address>,
+}
 
 pub struct AppService {}
 
@@ -462,6 +476,37 @@ impl AppService {
         }
         let models = query.all(db).await?;
         let list: Vec<SelectOptionItem> = models.into_iter().map(|model| model.into()).collect();
+
+        let client = state.redis.clone();
+        let mut con = client.get_multiplexed_async_connection().await?;
+
+        let store_key = "app-option-test";
+        let opt = SelectOptionItem {
+            label: "test 203".to_owned(),
+            value: cms_core::domain::SelectValueEnum::Number(1),
+            disabled: Some(false),
+            group: None,
+            alias: None,
+            children: None,
+        };
+        println!("opt: {:#?}", opt);
+        let _: () = con.json_set(store_key, "$", &opt).await?;
+        let Json(stored_opt): Json<SelectOptionItem> = con.json_get(store_key, "$").await?;
+        println!("stored opt: {:#?}", stored_opt);
+
+        let store_key = "app-option-user";
+        let user = User {
+            id: 1,
+            name: "Ziggy".to_string(),
+            addresses: vec![
+                Address::Street("Downing".to_string()),
+                Address::Road("Abbey".to_string()),
+            ],
+        };
+        let _: () = con.json_set(store_key, "$", &user).await?;
+        let Json(stored_user): Json<User> = con.json_get(store_key, "$").await?;
+        println!("stored user: {:#?}", stored_user);
+
         handle_ok(list)
     }
 

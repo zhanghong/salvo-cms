@@ -84,7 +84,7 @@ impl Into<SelectOptionItem> for Model {
     fn into(self) -> SelectOptionItem {
         SelectOptionItem {
             label: self.title,
-            value: SelectValueEnum::BigNum(self.id),
+            value: SelectValueEnum::Number(self.id),
             disabled: Some(!self.is_enabled),
             alias: Some(vec![self.name]),
             children: None,

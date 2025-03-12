@@ -17,7 +17,7 @@ impl EnableEnum {
         }
     }
 
-    pub fn option_value(&self) -> i8 {
+    pub fn option_value(&self) -> i64 {
         match self {
             EnableEnum::Yes => 1,
             EnableEnum::No => 0,
@@ -41,7 +41,7 @@ impl Into<SelectOptionItem> for EnableEnum {
         let value = self.option_value();
         SelectOptionItem {
             label: self.as_title(),
-            value: SelectValueEnum::TinyNum(value),
+            value: SelectValueEnum::Number(value),
             ..Default::default()
         }
     }

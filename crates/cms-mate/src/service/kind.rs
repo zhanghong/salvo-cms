@@ -527,7 +527,7 @@ impl KindService {
             .map(|app| {
                 let mut item = app.clone();
                 let app_id = match item.value {
-                    SelectValueEnum::BigNum(id) => id,
+                    SelectValueEnum::Number(id) => id,
                     _ => 0,
                 };
                 let mut children = vec![];
