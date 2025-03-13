@@ -42,14 +42,17 @@ fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
 pub struct AppStoreForm {
     /// 名称
+    #[serde(deserialize_with = "deserializer::string_to_option_trimmed")]
     #[validate(custom(function = "validate_field_name", message = "模块名称长度为2-20位"))]
     pub name: Option<String>,
 
     /// 标题
+    #[serde(deserialize_with = "deserializer::string_to_option_trimmed")]
     #[validate(custom(function = "validate_field_title", message = "模块标题长度为2-30位"))]
     pub title: Option<String>,
 
     /// 描述
+    #[serde(deserialize_with = "deserializer::string_to_option_trimmed")]
     #[validate(custom(
         function = "validate_field_description",
         message = "模块简介长度不能超过200个字符"
@@ -57,6 +60,7 @@ pub struct AppStoreForm {
     pub description: Option<String>,
 
     /// 图标
+    #[serde(deserialize_with = "deserializer::string_to_option_trimmed")]
     #[validate(custom(
         function = "validate_field_icon",
         message = "模块图标长度不能超过30个字符"
@@ -73,5 +77,6 @@ pub struct AppStoreForm {
     pub sort: Option<i16>,
 
     /// 是否启用
+    #[serde(deserialize_with = "deserializer::string_to_option_bool")]
     pub is_enabled: Option<bool>,
 }

@@ -4,7 +4,11 @@ use regex::Regex;
 use validator::ValidationError;
 
 pub fn string_present(str: &str) -> Result<(), ValidationError> {
-    let len = if str.is_empty() { 0 } else { str.len() };
+    let len = if str.is_empty() {
+        0
+    } else {
+        str.chars().count()
+    };
 
     if len == 0 {
         return Err(ValidationError::new("length_invalid"));
@@ -14,7 +18,11 @@ pub fn string_present(str: &str) -> Result<(), ValidationError> {
 }
 
 pub fn string_min_length(str: &str, min: usize) -> Result<(), ValidationError> {
-    let len = if str.is_empty() { 0 } else { str.len() };
+    let len = if str.is_empty() {
+        0
+    } else {
+        str.chars().count()
+    };
 
     if len < min {
         return Err(ValidationError::new("length_invalid"));
@@ -24,7 +32,11 @@ pub fn string_min_length(str: &str, min: usize) -> Result<(), ValidationError> {
 }
 
 pub fn string_max_length(str: &str, max: usize) -> Result<(), ValidationError> {
-    let len = if str.is_empty() { 0 } else { str.len() };
+    let len = if str.is_empty() {
+        0
+    } else {
+        str.chars().count()
+    };
 
     if len > max {
         return Err(ValidationError::new("length_invalid"));
@@ -39,7 +51,11 @@ pub fn string_length(
     min: usize,
     max: usize,
 ) -> Result<(), ValidationError> {
-    let len = if str.is_empty() { 0 } else { str.len() };
+    let len = if str.is_empty() {
+        0
+    } else {
+        str.chars().count()
+    };
 
     if !required && len == 0 {
         return Ok(());
