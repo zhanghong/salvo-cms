@@ -44,3 +44,5 @@ jsonwebtoken = { version = "9" }
 # Redis
 redis = { version = "0", features = ["tokio-comp", "r2d2", "connection-manager", "json"] }
 redis-macros = "0"
+
+num-traits = "0"

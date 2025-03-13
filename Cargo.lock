@@ -635,6 +635,7 @@ dependencies = [
  "envy",
  "jsonwebtoken",
  "md5",
+ "num-traits",
  "rand 0.9.0",
  "redis",
  "redis-macros",

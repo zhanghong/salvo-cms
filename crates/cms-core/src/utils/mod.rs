@@ -1,4 +1,5 @@
-mod editor;
+pub mod deserializer;
+pub mod editor;
 pub mod encrypt;
 pub mod random;
 pub mod time;

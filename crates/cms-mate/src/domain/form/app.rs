@@ -2,7 +2,7 @@ use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
 
-use cms_core::utils::validate;
+use cms_core::utils::{deserializer, validate};
 
 // // ------------------------------------
 // // 字段验证方法
@@ -64,9 +64,11 @@ pub struct AppStoreForm {
     pub icon: Option<String>,
 
     /// 版本号
+    #[serde(deserialize_with = "deserializer::string_to_option_i32")]
     pub version_no: Option<i32>,
 
     /// 排序编号
+    #[serde(deserialize_with = "deserializer::string_to_option_i16")]
     #[validate(custom(function = "validate_field_sort", message = "排序编号必须在0-9999之间"))]
     pub sort: Option<i16>,
 
