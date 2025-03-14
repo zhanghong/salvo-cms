@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use validator::{Validate, ValidationError};
 
-use cms_core::utils::validate;
+use cms_core::utils::{deserializer, validate};
 
 // // ------------------------------------
 // // 字段验证方法
@@ -19,6 +19,7 @@ fn validate_big_integer_present(num: i64) -> Result<(), ValidationError> {
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
 pub struct MorphInstanceStoreForm {
     /// 名称
+    #[serde(deserialize_with = "deserializer::string_to_option_trimmed")]
     #[validate(
         required(message = "实例类型不能为空"),
         length(min = 1, message = "实例类型不能为空")
@@ -26,6 +27,7 @@ pub struct MorphInstanceStoreForm {
     pub instance_type: Option<String>,
 
     /// 实例ID
+    #[serde(deserialize_with = "deserializer::string_to_option_i64")]
     #[validate(custom(function = "validate_big_integer_present", message = "实例ID不能为空"))]
     pub instance_id: Option<i64>,
 
