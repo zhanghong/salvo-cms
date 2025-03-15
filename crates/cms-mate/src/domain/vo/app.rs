@@ -13,6 +13,7 @@ use crate::domain::entity::app::Model;
 // 创建/更新表单选项
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
+#[salvo(schema(name = "Mate模块/App/App表单选项VO"))]
 pub struct AppFormOptionVO {
     /// 启用状态
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -23,6 +24,7 @@ pub struct AppFormOptionVO {
 // 查询表单选项
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
+#[salvo(schema(name = "Mate模块/App/App查询选项VO"))]
 pub struct AppQueryOptionVO {
     /// 启用状态
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -36,6 +38,7 @@ pub struct AppQueryOptionVO {
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
+#[salvo(schema(name = "Mate模块/App/App主VO"))]
 pub struct AppMasterVO {
     /// 主键
     pub id: i64,
@@ -120,12 +123,12 @@ impl AppMasterVO {
 }
 
 // ------------------------------------
-// 详情视图
+// 关联VO
 // ------------------------------------
-// Service 层创建/更新用户使用的结构体
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
+#[salvo(schema(name = "Mate模块/App/App关联VO"))]
 pub struct AppLoadVO {
     /// 主键
     pub id: i64,

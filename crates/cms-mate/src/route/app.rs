@@ -29,13 +29,7 @@ use crate::{
 /// 分页列表
 ///
 /// 管理端分页查询
-#[endpoint(
-    parameters(AppPaginateQuery),
-    tags("Mate模块/管理端/应用管理"),
-    responses(
-        (status_code = 200, description = "success response")
-    )
-)]
+#[endpoint(parameters(AppPaginateQuery), tags("Mate模块/管理端/应用管理"))]
 pub async fn manager_paginate(
     depot: &mut Depot,
     query: AppPaginateQuery,

@@ -77,10 +77,10 @@ pub struct AppQueryDTO {
     pub editor: EditorCurrent,
 
     /// 页码
-    pub page: Option<u64>,
+    pub page: u64,
 
     /// 每页数量
-    pub page_size: Option<u64>,
+    pub page_size: u64,
 
     /// 关键字
     pub keyword: Option<String>,
@@ -104,8 +104,8 @@ pub struct AppQueryDTO {
 impl AppQueryDTO {
     fn from_inner(model: &AppPaginateQuery) -> Self {
         Self {
-            page: model.page.clone(),
-            page_size: model.page_size.clone(),
+            page: model.page,
+            page_size: model.page_size,
             keyword: model.keyword.clone(),
             title: model.title.clone(),
             is_enabled: model.is_enabled.clone(),

@@ -1,6 +1,7 @@
 pub mod deserializer;
 pub mod editor;
 pub mod encrypt;
+pub mod parameter;
 pub mod random;
 pub mod time;
 pub mod validate;
