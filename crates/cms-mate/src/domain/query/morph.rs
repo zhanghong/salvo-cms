@@ -21,7 +21,10 @@ pub struct MorphInstanceQuery {
     pub instance_id: Option<i64>,
 
     /// 类型列表
-    #[serde(default)]
+    #[serde(
+        default,
+        deserialize_with = "deserializer::string_to_option_string_vec"
+    )]
     #[salvo(parameter(required = false, nullable = true, value_type = Vec<String>))]
     pub kind_names: Option<Vec<String>>,
 }

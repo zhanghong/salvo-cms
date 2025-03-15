@@ -29,6 +29,48 @@ where
     }
 }
 
+pub fn string_to_option_string_vec<'de, D>(deserializer: D) -> Result<Option<Vec<String>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    println!("in string vec");
+    let value = Value::deserialize(deserializer)?;
+
+    match value {
+        Value::String(s) => {
+            println!("s = {:?}", s);
+            let vec: Vec<String> = s
+                .split(",")
+                .map(|part| part.trim().to_string())
+                .filter(|part| !part.is_empty())
+                .collect();
+            if vec.is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(vec))
+            }
+        }
+        Value::Array(arr) => {
+            println!("vec= {:#?}", arr);
+            let vec: Vec<String> = arr
+                .into_iter()
+                .filter_map(|v| v.as_str().map(|s| s.trim().to_string()))
+                .filter(|s| !s.is_empty())
+                .collect();
+            if vec.is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(vec))
+            }
+        }
+        // 其他类型返回 None
+        _ => {
+            println!("other types");
+            Ok(None)
+        }
+    }
+}
+
 // ------------------------------------------------------------------------
 // Option 数字类型处理方法
 // ------------------------------------------------------------------------

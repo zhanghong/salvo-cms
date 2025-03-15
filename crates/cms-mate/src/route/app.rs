@@ -29,7 +29,7 @@ use crate::{
 /// 分页列表
 ///
 /// 管理端分页查询
-#[endpoint(parameters(AppPaginateQuery), tags("Mate模块/管理端/应用管理"))]
+#[endpoint(parameters(AppPaginateQuery), tags("Mate模块/管理端/App管理"))]
 pub async fn manager_paginate(
     depot: &mut Depot,
     query: AppPaginateQuery,
@@ -48,7 +48,7 @@ pub async fn manager_paginate(
 ///
 /// 管理端创建应用
 #[endpoint(
-    tags("Mate模块/管理端/应用管理"),
+    tags("Mate模块/管理端/App管理"),
     responses(
         (status_code = 200, description = "success response")
     )
@@ -69,7 +69,7 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<AppStoreForm>) -> 
 ///
 /// 管理端更新应用
 #[endpoint(
-    tags("Mate模块/管理端/应用管理"),
+    tags("Mate模块/管理端/App管理"),
     responses(
         (status_code = 200, description = "success response")
     )
@@ -95,7 +95,7 @@ pub async fn manager_update(
 ///
 /// 管理端删除应用
 #[endpoint(
-    tags("Mate模块/管理端/应用管理"),
+    tags("Mate模块/管理端/App管理"),
     responses(
         (status_code = 200, description = "success response")
     )
@@ -117,7 +117,7 @@ pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<
 ///
 /// 管理端表单选项
 #[endpoint(
-    tags("Mate模块/管理端/应用管理"),
+    tags("Mate模块/管理端/App管理"),
     responses(
         (status_code = 200, description = "success response")
     )
@@ -132,7 +132,7 @@ pub async fn manager_form(depot: &mut Depot) -> AppResult<AppFormOptionVO> {
 ///
 /// 管理端查询选项
 #[endpoint(
-    tags("Mate模块/管理端/应用管理"),
+    tags("Mate模块/管理端/App管理"),
     responses(
         (status_code = 200, description = "success response")
     )
@@ -147,7 +147,7 @@ pub async fn manager_query(depot: &mut Depot) -> AppResult<AppQueryOptionVO> {
 ///
 /// 管理端字段值唯一性校验
 #[endpoint(
-    tags("Mate模块/管理端/应用管理"),
+    tags("Mate模块/管理端/App管理"),
     responses(
         (status_code = 200, description = "success response")
     )
@@ -168,7 +168,7 @@ pub async fn check_field_unique(
 ///
 /// 管理端更新Bool字段值
 #[endpoint(
-    tags("Mate模块/管理端/应用管理"),
+    tags("Mate模块/管理端/App管理"),
     responses(
         (status_code = 200, description = "success response")
     )
@@ -195,7 +195,7 @@ pub async fn update_bool_field(
 ///
 /// 管理端查看详情
 #[endpoint(
-    tags("Mate模块/管理端/应用管理"),
+    tags("Mate模块/管理端/App管理"),
     responses(
         (status_code = 200, description = "success response")
     )
