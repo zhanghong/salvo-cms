@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use cms_core::utils::{deserializer, parameter};
 
 // ------------------------------------
-// 分页查询用户
+// 分页查询 App
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToParameters, ToSchema)]
 #[salvo(parameters(default_parameter_in = Query))]

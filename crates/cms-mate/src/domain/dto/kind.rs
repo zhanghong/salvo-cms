@@ -89,10 +89,10 @@ pub struct KindQueryDTO {
     pub editor: EditorCurrent,
 
     /// 页码
-    pub page: Option<u64>,
+    pub page: u64,
 
     /// 每页数量
-    pub page_size: Option<u64>,
+    pub page_size: u64,
 
     /// App ID
     pub app_id: Option<i64>,
@@ -119,8 +119,8 @@ pub struct KindQueryDTO {
 impl KindQueryDTO {
     fn from_inner(model: &KindPaginateQuery) -> Self {
         Self {
-            page: model.page.clone(),
-            page_size: model.page_size.clone(),
+            page: model.page,
+            page_size: model.page_size,
             app_id: model.app_id.clone(),
             keyword: model.keyword.clone(),
             title: model.title.clone(),

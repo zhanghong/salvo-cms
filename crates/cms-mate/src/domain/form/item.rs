@@ -53,33 +53,33 @@ fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
 }
 
 // ------------------------------------
-// 创建/更新用户
+// 创建/更新 Item
 // ------------------------------------
-// Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
+#[salvo(schema(name = "Mate模块/Item/Item表单"))]
 pub struct ItemStoreForm {
     /// 模块ID
-    #[serde(deserialize_with = "deserializer::string_to_option_i64")]
+    #[serde(default, deserialize_with = "deserializer::string_to_option_i64")]
     #[validate(custom(function = "validate_big_integer_present", message = "模块ID不能为空"))]
     pub app_id: Option<i64>,
 
     /// 类型ID
-    #[serde(deserialize_with = "deserializer::string_to_option_i64")]
+    #[serde(default, deserialize_with = "deserializer::string_to_option_i64")]
     #[validate(custom(function = "validate_big_integer_present", message = "类型ID不能为空"))]
     pub kind_id: Option<i64>,
 
     /// 名称
-    #[serde(deserialize_with = "deserializer::string_to_option_trimmed")]
+    #[serde(default, deserialize_with = "deserializer::string_to_option_trimmed")]
     #[validate(custom(function = "validate_field_name", message = "名称长度为5-20位"))]
     pub name: Option<String>,
 
     /// 标题
-    #[serde(deserialize_with = "deserializer::string_to_option_trimmed")]
+    #[serde(default, deserialize_with = "deserializer::string_to_option_trimmed")]
     #[validate(custom(function = "validate_field_title", message = "标题长度为2-30位"))]
     pub title: Option<String>,
 
     /// 描述
-    #[serde(deserialize_with = "deserializer::string_to_option_trimmed")]
+    #[serde(default, deserialize_with = "deserializer::string_to_option_trimmed")]
     #[validate(custom(
         function = "validate_field_description",
         message = "描述长度不能超过200个字符"
@@ -87,7 +87,7 @@ pub struct ItemStoreForm {
     pub description: Option<String>,
 
     /// 介绍
-    #[serde(deserialize_with = "deserializer::string_to_option_trimmed")]
+    #[serde(default, deserialize_with = "deserializer::string_to_option_trimmed")]
     #[validate(custom(
         function = "validate_field_introduction",
         message = "介绍长度不能超过500个字符"
@@ -95,12 +95,12 @@ pub struct ItemStoreForm {
     pub introduction: Option<String>,
 
     /// Icon
-    #[serde(deserialize_with = "deserializer::string_to_option_trimmed")]
+    #[serde(default, deserialize_with = "deserializer::string_to_option_trimmed")]
     #[validate(custom(function = "validate_field_icon", message = "图标长度不能超过30个字符"))]
     pub icon: Option<String>,
 
     /// PC端封面图片
-    #[serde(deserialize_with = "deserializer::string_to_option_trimmed")]
+    #[serde(default, deserialize_with = "deserializer::string_to_option_trimmed")]
     #[validate(custom(
         function = "validate_field_upload_path",
         message = "PC端封面图片路径无效"
@@ -108,7 +108,7 @@ pub struct ItemStoreForm {
     pub pc_detail_path: Option<String>,
 
     /// 手机端封面图片
-    #[serde(deserialize_with = "deserializer::string_to_option_trimmed")]
+    #[serde(default, deserialize_with = "deserializer::string_to_option_trimmed")]
     #[validate(custom(
         function = "validate_field_upload_path",
         message = "手机端封面图片路径无效"
@@ -116,19 +116,19 @@ pub struct ItemStoreForm {
     pub wap_detail_path: Option<String>,
 
     /// 父级ID
-    #[serde(deserialize_with = "deserializer::string_to_option_i64")]
+    #[serde(default, deserialize_with = "deserializer::string_to_option_i64")]
     pub parent_id: Option<i64>,
 
     /// 版本号
-    #[serde(deserialize_with = "deserializer::string_to_option_i32")]
+    #[serde(default, deserialize_with = "deserializer::string_to_option_i32")]
     pub version_no: Option<i32>,
 
     /// 排序编号
-    #[serde(deserialize_with = "deserializer::string_to_option_i16")]
+    #[serde(default, deserialize_with = "deserializer::string_to_option_i16")]
     #[validate(custom(function = "validate_field_sort", message = "排序编号必须在0-9999之间"))]
     pub sort: Option<i16>,
 
     /// 是否启用
-    #[serde(deserialize_with = "deserializer::string_to_option_bool")]
+    #[serde(default, deserialize_with = "deserializer::string_to_option_bool")]
     pub is_enabled: Option<bool>,
 }

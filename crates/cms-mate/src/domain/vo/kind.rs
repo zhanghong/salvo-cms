@@ -15,6 +15,7 @@ use super::AppLoadVO;
 // 创建/更新表单选项
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
+#[salvo(schema(name = "Mate模块/Kind/Kind表单选项VO"))]
 pub struct KindFormOptionVO {
     /// App 选项
     pub apps: Vec<SelectOptionItem>,
@@ -28,6 +29,7 @@ pub struct KindFormOptionVO {
 // 查询表单选项
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
+#[salvo(schema(name = "Mate模块/Kind/Kind查询选项VO"))]
 pub struct KindQueryOptionVO {
     /// App 选项
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -39,11 +41,12 @@ pub struct KindQueryOptionVO {
 }
 
 // ------------------------------------
-// 详情视图
+// 详情 VO
 // ------------------------------------
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
+#[salvo(schema(name = "Mate模块/Kind/Kind主VO"))]
 pub struct KindMasterVO {
     /// 主键
     pub id: i64,
@@ -143,11 +146,12 @@ impl KindMasterVO {
 }
 
 // ------------------------------------
-// 关联视图
+// 关联 VO
 // ------------------------------------
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
+#[salvo(schema(name = "Mate模块/Kind/Kind关联VO"))]
 pub struct KindLoadVO {
     /// 主键
     pub id: i64,

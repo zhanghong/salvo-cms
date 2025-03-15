@@ -6,10 +6,10 @@ use super::ItemLoadVO;
 use crate::domain::entity::morph::Model;
 
 // ------------------------------------
-// 详情视图
+// 详情 VO
 // ------------------------------------
-// Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
+#[salvo(schema(name = "Mate模块/Morph/Morph Instance VO"))]
 pub struct MorphInstanceVO {
     /// 主键
     pub id: i64,

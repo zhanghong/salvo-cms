@@ -36,9 +36,8 @@ fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
 }
 
 // ------------------------------------
-// 创建/更新用户
+// 创建/更新 App
 // ------------------------------------
-// Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
 #[salvo(schema(name = "Mate模块/App/App表单"))]
 pub struct AppStoreForm {

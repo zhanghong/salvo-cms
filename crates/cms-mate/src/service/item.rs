@@ -400,17 +400,8 @@ impl ItemService {
         state: &AppState,
     ) -> HandleResult<PaginateResultVO<ItemMasterVO>> {
         let db = &state.db;
-        let mut page = dto.page.unwrap_or(1);
-        if page < 1 {
-            page = 1;
-        }
-
-        let mut page_size = dto.page_size.unwrap_or(20);
-        if page_size < 1 {
-            page_size = 20;
-        } else if page_size > 50 {
-            page_size = 50;
-        }
+        let page = dto.page;
+        let page_size = dto.page_size;
 
         let editor = dto.editor.clone();
         let view_enum = ViewModeEnum::platform_to_list_mode(platform);

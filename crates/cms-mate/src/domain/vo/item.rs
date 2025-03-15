@@ -15,6 +15,7 @@ use crate::domain::entity::item::Model;
 // 创建/更新表单选项
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
+#[salvo(schema(name = "Mate模块/Item/Item表单选项VO"))]
 pub struct ItemFormOptionVO {
     /// App 选项
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -37,6 +38,7 @@ pub struct ItemFormOptionVO {
 // 查询表单选项
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
+#[salvo(schema(name = "Mate模块/Item/Item查询选项VO"))]
 pub struct ItemQueryOptionVO {
     /// App 选项
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -56,11 +58,12 @@ pub struct ItemQueryOptionVO {
 }
 
 // ------------------------------------
-// 详情视图
+// 详情 VO
 // ------------------------------------
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
+#[salvo(schema(name = "Mate模块/Item/Item主VO"))]
 pub struct ItemMasterVO {
     /// 主键
     pub id: i64,
@@ -202,11 +205,12 @@ impl ItemMasterVO {
 }
 
 // ------------------------------------
-// 关联视图
+// 关联 VO
 // ------------------------------------
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
+#[salvo(schema(name = "Mate模块/Item/Item关联VO"))]
 pub struct ItemLoadVO {
     /// 主键
     pub id: i64,

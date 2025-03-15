@@ -32,9 +32,8 @@ pub struct AppQueryOptionVO {
 }
 
 // ------------------------------------
-// 详情视图
+// 详情 VO
 // ------------------------------------
-// Service 层创建/更新用户使用的结构体
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
@@ -123,7 +122,7 @@ impl AppMasterVO {
 }
 
 // ------------------------------------
-// 关联VO
+// 关联 VO
 // ------------------------------------
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
