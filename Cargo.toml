@@ -46,3 +46,5 @@ redis = { version = "0", features = ["tokio-comp", "r2d2", "connection-manager",
 redis-macros = "0"
 
 num-traits = "0"
+
+clap = { version = "4", features = ["derive"] }

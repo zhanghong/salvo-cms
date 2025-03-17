@@ -657,6 +657,7 @@ name = "cms-mate"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "clap",
  "cms-core",
  "dotenvy",
  "envy",
