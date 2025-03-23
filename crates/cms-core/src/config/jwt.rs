@@ -11,7 +11,7 @@ pub struct JwtConfig {
 impl JwtConfig {
     pub fn from_env() -> Result<Self, envy::Error> {
         dotenv().ok();
-        envy::prefixed("JWT_").from_env::<JwtConfig>()
+        envy::prefixed("CMS_JWT_").from_env::<JwtConfig>()
     }
 
     pub fn secret_bytes(&self) -> Vec<u8> {

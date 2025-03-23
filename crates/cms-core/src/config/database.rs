@@ -26,7 +26,7 @@ pub struct DbConfig {
 impl DbConfig {
     pub fn from_env() -> Result<Self, envy::Error> {
         dotenv().ok();
-        envy::prefixed("DB_").from_env::<DbConfig>()
+        envy::prefixed("CMS_DB_").from_env::<DbConfig>()
     }
 
     pub fn url(&self) -> String {
