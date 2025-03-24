@@ -33,6 +33,3 @@ validator = { workspace = true }
 # redis
 redis = { workspace = true }
 redis-macros = { workspace = true }
-
-# console
-clap = { workspace = true }

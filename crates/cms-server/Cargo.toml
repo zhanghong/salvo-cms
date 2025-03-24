@@ -2,6 +2,15 @@
 name = "cms-server"
 version = "0.1.0"
 edition = "2024"
+default-run = "cms-server"
+
+[[bin]]
+name = "cms-server"
+path = "src/main.rs"
+
+[[bin]]
+name = "cms-command"
+path = "src/bin/command.rs"
 
 [dependencies]
 cms-auth = { version = "0.1.0", path = "../cms-auth" }
@@ -34,3 +43,6 @@ sea-orm = { workspace = true }
 jsonwebtoken = { workspace = true }
 
 anyhow = { workspace = true }
+
+# console
+clap = { workspace = true }
