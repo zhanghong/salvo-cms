@@ -48,3 +48,7 @@ redis-macros = "0"
 num-traits = "0"
 
 clap = { version = "4", features = ["derive"] }
+
+# RabittMQ
+lapin = "2"
+deadpool-lapin = "0"

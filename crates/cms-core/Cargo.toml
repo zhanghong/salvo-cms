@@ -43,3 +43,7 @@ redis = { workspace = true }
 redis-macros = { workspace = true }
 
 num-traits = {workspace = true}
+
+# RabittMQ
+lapin = {workspace = true}
+deadpool-lapin = {workspace = true}
