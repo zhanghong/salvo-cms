@@ -18,7 +18,7 @@ pub struct RedisConfig {
 impl RedisConfig {
     pub fn from_env() -> Result<Self, envy::Error> {
         dotenv().ok();
-        envy::prefixed("REDIS_").from_env::<RedisConfig>()
+        envy::prefixed("CMS_REDIS_").from_env::<RedisConfig>()
     }
 
     pub fn url(&self) -> String {

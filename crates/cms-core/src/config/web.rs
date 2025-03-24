@@ -18,7 +18,7 @@ pub struct WebConfig {
 impl WebConfig {
     pub fn from_env() -> Result<Self, envy::Error> {
         dotenv().ok();
-        envy::prefixed("WEB_").from_env::<WebConfig>()
+        envy::prefixed("CMS_WEB_").from_env::<WebConfig>()
     }
 
     pub fn address(&self) -> String {
