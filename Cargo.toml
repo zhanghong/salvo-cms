@@ -9,6 +9,7 @@ members = [".", "crates/*", "migration"]
 [workspace.dependencies]
 salvo = { version = "0", features = ["anyhow", "jwt-auth", "cors", "oapi", "affix-state", "serve-static"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio-executor-trait = "2.1"
 
 # error handling
 anyhow = "1"
@@ -50,5 +51,5 @@ num-traits = "0"
 clap = { version = "4", features = ["derive"] }
 
 # RabittMQ
-lapin = "2"
-deadpool-lapin = "0"
+lapin = { version = "2" }
+deadpool-lapin = { version="0", features = ["serde"] }

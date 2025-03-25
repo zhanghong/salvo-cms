@@ -30,6 +30,9 @@ pub enum AppError {
     #[error("Database error: {0}")]
     Database(String),
 
+    #[error("Database error: {0}")]
+    Queue(String),
+
     #[error(transparent)]
     Validation(#[from] ValidationErrors),
 }
@@ -41,17 +44,33 @@ impl From<anyhow::Error> for AppError {
     }
 }
 
-// 修改 From 实现
 impl From<sea_orm::DbErr> for AppError {
     fn from(err: sea_orm::DbErr) -> Self {
-        AppError::Database(err.to_string()) // 将 DbErr 转换为字符串
+        AppError::Database(err.to_string())
     }
 }
 
-// 修改 From 实现
 impl From<redis::RedisError> for AppError {
     fn from(err: redis::RedisError) -> Self {
-        AppError::Database(err.to_string()) // 将 DbErr 转换为字符串
+        AppError::Database(err.to_string())
+    }
+}
+
+impl From<lapin::Error> for AppError {
+    fn from(err: lapin::Error) -> Self {
+        AppError::Queue(err.to_string())
+    }
+}
+
+impl From<deadpool_lapin::PoolError> for AppError {
+    fn from(err: deadpool_lapin::PoolError) -> Self {
+        AppError::Queue(err.to_string())
+    }
+}
+
+impl From<deadpool_lapin::CreatePoolError> for AppError {
+    fn from(err: deadpool_lapin::CreatePoolError) -> Self {
+        AppError::Queue(err.to_string())
     }
 }
 

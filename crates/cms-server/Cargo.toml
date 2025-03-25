@@ -46,3 +46,4 @@ anyhow = { workspace = true }
 
 # console
 clap = { workspace = true }
+deadpool-lapin = { workspace = true }

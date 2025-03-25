@@ -866,6 +866,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "cms-queue"
+version = "0.1.0"
+dependencies = [
+ "cms-core",
+ "deadpool-lapin",
+ "dotenvy",
+ "envy",
+ "lapin",
+ "salvo",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-executor-trait",
+]
+
+[[package]]
 name = "cms-server"
 version = "0.1.0"
 dependencies = [
@@ -875,6 +891,7 @@ dependencies = [
  "cms-core",
  "cms-mate",
  "cms-user",
+ "deadpool-lapin",
  "dotenvy",
  "envy",
  "jsonwebtoken",
@@ -1116,6 +1133,7 @@ checksum = "5ed5957ff93768adf7a65ab167a17835c3d2c3c50d084fe305174c112f468e2f"
 dependencies = [
  "deadpool-runtime",
  "num_cpus",
+ "serde",
  "tokio",
 ]
 
@@ -1127,6 +1145,7 @@ checksum = "33c7b14064f854a3969735e7c948c677a57ef17ca7f0bc029da8fe2e5e0fc1eb"
 dependencies = [
  "deadpool",
  "lapin",
+ "serde",
  "tokio-executor-trait",
 ]
 

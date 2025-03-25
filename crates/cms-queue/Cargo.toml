@@ -1,0 +1,20 @@
+[package]
+name = "cms-queue"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cms-core = { version = "0.1.0", path = "../cms-core" }
+
+salvo = { workspace = true }
+tokio = { workspace = true }
+tokio-executor-trait = { workspace = true }
+# env
+dotenvy = { workspace = true }
+envy = { workspace = true }
+# serde
+serde = { workspace = true }
+serde_json = { workspace = true }
+# console
+lapin = { workspace = true }
+deadpool-lapin = { workspace = true }
