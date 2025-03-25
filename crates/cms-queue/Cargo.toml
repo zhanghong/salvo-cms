@@ -9,12 +9,19 @@ cms-core = { version = "0.1.0", path = "../cms-core" }
 salvo = { workspace = true }
 tokio = { workspace = true }
 tokio-executor-trait = { workspace = true }
+
+# logging
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
 # env
 dotenvy = { workspace = true }
 envy = { workspace = true }
+
 # serde
 serde = { workspace = true }
 serde_json = { workspace = true }
+
 # console
 lapin = { workspace = true }
 deadpool-lapin = { workspace = true }
