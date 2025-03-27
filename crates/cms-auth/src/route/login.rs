@@ -4,7 +4,7 @@ use validator::Validate;
 
 use cms_core::{
     config::AppState,
-    domain::{dto::JwtClaimsDTO, result_ok, AppResult},
+    domain::{AppResult, dto::JwtClaimsDTO, result_ok},
     enums::PlatformEnum,
 };
 

@@ -3,7 +3,7 @@ use sea_orm::*;
 use cms_core::{
     config::AppState,
     domain::{
-        dto::JwtClaimsDTO, entity::certificate::Model as CertificateModel, handle_ok, HandleResult,
+        HandleResult, dto::JwtClaimsDTO, entity::certificate::Model as CertificateModel, handle_ok,
     },
     enums::PlatformEnum,
     error::AppError,
@@ -76,9 +76,9 @@ impl LoginService {
             user_id: user.id,
             username: user.name.to_owned(),
             nickname: user.nickname.to_owned(),
-            avatar: avatar,
-            roles: roles,
-            permissions: permissions,
+            avatar,
+            roles,
+            permissions,
             access_token: cert.access_token.to_owned(),
             access_expired: time::to_db_time(&cert.access_expired_at),
             refresh_token: cert.refresh_token.to_owned(),

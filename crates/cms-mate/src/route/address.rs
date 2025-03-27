@@ -2,15 +2,10 @@ use salvo::prelude::*;
 
 use cms_core::{
     config::AppState,
-    domain::{
-        AppResult,
-        result_ok,
-    },
+    domain::{AppResult, result_ok},
 };
 
-use crate::{
-    service::AddressService,
-};
+use crate::service::AddressService;
 
 /// Redis Store
 ///
@@ -22,9 +17,9 @@ use crate::{
   )
 )]
 pub async fn redis_store(depot: &mut Depot) -> AppResult<()> {
-  let _state = depot.obtain::<AppState>().unwrap();
-  AddressService::redis_store().await?;
-  result_ok(())
+    let _state = depot.obtain::<AppState>().unwrap();
+    AddressService::redis_store().await?;
+    result_ok(())
 }
 
 /// Redis Read
@@ -37,9 +32,9 @@ pub async fn redis_store(depot: &mut Depot) -> AppResult<()> {
   )
 )]
 pub async fn redis_load(depot: &mut Depot) -> AppResult<()> {
-//   let state = depot.obtain::<AppState>().unwrap();
-//   let vo: AppMasterVO = AddressService::redis_load(state).await?;
+    //   let state = depot.obtain::<AppState>().unwrap();
+    //   let vo: AppMasterVO = AddressService::redis_load(state).await?;
     let _state = depot.obtain::<AppState>().unwrap();
     AddressService::redis_store().await?;
-  result_ok(())
+    result_ok(())
 }

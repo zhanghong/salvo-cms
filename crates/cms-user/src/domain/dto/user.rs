@@ -79,11 +79,7 @@ impl UserStoreDTO {
 
         let str = opt.clone().unwrap();
         let list = EditorTypeEnum::from_comma_str(str.as_str());
-        if list.is_empty() {
-            None
-        } else {
-            Some(list)
-        }
+        if list.is_empty() { None } else { Some(list) }
     }
 }
 

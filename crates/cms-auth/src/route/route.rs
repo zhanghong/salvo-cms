@@ -1,6 +1,6 @@
 use salvo::prelude::*;
 
-use cms_core::domain::{result_ok, AppResult};
+use cms_core::domain::{AppResult, result_ok};
 
 /// 动态路由列表
 ///

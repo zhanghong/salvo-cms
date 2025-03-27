@@ -1,13 +1,15 @@
+use redis_macros::{FromRedisValue, ToRedisArgs};
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
-use redis_macros::{FromRedisValue, ToRedisArgs};
 
 use crate::domain::entity::editor::Model;
 
 // ------------------------------------
 // 分页查询 VO
 // ------------------------------------
-#[derive(Deserialize, Serialize, FromRedisValue, ToRedisArgs, Debug, Clone, PartialEq, Default, ToSchema)]
+#[derive(
+    Deserialize, Serialize, FromRedisValue, ToRedisArgs, Debug, Clone, PartialEq, Default, ToSchema,
+)]
 pub struct EditorLoadVO {
     /// 主键
     pub id: i64,

@@ -68,7 +68,7 @@ impl From<Model> for DetailVO {
             city_id: model.city_id,
             district_id: model.district_id,
             address: model.address.to_owned(),
-            born_date: born_date,
+            born_date,
             emotional: model.emotional.to_owned(),
             graduated_from: model.graduated_from.to_owned(),
             company_name: model.company_name.to_owned(),

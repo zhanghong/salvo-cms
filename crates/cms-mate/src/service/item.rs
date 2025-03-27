@@ -486,7 +486,7 @@ impl ItemService {
             page_size,
             current_page: page,
             total: total.number_of_items,
-            list: list,
+            list,
         };
 
         handle_ok(vo)

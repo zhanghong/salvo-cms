@@ -23,7 +23,10 @@ impl AppState {
         let redis = redis_config.build_client().await.unwrap();
         let rabbitmq = rabbitmq_config.build_pool().await.unwrap();
 
-
-        Self { db, redis, rabbitmq }
+        Self {
+            db,
+            redis,
+            rabbitmq,
+        }
     }
 }

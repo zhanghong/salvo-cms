@@ -3,7 +3,7 @@ use salvo::prelude::*;
 
 use crate::config::JwtConfig;
 use crate::domain::dto::JwtClaimsDTO;
-use crate::domain::{handle_ok, HandleResult};
+use crate::domain::{HandleResult, handle_ok};
 use crate::service::JwtService;
 
 pub fn jwt_authorizor_init() -> JwtAuth<JwtClaimsDTO, ConstDecoder> {

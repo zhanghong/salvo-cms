@@ -1,7 +1,7 @@
 use salvo::prelude::*;
 
 use cms_core::config::AppState;
-use cms_core::domain::{result_ok, AppResult};
+use cms_core::domain::{AppResult, result_ok};
 
 /// 服务状态
 ///

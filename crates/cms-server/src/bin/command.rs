@@ -8,7 +8,7 @@ pub enum CommandEnum {
         // 定义 days 参数，默认值为 3
         #[clap(long, default_value_t = 3)]
         days: u32,
-    }
+    },
 }
 
 #[derive(Parser, Debug)]

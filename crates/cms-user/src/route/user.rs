@@ -5,11 +5,11 @@ use validator::Validate;
 use cms_core::{
     config::AppState,
     domain::{
+        AppResult,
         dto::FieldBoolUpdateDTO,
         form::{FieldBoolUpdateForm, FieldValueUniqueForm},
         result_ok,
         vo::PaginateResultVO,
-        AppResult,
     },
     enums::PlatformEnum,
 };

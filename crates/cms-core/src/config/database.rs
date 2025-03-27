@@ -3,7 +3,7 @@ use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use serde::Deserialize;
 use std::time::Duration;
 
-use crate::domain::{handle_ok, HandleResult};
+use crate::domain::{HandleResult, handle_ok};
 
 #[derive(Deserialize, Debug)]
 pub struct DbConfig {

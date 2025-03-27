@@ -3,10 +3,10 @@ use sea_orm::*;
 
 use cms_core::config::AppState;
 use cms_core::domain::{
+    HandleResult,
     dto::{FieldBoolUpdateDTO, FieldValueUniqueDTO},
     handle_ok,
     vo::PaginateResultVO,
-    HandleResult,
 };
 use cms_core::enums::{EditorTypeEnum, PlatformEnum};
 use cms_core::error::AppError;
@@ -548,7 +548,7 @@ impl UserService {
             page_size,
             current_page: page,
             total: total.number_of_items,
-            list: list,
+            list,
         };
 
         // let editor_ids = models

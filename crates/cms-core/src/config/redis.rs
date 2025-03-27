@@ -1,8 +1,8 @@
 use dotenvy::dotenv;
-use redis::{aio::ConnectionManager, Client};
+use redis::{Client, aio::ConnectionManager};
 use serde::Deserialize;
 
-use crate::domain::{handle_ok, HandleResult};
+use crate::domain::{HandleResult, handle_ok};
 
 #[derive(Deserialize, Debug)]
 pub struct RedisConfig {

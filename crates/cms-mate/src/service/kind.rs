@@ -247,7 +247,7 @@ impl KindService {
 
         let mut vo = KindFormOptionVO {
             enables: None,
-            apps: apps,
+            apps,
         };
 
         if *platform == PlatformEnum::Manager {
@@ -419,7 +419,7 @@ impl KindService {
             page_size,
             current_page: page,
             total: total.number_of_items,
-            list: list,
+            list,
         };
 
         // let editor_ids = models

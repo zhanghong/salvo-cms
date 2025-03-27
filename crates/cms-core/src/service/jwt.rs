@@ -115,7 +115,7 @@ impl JwtService {
 
         let claims = JwtClaimsDTO {
             uuid: uuid.to_owned(),
-            user_id: user_id,
+            user_id,
             user_type: user_type.to_owned(),
             token_type: TokenTypeEnum::AccessToken.as_value(),
             exp: expired_time,
@@ -127,7 +127,7 @@ impl JwtService {
         let dto = JwtTokenDTO {
             token_type: claims.token_type.to_owned(),
             token_value: jsonwebtoken::encode(&header, &claims, &encode_key).unwrap(),
-            expired_time: expired_time,
+            expired_time,
         };
         handle_ok(dto)
     }
@@ -182,7 +182,7 @@ impl JwtService {
 
         let claims = JwtClaimsDTO {
             uuid: uuid.to_owned(),
-            user_id: user_id,
+            user_id,
             user_type: user_type.to_owned(),
             token_type: TokenTypeEnum::RefreshToken.as_value(),
             exp: expired_time,
@@ -194,7 +194,7 @@ impl JwtService {
         let dto = JwtTokenDTO {
             token_type: claims.token_type.to_owned(),
             token_value: jsonwebtoken::encode(&header, &claims, &encode_key).unwrap(),
-            expired_time: expired_time,
+            expired_time,
         };
 
         handle_ok(dto)

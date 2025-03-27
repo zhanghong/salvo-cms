@@ -1,7 +1,7 @@
 use salvo::prelude::*;
 
 use crate::config::AppState;
-use crate::domain::{result_ok, AppResult};
+use crate::domain::{AppResult, result_ok};
 
 /// 服务状态
 ///

@@ -1,12 +1,10 @@
 use deadpool_lapin::{Config, Pool, Runtime};
 use dotenvy::dotenv;
 
-use crate::domain::{handle_ok, HandleResult};
-
+use crate::domain::{HandleResult, handle_ok};
 
 #[derive(Debug, serde::Deserialize)]
-pub struct RabbitMQPool {
-}
+pub struct RabbitMQPool {}
 
 impl RabbitMQPool {
     pub fn from_env() -> Result<Self, envy::Error> {
