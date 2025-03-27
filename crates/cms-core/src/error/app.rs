@@ -30,6 +30,9 @@ pub enum AppError {
     #[error("Database error: {0}")]
     Database(String),
 
+    #[error("Database error: {0}")]
+    Redis(String),
+
     #[error("Queue error: {0}")]
     Queue(String),
 
@@ -52,7 +55,7 @@ impl From<sea_orm::DbErr> for AppError {
 
 impl From<redis::RedisError> for AppError {
     fn from(err: redis::RedisError) -> Self {
-        AppError::Database(err.to_string())
+        AppError::Redis(err.to_string())
     }
 }
 

@@ -1,6 +1,6 @@
 use dotenvy::dotenv;
 use serde::Deserialize;
-use tracing::Level;
+use tracing::{Level, info, warn};
 
 #[derive(Deserialize, Debug)]
 pub struct WebConfig {
@@ -17,74 +17,70 @@ pub struct WebConfig {
 
 impl WebConfig {
     pub fn from_env() -> Result<Self, envy::Error> {
-        dotenv().ok();
-        envy::prefixed("CMS_WEB_").from_env::<WebConfig>()
+        match dotenv() {
+            Ok(_) => info!("Loaded environment variables from .env file."),
+            Err(e) => warn!("Failed to load .env file: {}", e),
+        }
+        let config = envy::prefixed("CMS_WEB_").from_env::<WebConfig>()?;
+
+        // 验证关键字段
+        if config.host.as_deref() == Some("") || config.port.is_none() {
+            return Err(envy::Error::Custom(
+                "Missing or invalid 'host' or 'port' configuration.".to_string(),
+            ));
+        }
+
+        Ok(config)
+    }
+
+    fn get_default(value: &Option<String>, default: &str) -> String {
+        value.as_deref().unwrap_or(default).to_string()
     }
 
     pub fn address(&self) -> String {
         format!(
             "{}:{}",
-            self.host.as_ref().unwrap_or(&"localhost".to_string()),
+            Self::get_default(&self.host, "localhost"),
             self.port.unwrap_or(3000),
         )
     }
 
     pub fn app_name(&self) -> String {
-        format!(
-            "{}",
-            self.name.as_ref().unwrap_or(&String::from("Simple CMS"))
-        )
+        Self::get_default(&self.name, "Simple CMS")
     }
 
     pub fn app_version(&self) -> String {
-        format!(
-            "{}",
-            self.version.as_ref().unwrap_or(&String::from("0.0.1"))
-        )
+        Self::get_default(&self.version, "0.0.1")
     }
 
     pub fn app_description(&self) -> String {
-        format!(
-            "{}",
-            self.description
-                .as_ref()
-                .unwrap_or(&String::from("A simple CMS"))
-        )
+        Self::get_default(&self.description, "A simple CMS")
     }
 
     pub fn app_api_prefix(&self) -> String {
-        format!("{}", self.api_prefix.as_ref().unwrap_or(&String::from("")))
+        Self::get_default(&self.api_prefix, "")
     }
 
     pub fn swagger_url(&self) -> String {
-        format!(
-            "{}",
-            self.swagger_path
-                .as_ref()
-                .unwrap_or(&String::from("/swagger-ui"))
-        )
+        Self::get_default(&self.swagger_path, "/swagger-ui")
     }
 
     pub fn openapi_url(&self) -> String {
-        format!(
-            "{}",
-            self.openapi_path
-                .as_ref()
-                .unwrap_or(&String::from("/api-docs/openapi.json"))
-        )
+        Self::get_default(&self.openapi_path, "/api-docs/openapi.json")
     }
 
     pub fn tracing_level(&self) -> Level {
-        let name = match self.log_level.as_ref() {
-            Some(name) => name.as_str(),
-            None => "info",
-        };
+        let name = self.log_level.as_deref().unwrap_or("info");
 
-        match name {
+        match name.to_lowercase().as_str() {
             "debug" => Level::DEBUG,
             "warn" => Level::WARN,
             "error" => Level::ERROR,
-            _ => Level::INFO,
+            "info" => Level::INFO,
+            _ => {
+                warn!("Invalid log level '{}', falling back to 'info'", name);
+                Level::INFO
+            }
         }
     }
 }

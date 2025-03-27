@@ -53,3 +53,4 @@ clap = { version = "4", features = ["derive"] }
 # RabittMQ
 lapin = { version = "2" }
 deadpool-lapin = { version="0", features = ["serde"] }
+

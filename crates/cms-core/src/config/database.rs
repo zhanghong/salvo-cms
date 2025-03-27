@@ -2,6 +2,7 @@ use dotenvy::dotenv;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use serde::Deserialize;
 use std::time::Duration;
+use tracing::warn;
 
 use crate::{
     domain::{HandleResult, handle_ok},
@@ -30,10 +31,9 @@ pub struct DbConfig {
 impl DbConfig {
     /// 从环境变量中加载并解析数据库配置
     pub fn from_env() -> Result<Self, String> {
-        // 尝试加载.env文件，如果失败则返回错误信息
-        match dotenv() {
-            Ok(_) => (),
-            Err(e) => return Err(format!("Failed to load .env file: {}", e)),
+        // 尝试加载 .env 文件，如果失败则记录警告日志
+        if let Err(err) = dotenv() {
+            warn!("Failed to load .env file: {}", err);
         }
         // 从环境变量中解析DbConfig结构体，如果失败则返回错误信息
         envy::prefixed("CMS_DB_")
