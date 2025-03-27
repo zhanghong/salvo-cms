@@ -30,7 +30,7 @@ pub enum AppError {
     #[error("Database error: {0}")]
     Database(String),
 
-    #[error("Database error: {0}")]
+    #[error("Queue error: {0}")]
     Queue(String),
 
     #[error(transparent)]
@@ -39,8 +39,8 @@ pub enum AppError {
 
 // 将 anyhow::Error 转换为自定义错误
 impl From<anyhow::Error> for AppError {
-    fn from(_: anyhow::Error) -> Self {
-        AppError::Internal
+    fn from(err: anyhow::Error) -> Self {
+        AppError::BadRequest(err.to_string())
     }
 }
 
@@ -73,12 +73,6 @@ impl From<deadpool_lapin::CreatePoolError> for AppError {
         AppError::Queue(err.to_string())
     }
 }
-
-// impl From<ValidationErrors> for AppError {
-//     fn from(err: ValidationErrors) -> Self {
-//         AppError::Validation(err.to_string())
-//     }
-// }
 
 // 为自定义错误实现 Salvo 的 Writer
 #[async_trait]

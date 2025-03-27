@@ -3,8 +3,8 @@ use lapin::message::DeliveryResult;
 
 mod service;
 
-use cms_core::config::AppState;
 use crate::service::RabbitMQService;
+use cms_core::config::AppState;
 
 #[tokio::main]
 async fn main() {
@@ -15,9 +15,13 @@ async fn main() {
     let pool = &state.rabbitmq;
     let queue_name = "queue_test";
     let queue_tag = "";
-    let channel = RabbitMQService::init_channel_and_queue(pool, queue_name).await.unwrap();
-    
-    let consumer = RabbitMQService::init_consumer(&channel, queue_name, queue_tag).await.unwrap();
+    let channel = RabbitMQService::init_channel_and_queue(pool, queue_name)
+        .await
+        .unwrap();
+
+    let consumer = RabbitMQService::init_consumer(&channel, queue_name, queue_tag)
+        .await
+        .unwrap();
 
     consumer.set_delegate(move |delivery: DeliveryResult| async move {
         let delivery = match delivery {
@@ -35,13 +39,10 @@ async fn main() {
         // Do something with the delivery data (The message payload)
         println!("Received message data: {:?}", delivery.data);
 
-        RabbitMQService::delivery_basic_ack(&delivery).await.unwrap();
+        RabbitMQService::delivery_basic_ack(&delivery)
+            .await
+            .unwrap();
     });
-
-    let payload = b"Hello world!";
-    let exchange = "";
-    let routing_key = "queue_test";
-    RabbitMQService::publish_message(pool, exchange, routing_key, payload).await.unwrap();
 
     std::future::pending::<()>().await;
 }

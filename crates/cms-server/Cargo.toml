@@ -17,6 +17,7 @@ cms-auth = { version = "0.1.0", path = "../cms-auth" }
 cms-core = { version = "0.1.0", path = "../cms-core" }
 cms-user = { version = "0.1.0", path = "../cms-user" }
 cms-mate = { version = "0.1.0", path = "../cms-mate" }
+cms-queue = { version = "0.1.0", path = "../cms-queue" }
 
 salvo = { workspace = true }
 tokio = { workspace = true }

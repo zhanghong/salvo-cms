@@ -1,20 +1,29 @@
 use deadpool_lapin::Pool;
-use deadpool_lapin::lapin::{
-    options::BasicPublishOptions,
-    BasicProperties,
-};
-use lapin::message::Delivery;
+use deadpool_lapin::lapin::{BasicProperties, options::BasicPublishOptions};
 use lapin::Consumer;
-use lapin::{options::{QueueDeclareOptions, BasicAckOptions, BasicConsumeOptions}, types::FieldTable, Channel};
+use lapin::message::Delivery;
+use lapin::{
+    Channel,
+    options::{BasicAckOptions, BasicConsumeOptions, QueueDeclareOptions},
+    types::FieldTable,
+};
 
-use cms_core::domain::{handle_ok, HandleResult};
+use cms_core::domain::{HandleResult, handle_ok};
+use cms_core::error::AppError;
+use tracing::{error, info}; // 确保引入 AppError
 
 pub struct RabbitMQService {}
 
 impl RabbitMQService {
-   pub async fn init_channel_and_queue(pool: &Pool, queue_name: &str) -> HandleResult<Channel> {
-    let connection = pool.get().await?;
+    pub async fn init_channel_and_queue(pool: &Pool, queue_name: &str) -> HandleResult<Channel> {
+        if queue_name.is_empty() {
+            return Err(AppError::BadRequest("Queue name cannot be empty".to_string()).into());
+        }
+
+        let connection = pool.get().await?;
         let channel = connection.create_channel().await?;
+
+        // Declare the queue with proper error handling
         let _queue = channel
             .queue_declare(
                 queue_name,
@@ -22,41 +31,87 @@ impl RabbitMQService {
                 FieldTable::default(),
             )
             .await?;
-        
+
+        info!("Queue '{}' initialized successfully", queue_name);
         handle_ok(channel)
-   } 
+    }
 
-   pub async fn publish_message(pool: &Pool, exchange: &str, routing_key: &str, payload: &[u8]) -> HandleResult<()> {
-    let connection = pool.get().await?;
-    let channel = connection.create_channel().await?;
+    pub async fn publish_message(
+        pool: &Pool,
+        exchange: &str,
+        routing_key: &str,
+        payload: &[u8],
+    ) -> HandleResult<()> {
+        if (exchange.is_empty() && routing_key.is_empty()) || payload.is_empty() {
+            let error = AppError::BadRequest(
+                "Exchange, routing key, and payload must not be empty".to_string(),
+            );
+            return Err(error.into());
+        }
 
-    channel.basic_publish(exchange, routing_key, BasicPublishOptions::default(), payload, BasicProperties::default()).await
-    .unwrap()
-    .await
-    .unwrap();
+        let connection = pool.get().await?;
+        let channel = connection.create_channel().await?;
 
-    handle_ok(())    
-   }
+        match channel
+            .basic_publish(
+                exchange,
+                routing_key,
+                BasicPublishOptions::default(),
+                payload,
+                BasicProperties::default(),
+            )
+            .await
+        {
+            Ok(publish_result) => {
+                if let Err(err) = publish_result.await {
+                    error!("Failed to confirm message publication: {}", err);
+                    return Err(err.into());
+                }
+                info!(
+                    "Message published successfully to exchange '{}' with routing key '{}'",
+                    exchange, routing_key
+                );
+                handle_ok(())
+            }
+            Err(err) => {
+                error!("Failed to publish message: {}", err);
+                Err(err.into())
+            }
+        }
+    }
 
-   pub async fn init_consumer(channel: &Channel, queue_name: &str, queue_tag: &str) -> HandleResult<Consumer> {
-    let consumer = channel
-    .basic_consume(
-        queue_name,
-        queue_tag,
-        BasicConsumeOptions::default(),
-        FieldTable::default(),
-    )
-    .await?;
+    pub async fn init_consumer(
+        channel: &Channel,
+        queue_name: &str,
+        queue_tag: &str,
+    ) -> HandleResult<Consumer> {
+        if queue_name.is_empty() && queue_tag.is_empty() {
+            return Err(AppError::BadRequest(
+                "Queue name and queue tag can not both empty".to_string(),
+            )
+            .into());
+        }
 
-    handle_ok(consumer)
-   }
+        let consumer = channel
+            .basic_consume(
+                queue_name,
+                queue_tag,
+                BasicConsumeOptions::default(),
+                FieldTable::default(),
+            )
+            .await?;
 
-   pub async fn delivery_basic_ack(delivery: &Delivery) -> HandleResult<()> {
-    delivery
-    .ack(BasicAckOptions::default())
-    .await
-    .expect("Failed to ack send_webhook_event message");
+        info!("Consumer initialized for queue '{}'", queue_name);
+        handle_ok(consumer)
+    }
 
-    handle_ok(())
-   } 
+    pub async fn delivery_basic_ack(delivery: &Delivery) -> HandleResult<()> {
+        if let Err(err) = delivery.ack(BasicAckOptions::default()).await {
+            error!("Failed to acknowledge message: {}", err);
+            return Err(err.into());
+        }
+
+        info!("Message acknowledged successfully");
+        handle_ok(())
+    }
 }
