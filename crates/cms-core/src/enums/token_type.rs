@@ -1,6 +1,10 @@
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
+const ACCESS_TOKEN_TITLE: &str = "Access Token";
+const REFRESH_TOKEN_TITLE: &str = "Refresh Token";
+const NONE_TITLE: &str = "Refresh Token";
+
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, ToSchema)]
 pub enum TokenTypeEnum {
     None,
@@ -17,11 +21,11 @@ impl TokenTypeEnum {
         }
     }
 
-    pub fn as_title(&self) -> String {
+    pub fn as_title(&self) -> &'static str {
         match self {
-            TokenTypeEnum::AccessToken => String::from("Access Token"),
-            TokenTypeEnum::RefreshToken => String::from("Refresh Token"),
-            _ => String::from("None"),
+            TokenTypeEnum::AccessToken => ACCESS_TOKEN_TITLE,
+            TokenTypeEnum::RefreshToken => REFRESH_TOKEN_TITLE,
+            _ => NONE_TITLE,
         }
     }
 

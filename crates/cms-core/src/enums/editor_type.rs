@@ -1,7 +1,14 @@
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
+use tracing::warn;
 
 use crate::domain::{SelectOptionItem, SelectValueEnum};
+
+// 定义常量字符串
+const ADMIN_TITLE: &str = "管理员";
+const MEMBER_TITLE: &str = "会员";
+const GUEST_TITLE: &str = "游客";
+const NONE_TITLE: &str = "无效值";
 
 // 会员类型
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
@@ -20,54 +27,68 @@ impl Default for EditorTypeEnum {
 }
 
 impl EditorTypeEnum {
+    // 将枚举值转换为字符串值
     pub fn as_value(&self) -> String {
-        let str = match self {
+        match self {
             EditorTypeEnum::Admin => "admin",
             EditorTypeEnum::Member => "member",
             EditorTypeEnum::Guest => "guest",
-            _ => "system",
-        };
-        str.to_string()
+            EditorTypeEnum::None => "none",
+        }
+        .to_string()
     }
 
-    pub fn as_title(&self) -> String {
-        let str = match self {
-            EditorTypeEnum::Admin => "管理员",
-            EditorTypeEnum::Member => "会员",
-            EditorTypeEnum::Guest => "游客",
-            _ => "系统",
-        };
-        str.to_string()
+    // 将枚举值转换为标题字符串
+    pub fn as_title(&self) -> &'static str {
+        match self {
+            EditorTypeEnum::Admin => ADMIN_TITLE,
+            EditorTypeEnum::Member => MEMBER_TITLE,
+            EditorTypeEnum::Guest => GUEST_TITLE,
+            EditorTypeEnum::None => NONE_TITLE,
+        }
     }
 
     /// 将枚举转换为选项列表
     pub fn to_option_list() -> Vec<SelectOptionItem> {
         vec![
-            EditorTypeEnum::Admin.into(),
-            EditorTypeEnum::Member.into(),
-            EditorTypeEnum::Guest.into(),
+            EditorTypeEnum::Admin,
+            EditorTypeEnum::Member,
+            EditorTypeEnum::Guest,
         ]
+        .into_iter()
+        .map(|e| e.into())
+        .collect()
     }
 
+    // 从字符串值转换为枚举值
     pub fn from_string(s: &str) -> Self {
         match s.to_lowercase().as_str() {
             "admin" => EditorTypeEnum::Admin,
             "member" => EditorTypeEnum::Member,
             "guest" => EditorTypeEnum::Guest,
-            _ => EditorTypeEnum::None,
+            _ => {
+                warn!("Invalid input for EditorTypeEnum: {}", s); // 增加日志记录
+                EditorTypeEnum::None
+            }
         }
     }
 
-    /// 将逗号分隔的字符串转换为 EditorTypeEnum 向量
+    /// 从逗号分隔的字符串转换为 EditorTypeEnum 向量
     pub fn from_comma_str(s: &str) -> Vec<Self> {
         s.split(',')
             .map(|s| s.trim()) // 去除可能的空格
             .filter(|s| !s.is_empty()) // 过滤空字符串
-            .map(|s| match s.to_lowercase().as_str() {
-                "admin" => EditorTypeEnum::Admin,
-                "member" => EditorTypeEnum::Member,
-                "guest" => EditorTypeEnum::Guest,
-                _ => EditorTypeEnum::None,
+            .map(|s| {
+                let lower = s.to_lowercase(); // 提前转换为小写
+                match lower.as_str() {
+                    "admin" => EditorTypeEnum::Admin,
+                    "member" => EditorTypeEnum::Member,
+                    "guest" => EditorTypeEnum::Guest,
+                    _ => {
+                        warn!("Invalid item in comma-separated string: {}", s); // 增加日志记录
+                        EditorTypeEnum::None
+                    }
+                }
             })
             .filter(|item| *item != EditorTypeEnum::None)
             .collect()
@@ -75,17 +96,12 @@ impl EditorTypeEnum {
 
     /// 将 EditorTypeEnum 向量转换为逗号分隔的字符串，过滤掉 None 值
     pub fn to_comma_str(types: &[Self]) -> String {
-        let str = types
+        types
             .iter()
             .filter(|&t| *t != EditorTypeEnum::None) // 过滤掉 None 值
             .map(|t| t.as_value()) // 转换为字符串值
-            .collect::<Vec<_>>()
-            .join(",");
-        if str.is_empty() {
-            str
-        } else {
-            format!(",{},", str)
-        }
+            .collect::<Vec<_>>() // 收集到临时向量
+            .join(",") // 直接拼接
     }
 }
 
@@ -100,7 +116,10 @@ impl<'de> Deserialize<'de> for EditorTypeEnum {
             "admin" => Ok(EditorTypeEnum::Admin),
             "member" => Ok(EditorTypeEnum::Member),
             "guest" => Ok(EditorTypeEnum::Guest),
-            _ => Ok(EditorTypeEnum::None),
+            _ => {
+                warn!("Invalid value during deserialization: {}", s); // 增加日志记录
+                Ok(EditorTypeEnum::None)
+            }
         }
     }
 }
@@ -110,7 +129,7 @@ impl Into<SelectOptionItem> for EditorTypeEnum {
     fn into(self) -> SelectOptionItem {
         let value = self.as_value();
         SelectOptionItem {
-            label: self.as_title(),
+            label: self.as_title().to_string(),
             value: SelectValueEnum::String(value),
             ..Default::default()
         }
