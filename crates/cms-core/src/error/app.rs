@@ -43,13 +43,11 @@ pub enum AppError {
 // 宏生成 From 实现，减少重复代码
 macro_rules! impl_from_error {
     ($($ty:ty => $variant:path),+) => {
-        $(
-            impl From<$ty> for AppError {
-                fn from(err: $ty) -> Self {
-                    $variant(err.to_string())
-                }
+        $(impl From<$ty> for AppError {
+            fn from(err: $ty) -> Self {
+                $variant(err.to_string())
             }
-        )+
+        })+
     };
 }
 
@@ -62,40 +60,42 @@ impl_from_error!(
     deadpool_lapin::CreatePoolError => AppError::Queue
 );
 
-// 提取状态码和消息映射逻辑
-fn map_error_to_response(error: AppError) -> (u32, String, Option<HashMap<String, String>>) {
-    let mut code = 500;
-    let mut message = String::from("Internal Server Error");
-    let mut data: Option<HashMap<String, String>> = None;
+// 为 AppError 实现 Into<AppResponse<HashMap<String, String>>>
+impl Into<AppResponse<HashMap<String, String>>> for AppError {
+    fn into(self) -> AppResponse<HashMap<String, String>> {
+        let mut code = 500;
+        let mut message = String::from("Internal Server Error");
+        let mut data: Option<HashMap<String, String>> = None;
 
-    match error {
-        AppError::BadRequest(msg) => {
-            code = 400;
-            message = msg;
-        }
-        AppError::Unauthorized => {
-            code = 401;
-            message = String::from("Unauthorized");
-        }
-        AppError::NotFound(msg) => {
-            code = 404;
-            message = msg;
-        }
-        AppError::Validation(err) => {
-            code = 400;
-            message = String::from("Validation failed");
-            let mut map = HashMap::new();
-            for (field, messages) in err.field_errors() {
-                if let Some(msg) = messages.first() {
-                    map.insert(field.to_string(), msg.to_string());
-                }
+        match self {
+            AppError::BadRequest(msg) => {
+                code = 400;
+                message = msg;
             }
-            data = Some(map);
+            AppError::Unauthorized => {
+                code = 401;
+                message = String::from("Unauthorized");
+            }
+            AppError::NotFound(msg) => {
+                code = 404;
+                message = msg;
+            }
+            AppError::Validation(err) => {
+                code = 400;
+                message = String::from("Validation failed");
+                let mut map = HashMap::new();
+                for (field, messages) in err.field_errors() {
+                    if let Some(msg) = messages.first() {
+                        map.insert(field.to_string(), msg.to_string());
+                    }
+                }
+                data = Some(map);
+            }
+            _ => {}
         }
-        _ => {}
-    }
 
-    (code, message, data)
+        AppResponse::new(code, Some(message), data)
+    }
 }
 
 // 为自定义错误实现 Salvo 的 Writer
@@ -103,11 +103,10 @@ fn map_error_to_response(error: AppError) -> (u32, String, Option<HashMap<String
 impl Writer for AppError {
     async fn write(mut self, _req: &mut Request, _depot: &mut Depot, res: &mut Response) {
         let cloned_self = self.clone(); // 克隆 self 以保留原始错误信息
-        let (code, message, data) = map_error_to_response(self);
+        let response: AppResponse<HashMap<String, String>> = self.into();
 
         error!("Error occurred: {:?}", cloned_self); // 使用克隆的错误信息进行日志记录
 
-        let response = AppResponse::new(code, Some(message), data);
         res.render(Json(response));
     }
 }

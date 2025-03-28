@@ -1,9 +1,10 @@
 use salvo::jwt_auth::{ConstDecoder, HeaderFinder};
 use salvo::prelude::*;
+use std::collections::HashMap;
 
 use crate::config::JwtConfig;
+use crate::domain::AppResponse;
 use crate::domain::dto::JwtClaimsDTO;
-use crate::domain::{HandleResult, handle_ok};
 use crate::service::JwtService;
 
 pub fn jwt_authorizor_init() -> JwtAuth<JwtClaimsDTO, ConstDecoder> {
@@ -18,13 +19,21 @@ pub fn jwt_authorizor_init() -> JwtAuth<JwtClaimsDTO, ConstDecoder> {
 }
 
 #[handler]
-pub fn jwt_verify_access(depot: &mut Depot) -> HandleResult<()> {
-    JwtService::verify_access_token(depot)?;
-    handle_ok(())
+pub fn jwt_verify_access(depot: &mut Depot, res: &mut Response, ctrl: &mut FlowCtrl) {
+    let result = JwtService::verify_access_token(depot);
+    if let Err(err) = result {
+        let response: AppResponse<HashMap<String, String>> = err.into();
+        res.render(Json(response));
+        ctrl.skip_rest();
+    }
 }
 
 #[handler]
-pub fn jwt_verify_refresh(depot: &mut Depot) -> HandleResult<()> {
-    JwtService::verify_refresh_token(depot)?;
-    handle_ok(())
+pub fn jwt_verify_refresh(depot: &mut Depot, res: &mut Response, ctrl: &mut FlowCtrl) {
+    let result = JwtService::verify_refresh_token(depot);
+    if let Err(err) = result {
+        let response: AppResponse<HashMap<String, String>> = err.into();
+        res.render(Json(response));
+        ctrl.skip_rest();
+    }
 }
