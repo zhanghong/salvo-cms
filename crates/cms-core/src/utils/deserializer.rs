@@ -3,12 +3,23 @@ use num_traits::{Bounded, NumCast, Zero};
 use serde::{Deserialize, Deserializer};
 use serde_json::Value;
 use std::str::FromStr;
+use tracing::{debug, warn};
 
 use super::parameter;
 
 // ------------------------------------------------------------------------
 // 字符串类型处理方法
 // ------------------------------------------------------------------------
+
+/// 将字符串反序列化为Option<String>，去除前后空格
+///
+/// # Arguments
+///
+/// * `deserializer`: D类型的反序列化器
+///
+/// # Returns
+///
+/// * `Result<Option<String>, D::Error>`: 去除前后空格的字符串，如果字符串为空则返回None
 pub fn string_to_option_trimmed<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
 where
     D: Deserializer<'de>,
@@ -18,27 +29,37 @@ where
     match value {
         // 处理字符串类型，去掉前后空格
         Value::String(s) => {
-            let mut trimmed = s.trim();
+            let trimmed = s.trim();
             if trimmed.is_empty() {
-                trimmed = "";
+                Ok(None)
+            } else {
+                Ok(Some(trimmed.to_string()))
             }
-            Ok(Some(trimmed.to_string()))
         }
         // 其他类型返回 None
         _ => Ok(None),
     }
 }
 
+/// 将字符串反序列化为Option<Vec<String>>，分割字符串为向量
+///
+/// # Arguments
+///
+/// * `deserializer`: D类型的反序列化器
+///
+/// # Returns
+///
+/// * `Result<Option<Vec<String>>, D::Error>`: 分割后的字符串向量，如果为空则返回None
 pub fn string_to_option_string_vec<'de, D>(deserializer: D) -> Result<Option<Vec<String>>, D::Error>
 where
     D: Deserializer<'de>,
 {
-    println!("in string vec");
+    debug!("Deserializing string to vector");
     let value = Value::deserialize(deserializer)?;
 
     match value {
         Value::String(s) => {
-            println!("s = {:?}", s);
+            debug!("Input string: {:?}", s);
             let vec: Vec<String> = s
                 .split(",")
                 .map(|part| part.trim().to_string())
@@ -51,7 +72,7 @@ where
             }
         }
         Value::Array(arr) => {
-            println!("vec= {:#?}", arr);
+            debug!("Input array: {:#?}", arr);
             let vec: Vec<String> = arr
                 .into_iter()
                 .filter_map(|v| v.as_str().map(|s| s.trim().to_string()))
@@ -65,7 +86,7 @@ where
         }
         // 其他类型返回 None
         _ => {
-            println!("other types");
+            debug!("Unsupported type encountered");
             Ok(None)
         }
     }
@@ -74,10 +95,21 @@ where
 // ------------------------------------------------------------------------
 // Option 数字类型处理方法
 // ------------------------------------------------------------------------
+
+/// 将字符串反序列化为Option<T>，其中T为数字类型
+///
+/// # Arguments
+///
+/// * `deserializer`: D类型的反序列化器
+///
+/// # Returns
+///
+/// * `Result<Option<T>, D::Error>`: 转换后的数字类型，如果转换失败则返回None
 pub fn string_to_option_number<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
 where
     D: Deserializer<'de>,
     T: FromStr + Bounded + NumCast,
+    <T as FromStr>::Err: std::fmt::Display,
 {
     let value = Value::deserialize(deserializer)?;
 
@@ -85,7 +117,10 @@ where
         // 处理字符串类型
         Value::String(s) => match T::from_str(&s) {
             Ok(num) => Ok(Some(num)),
-            Err(_) => Ok(None),
+            Err(e) => {
+                warn!("Failed to parse string to number: {}", e);
+                Ok(None)
+            }
         },
         // 处理数字类型
         Value::Number(num) => {
@@ -95,12 +130,17 @@ where
                 {
                     match NumCast::from(n) {
                         Some(num) => Ok(Some(num)),
-                        None => Ok(None),
+                        None => {
+                            warn!("Failed to cast number to target type");
+                            Ok(None)
+                        }
                     }
                 } else {
+                    warn!("Number out of range for target type");
                     Ok(None)
                 }
             } else {
+                warn!("Invalid number format");
                 Ok(None)
             }
         }
@@ -109,69 +149,45 @@ where
     }
 }
 
-pub fn string_to_option_u8<'de, D>(deserializer: D) -> Result<Option<u8>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_option_number(deserializer)
+// 泛型实现，减少重复代码
+macro_rules! impl_string_to_option_number {
+    ($func_name:ident, $type:ty) => {
+        pub fn $func_name<'de, D>(deserializer: D) -> Result<Option<$type>, D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            string_to_option_number::<D, $type>(deserializer)
+        }
+    };
 }
 
-pub fn string_to_option_i8<'de, D>(deserializer: D) -> Result<Option<i8>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_option_number(deserializer)
-}
-
-pub fn string_to_option_u16<'de, D>(deserializer: D) -> Result<Option<u16>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_option_number(deserializer)
-}
-
-pub fn string_to_option_i16<'de, D>(deserializer: D) -> Result<Option<i16>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_option_number(deserializer)
-}
-
-pub fn string_to_option_u32<'de, D>(deserializer: D) -> Result<Option<u32>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_option_number(deserializer)
-}
-
-pub fn string_to_option_i32<'de, D>(deserializer: D) -> Result<Option<i32>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_option_number(deserializer)
-}
-
-pub fn string_to_option_u64<'de, D>(deserializer: D) -> Result<Option<u64>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_option_number(deserializer)
-}
-
-pub fn string_to_option_i64<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_option_number(deserializer)
-}
+impl_string_to_option_number!(string_to_option_u8, u8);
+impl_string_to_option_number!(string_to_option_i8, i8);
+impl_string_to_option_number!(string_to_option_u16, u16);
+impl_string_to_option_number!(string_to_option_i16, i16);
+impl_string_to_option_number!(string_to_option_u32, u32);
+impl_string_to_option_number!(string_to_option_i32, i32);
+impl_string_to_option_number!(string_to_option_u64, u64);
+impl_string_to_option_number!(string_to_option_i64, i64);
 
 // ------------------------------------------------------------------------
 // 数字类型处理方法
 // ------------------------------------------------------------------------
+
+/// 将字符串反序列化为T，其中T为数字类型，如果转换失败则返回默认值
+///
+/// # Arguments
+///
+/// * `deserializer`: D类型的反序列化器
+///
+/// # Returns
+///
+/// * `Result<T, D::Error>`: 转换后的数字类型，如果转换失败则返回默认值
 pub fn string_to_number<'de, D, T>(deserializer: D) -> Result<T, D::Error>
 where
     D: Deserializer<'de>,
     T: FromStr + Bounded + NumCast + Zero,
+    <T as FromStr>::Err: std::fmt::Display,
 {
     let value = Value::deserialize(deserializer)?;
     let default_num = T::zero();
@@ -180,7 +196,10 @@ where
         // 处理字符串类型
         Value::String(s) => match T::from_str(&s) {
             Ok(num) => Ok(num),
-            Err(_) => Ok(default_num),
+            Err(e) => {
+                warn!("Failed to parse string to number: {}", e);
+                Ok(default_num)
+            }
         },
         // 处理数字类型
         Value::Number(num) => {
@@ -190,79 +209,59 @@ where
                 {
                     match NumCast::from(n) {
                         Some(num) => Ok(num),
-                        None => Ok(default_num),
+                        None => {
+                            warn!("Failed to cast number to target type");
+                            Ok(default_num)
+                        }
                     }
                 } else {
+                    warn!("Number out of range for target type");
                     Ok(default_num)
                 }
             } else {
+                warn!("Invalid number format");
                 Ok(default_num)
             }
         }
-        // 其他类型返回 None
+        // 其他类型返回默认值
         _ => Ok(default_num),
     }
 }
 
-pub fn string_to_u8<'de, D>(deserializer: D) -> Result<u8, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_number(deserializer)
+// 泛型实现，减少重复代码
+macro_rules! impl_string_to_number {
+    ($func_name:ident, $type:ty) => {
+        pub fn $func_name<'de, D>(deserializer: D) -> Result<$type, D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            string_to_number::<D, $type>(deserializer)
+        }
+    };
 }
 
-pub fn string_to_i8<'de, D>(deserializer: D) -> Result<i8, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_number(deserializer)
-}
-
-pub fn string_to_u16<'de, D>(deserializer: D) -> Result<u16, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_number(deserializer)
-}
-
-pub fn string_to_i16<'de, D>(deserializer: D) -> Result<i16, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_number(deserializer)
-}
-
-pub fn string_to_u32<'de, D>(deserializer: D) -> Result<u32, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_number(deserializer)
-}
-
-pub fn string_to_i32<'de, D>(deserializer: D) -> Result<i32, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_number(deserializer)
-}
-
-pub fn string_to_u64<'de, D>(deserializer: D) -> Result<u64, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_number(deserializer)
-}
-
-pub fn string_to_i64<'de, D>(deserializer: D) -> Result<i64, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    string_to_number(deserializer)
-}
+impl_string_to_number!(string_to_u8, u8);
+impl_string_to_number!(string_to_i8, i8);
+impl_string_to_number!(string_to_u16, u16);
+impl_string_to_number!(string_to_i16, i16);
+impl_string_to_number!(string_to_u32, u32);
+impl_string_to_number!(string_to_i32, i32);
+impl_string_to_number!(string_to_u64, u64);
+impl_string_to_number!(string_to_i64, i64);
 
 // ------------------------------------------------------------------------
 // 布尔类型处理方法
 // ------------------------------------------------------------------------
+/// 将字符串或其他类型转换为Option<bool>
+///
+/// 此函数主要用于反序列化过程中，将可能表示布尔值的字符串、数字等类型
+/// 转换为Option<bool>类型，以支持更灵活的数据解析。
+///
+/// 参数:
+/// - deserializer: D - 一个反序列化器，用于从数据源获取数据。
+///
+/// 返回:
+/// - Result<Option<bool>, D::Error> - 转换后的布尔值，或错误。
 pub fn string_to_option_bool<'de, D>(deserializer: D) -> Result<Option<bool>, D::Error>
 where
     D: Deserializer<'de>,
@@ -298,6 +297,16 @@ where
 // ------------------------------------------------------------------------
 // 特定参数处理方法
 // ------------------------------------------------------------------------
+/// 将字符串转换为页码参数
+///
+/// 此函数专用于处理页码参数的反序列化，确保输入的字符串能够
+/// 被正确地转换为u64类型的页码。
+///
+/// 参数:
+/// - deserializer: D - 一个反序列化器，用于从数据源获取数据。
+///
+/// 返回:
+/// - Result<u64, D::Error> - 转换后的页码参数，或错误。
 pub fn string_to_param_page_no<'de, D>(deserializer: D) -> Result<u64, D::Error>
 where
     D: Deserializer<'de>,
@@ -310,6 +319,16 @@ where
     Ok(num)
 }
 
+/// 将字符串转换为页面大小参数
+///
+/// 此函数专用于处理页面大小参数的反序列化，确保输入的字符串能够
+/// 被正确地转换为u64类型的页面大小。
+///
+/// 参数:
+/// - deserializer: D - 一个反序列化器，用于从数据源获取数据。
+///
+/// 返回:
+/// - Result<u64, D::Error> - 转换后的页面大小参数，或错误。
 pub fn string_to_param_page_size<'de, D>(deserializer: D) -> Result<u64, D::Error>
 where
     D: Deserializer<'de>,
@@ -325,6 +344,16 @@ where
 // ------------------------------------------------------------------------
 // 时间类型处理方法
 // ------------------------------------------------------------------------
+/// 将字符串转换为Option<NaiveDateTime>
+///
+/// 此函数主要用于反序列化过程中，将表示日期时间的字符串转换为
+/// Option<NaiveDateTime>类型，支持多种常见的日期时间格式。
+///
+/// 参数:
+/// - deserializer: D - 一个反序列化器，用于从数据源获取数据。
+///
+/// 返回:
+/// - Result<Option<NaiveDateTime>, D::Error> - 转换后的日期时间，或错误。
 pub fn string_to_option_naive_datetime<'de, D>(
     deserializer: D,
 ) -> Result<Option<NaiveDateTime>, D::Error>
@@ -334,10 +363,16 @@ where
     let value = Value::deserialize(deserializer)?;
 
     match value {
-        Value::String(s) => match NaiveDateTime::parse_from_str(s.trim(), "%Y-%m-%d %H:%M:%S") {
-            Ok(datetime) => Ok(Some(datetime)),
-            Err(_) => Ok(None),
-        },
+        Value::String(s) => {
+            let formats = ["%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"];
+            for fmt in &formats {
+                if let Ok(datetime) = NaiveDateTime::parse_from_str(s.trim(), fmt) {
+                    return Ok(Some(datetime));
+                }
+            }
+            warn!("Failed to parse datetime with supported formats");
+            Ok(None)
+        }
         _ => Ok(None),
     }
 }

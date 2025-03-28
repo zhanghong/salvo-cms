@@ -54,3 +54,4 @@ clap = { version = "4", features = ["derive"] }
 lapin = { version = "2" }
 deadpool-lapin = { version="0", features = ["serde"] }
 
+lazy_static = { version="1" }

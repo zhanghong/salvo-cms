@@ -47,3 +47,5 @@ num-traits = {workspace = true}
 # RabittMQ
 lapin = {workspace = true}
 deadpool-lapin = {workspace = true}
+
+lazy_static = { workspace = true }

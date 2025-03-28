@@ -825,6 +825,7 @@ dependencies = [
  "envy",
  "jsonwebtoken",
  "lapin",
+ "lazy_static",
  "md5",
  "num-traits",
  "rand 0.9.0",
