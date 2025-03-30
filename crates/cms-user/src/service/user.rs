@@ -84,7 +84,7 @@ impl UserService {
             let list: Vec<EditorTypeEnum> = user_type.unwrap();
             match platform {
                 PlatformEnum::Open => {
-                    let type_name = EditorTypeEnum::Member.as_value();
+                    let type_name = EditorTypeEnum::Member.string_value();
                     model.user_type = Set(type_name);
                 }
                 _ => {

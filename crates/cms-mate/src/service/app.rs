@@ -115,7 +115,7 @@ impl AppService {
         }
 
         let editor = dto.editor.clone();
-        model.editor_type = Set(editor.editor_type.as_value());
+        model.editor_type = Set(editor.editor_type.string_value());
         model.editor_id = Set(editor.editor_id);
 
         let txn = db.begin().await?;
@@ -235,7 +235,7 @@ impl AppService {
         model.updated_at = Set(Some(now));
 
         let editor = dto.editor.clone();
-        model.editor_type = Set(editor.editor_type.as_value());
+        model.editor_type = Set(editor.editor_type.string_value());
         model.editor_id = Set(editor.editor_id);
 
         let _ = model.save(db).await?;
@@ -428,7 +428,7 @@ impl AppService {
             return Err(err);
         }
         let mut model: AppActiveModel = model.into();
-        model.editor_type = Set(editor.editor_type.as_value());
+        model.editor_type = Set(editor.editor_type.string_value());
         model.editor_id = Set(editor.editor_id);
         model.is_deleted = Set(Some(true));
         let now = time::current_time();

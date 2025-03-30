@@ -176,7 +176,7 @@ impl ItemService {
         }
 
         let editor = dto.editor.clone();
-        model.editor_type = Set(editor.editor_type.as_value());
+        model.editor_type = Set(editor.editor_type.string_value());
         model.editor_id = Set(editor.editor_id);
 
         let kind_ids = vec![old_kind_id, new_kind_id];
@@ -332,7 +332,7 @@ impl ItemService {
         model.updated_at = Set(Some(now));
 
         let editor = dto.editor.clone();
-        model.editor_type = Set(editor.editor_type.as_value());
+        model.editor_type = Set(editor.editor_type.string_value());
         model.editor_id = Set(editor.editor_id);
 
         let _ = model.save(db).await?;
@@ -576,7 +576,7 @@ impl ItemService {
             return Err(err);
         }
         let mut model: ItemActiveModel = model.into();
-        model.editor_type = Set(editor.editor_type.as_value());
+        model.editor_type = Set(editor.editor_type.string_value());
         model.editor_id = Set(editor.editor_id);
         model.is_deleted = Set(Some(true));
         let now = time::current_time();

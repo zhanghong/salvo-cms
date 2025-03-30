@@ -9,6 +9,10 @@ const ADMIN_TITLE: &str = "管理员";
 const MEMBER_TITLE: &str = "会员";
 const GUEST_TITLE: &str = "游客";
 const NONE_TITLE: &str = "无效值";
+const ADMIN_VALUE: &str = "admin";
+const MEMBER_VALUE: &str = "member";
+const GUEST_VALUE: &str = "guest";
+const NONE_VALUE: &str = "none";
 
 // 会员类型
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
@@ -28,14 +32,18 @@ impl Default for EditorTypeEnum {
 
 impl EditorTypeEnum {
     // 将枚举值转换为字符串值
-    pub fn as_value(&self) -> String {
+    pub fn as_value(&self) -> &'static str {
         match self {
-            EditorTypeEnum::Admin => "admin",
-            EditorTypeEnum::Member => "member",
-            EditorTypeEnum::Guest => "guest",
-            EditorTypeEnum::None => "none",
+            EditorTypeEnum::Admin => ADMIN_VALUE,
+            EditorTypeEnum::Member => MEMBER_VALUE,
+            EditorTypeEnum::Guest => GUEST_VALUE,
+            EditorTypeEnum::None => NONE_VALUE,
         }
-        .to_string()
+    }
+
+    // 将枚举值转换为字符串值
+    pub fn string_value(&self) -> String {
+        self.as_value().to_string()
     }
 
     // 将枚举值转换为标题字符串
@@ -130,7 +138,7 @@ impl Into<SelectOptionItem> for EditorTypeEnum {
         let value = self.as_value();
         SelectOptionItem {
             label: self.as_title().to_string(),
-            value: SelectValueEnum::String(value),
+            value: SelectValueEnum::Str(value),
             ..Default::default()
         }
     }

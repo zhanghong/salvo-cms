@@ -4,8 +4,11 @@ use serde::{Deserialize, Serialize};
 use crate::domain::{SelectOptionItem, SelectValueEnum};
 
 const OPEN_TITLE: &str = "用户端";
-const MAMAGER_TITLE: &str = "管理端";
+const MANAGER_TITLE: &str = "管理端";
 const SYSTEM_TITLE: &str = "系统端";
+const OPEN_VALUE: &str = "open";
+const MANAGER_VALUE: &str = "manager";
+const SYSTEM_VALUE: &str = "system";
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, ToSchema)]
 pub enum PlatformEnum {
@@ -15,19 +18,18 @@ pub enum PlatformEnum {
 }
 
 impl PlatformEnum {
-    pub fn as_value(&self) -> String {
+    pub fn as_value(&self) -> &'static str {
         match self {
-            PlatformEnum::Open => "open",
-            PlatformEnum::Manager => "manager",
-            PlatformEnum::System => "system",
+            PlatformEnum::Open => OPEN_VALUE,
+            PlatformEnum::Manager => MANAGER_VALUE,
+            PlatformEnum::System => SYSTEM_VALUE,
         }
-        .to_string()
     }
 
     pub fn as_title(&self) -> &'static str {
         match self {
             PlatformEnum::Open => OPEN_TITLE,
-            PlatformEnum::Manager => MAMAGER_TITLE,
+            PlatformEnum::Manager => MANAGER_TITLE,
             PlatformEnum::System => SYSTEM_TITLE,
         }
     }
@@ -54,7 +56,7 @@ impl Into<SelectOptionItem> for PlatformEnum {
         let value = self.as_value();
         SelectOptionItem {
             label: self.as_title().to_string(),
-            value: SelectValueEnum::String(value),
+            value: SelectValueEnum::Str(value),
             ..Default::default()
         }
     }

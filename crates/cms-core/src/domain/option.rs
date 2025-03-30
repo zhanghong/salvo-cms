@@ -6,6 +6,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 pub enum SelectValueEnum {
     Number(i64),
     String(String),
+    Str(&'static str),
 }
 
 impl Default for SelectValueEnum {
@@ -23,6 +24,7 @@ impl Serialize for SelectValueEnum {
         match self {
             SelectValueEnum::Number(n) => n.serialize(serializer),
             SelectValueEnum::String(s) => s.serialize(serializer),
+            SelectValueEnum::Str(s) => s.serialize(serializer),
         }
     }
 }
