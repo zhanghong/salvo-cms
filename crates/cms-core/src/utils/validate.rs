@@ -1,5 +1,7 @@
 use lazy_static::lazy_static;
+use num_traits::{Bounded, NumCast, Zero};
 use regex::Regex;
+use std::collections::HashMap;
 use std::fmt::Debug;
 use validator::ValidationError;
 
@@ -61,6 +63,20 @@ pub fn string_length(
     }
 
     Ok(())
+}
+
+pub fn numeric_greater_than_zero<T>(opt: Option<T>) -> Result<(), ValidationError>
+where
+    T: Copy + PartialOrd + Debug + Bounded + NumCast + Zero,
+{
+    if let Some(num) = opt {
+        if num <= T::zero() {
+            return Err(ValidationError::new("range_invalid"));
+        }
+        Ok(())
+    } else {
+        Ok(())
+    }
 }
 
 // 验证数值是否等于或大于最小值
@@ -164,5 +180,21 @@ pub fn is_allow_enum_value(flag: bool) -> Result<(), ValidationError> {
         Ok(())
     } else {
         Err(ValidationError::new("invalid_enum_value"))
+    }
+}
+
+// 验证哈希映射的长度是否在指定范围内
+pub fn hash_map_max_length<T, N>(
+    opt: Option<&&HashMap<T, N>>,
+    max: usize,
+) -> Result<(), ValidationError> {
+    if let Some(map) = opt {
+        if map.len() <= max {
+            Ok(())
+        } else {
+            Err(ValidationError::new("hash out size"))
+        }
+    } else {
+        Ok(())
     }
 }

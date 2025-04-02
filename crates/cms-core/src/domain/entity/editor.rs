@@ -2,6 +2,7 @@
 
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::env;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "user")]
@@ -22,6 +23,15 @@ impl ActiveModelBehavior for ActiveModel {}
 
 impl Model {
     pub fn avatar_url(&self) -> String {
-        self.avatar_path.to_owned()
+        if self.avatar_path.is_empty() {
+            env::var("USER_AVATAR_URL_DEFAULT").unwrap_or_else(|_| String::from(""))
+        } else if !self.avatar_path.starts_with("http://")
+            && !self.avatar_path.starts_with("https://")
+        {
+            let prefix = env::var("USER_AVATAR_URL_PREFIX").unwrap_or_else(|_| String::from(""));
+            format!("{}{}", prefix, self.avatar_path)
+        } else {
+            self.avatar_path.clone()
+        }
     }
 }

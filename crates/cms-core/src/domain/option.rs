@@ -15,6 +15,23 @@ impl Default for SelectValueEnum {
     }
 }
 
+impl SelectValueEnum {
+    /// 构造一个 Number 类型的值
+    pub fn from_number(n: i64) -> Self {
+        Self::Number(n)
+    }
+
+    /// 构造一个 String 类型的值
+    pub fn from_string(s: String) -> Self {
+        Self::String(s)
+    }
+
+    /// 构造一个 &'static str 类型的值
+    pub fn from_static_str(s: &'static str) -> Self {
+        Self::Str(s)
+    }
+}
+
 // 为 SelectValueEnum 实现自定义序列化
 impl Serialize for SelectValueEnum {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
