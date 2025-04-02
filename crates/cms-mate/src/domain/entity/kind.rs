@@ -71,28 +71,20 @@ impl ActiveModelBehavior for ActiveModel {}
 
 impl Model {
     pub fn created_time(&self) -> Option<String> {
-        if let Some(time) = (&self).created_at.clone() {
-            Some(time::to_db_time(&time))
-        } else {
-            None
-        }
+        self.created_at.map(|time| time::to_db_time(&time))
     }
 
     pub fn updated_time(&self) -> Option<String> {
-        if let Some(time) = (&self).updated_at.clone() {
-            Some(time::to_db_time(&time))
-        } else {
-            None
-        }
+        self.updated_at.map(|time| time::to_db_time(&time))
     }
 
     pub fn to_option_item(&self) -> SelectOptionItem {
         let group = format!("app-{}", self.app_id);
         SelectOptionItem {
-            label: self.title.clone(),
+            label: self.title.to_string(),
             value: SelectValueEnum::Number(self.id),
             disabled: Some(!self.is_enabled),
-            alias: Some(vec![self.name.clone()]),
+            alias: Some(vec![self.name.to_string()]),
             group: Some(group),
             children: None,
             ..Default::default()
@@ -110,10 +102,10 @@ impl Into<SelectOptionItem> for &Model {
     fn into(self) -> SelectOptionItem {
         let group = format!("app-{}", self.app_id);
         SelectOptionItem {
-            label: self.title.clone(),
+            label: self.title.to_string(),
             value: SelectValueEnum::Number(self.id),
             disabled: Some(!self.is_enabled),
-            alias: Some(vec![self.name.clone()]),
+            alias: Some(vec![self.name.to_string()]),
             group: Some(group),
             children: None,
             ..Default::default()

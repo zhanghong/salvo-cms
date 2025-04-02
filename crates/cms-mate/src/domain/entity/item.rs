@@ -3,6 +3,7 @@
 use chrono::NaiveDateTime;
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::env;
 
 use cms_core::{
     domain::{SelectOptionItem, SelectValueEnum},
@@ -84,36 +85,45 @@ impl ActiveModelBehavior for ActiveModel {}
 
 impl Model {
     pub fn pc_detail_url(&self) -> Option<String> {
-        self.pc_detail_path.clone()
+        match &self.pc_detail_path {
+            Some(path) if path.is_empty() => None,
+            Some(path) if !path.starts_with("http://") && !path.starts_with("https://") => {
+                let prefix = env::var("MATA_IMATE_URL_PREFIX").ok()?;
+                Some(format!("{}{}", prefix, path))
+            }
+            Some(path) => Some(path.clone()),
+            None => None,
+        }
     }
 
     pub fn wap_detail_url(&self) -> Option<String> {
-        self.wap_detail_path.clone()
+        match &self.wap_detail_path {
+            Some(path) if path.is_empty() => None,
+            Some(path) if !path.starts_with("http://") && !path.starts_with("https://") => {
+                let prefix = env::var("MATA_IMATE_URL_PREFIX").ok()?;
+                Some(format!("{}{}", prefix, path))
+            }
+            Some(path) => Some(path.clone()),
+            None => None,
+        }
     }
 
     pub fn created_time(&self) -> Option<String> {
-        if let Some(time) = (&self).created_at.clone() {
-            Some(time::to_db_time(&time))
-        } else {
-            None
-        }
+        self.created_at.map(|time| time::to_db_time(&time))
     }
 
     pub fn updated_time(&self) -> Option<String> {
-        if let Some(time) = (&self).updated_at.clone() {
-            Some(time::to_db_time(&time))
-        } else {
-            None
-        }
+        self.updated_at.map(|time| time::to_db_time(&time))
     }
 
+    /// Converts the model into a `SelectOptionItem`.
     pub fn to_option_item(&self) -> SelectOptionItem {
         let group = format!("kind-{}-prt-{}", self.kind_id, self.parent_id);
         SelectOptionItem {
-            label: self.title.clone(),
+            label: self.title.to_string(),
             value: SelectValueEnum::Number(self.id),
             disabled: Some(!self.is_enabled),
-            alias: Some(vec![self.name.clone()]),
+            alias: Some(vec![self.name.to_string()]),
             group: Some(group),
             children: None,
             ..Default::default()
@@ -131,10 +141,10 @@ impl Into<SelectOptionItem> for &Model {
     fn into(self) -> SelectOptionItem {
         let group = format!("{}-{}", self.kind_id, self.parent_id);
         SelectOptionItem {
-            label: self.title.clone(),
+            label: self.title.to_string(),
             value: SelectValueEnum::Number(self.id),
             disabled: Some(!self.is_enabled),
-            alias: Some(vec![self.name.clone()]),
+            alias: Some(vec![self.name.to_string()]),
             group: Some(group),
             children: None,
             ..Default::default()
