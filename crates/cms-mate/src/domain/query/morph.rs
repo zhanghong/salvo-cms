@@ -12,12 +12,12 @@ use cms_core::utils::deserializer;
 pub struct MorphInstanceQuery {
     /// 实例类型
     #[serde(default, deserialize_with = "deserializer::string_to_option_trimmed")]
-    #[salvo(parameter(required = true, nullable = true, value_type = String))]
+    #[salvo(parameter(required = true, nullable = true))]
     pub instance_type: Option<String>,
 
     /// 实例ID
     #[serde(default, deserialize_with = "deserializer::string_to_option_i64")]
-    #[salvo(parameter(required = true, nullable = true, value_type = i64))]
+    #[salvo(parameter(required = true, nullable = true))]
     pub instance_id: Option<i64>,
 
     /// 类型列表
@@ -25,6 +25,6 @@ pub struct MorphInstanceQuery {
         default,
         deserialize_with = "deserializer::string_to_option_string_vec"
     )]
-    #[salvo(parameter(required = false, nullable = true, value_type = Vec<String>))]
+    #[salvo(parameter(required = false, nullable = true))]
     pub kind_names: Option<Vec<String>>,
 }

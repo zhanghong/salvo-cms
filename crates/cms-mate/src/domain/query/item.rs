@@ -16,7 +16,7 @@ pub struct ItemPaginateQuery {
         default = "parameter::page_no_default",
         deserialize_with = "deserializer::string_to_param_page_no"
     )]
-    #[salvo(parameter(required = false, nullable = true, value_type =u32, default = 1, minimum = 1))]
+    #[salvo(parameter(required = false, nullable = true, default = 1, minimum = 1))]
     pub page: u64,
 
     /// 每页数量
@@ -24,22 +24,46 @@ pub struct ItemPaginateQuery {
         default = "parameter::page_size_default",
         deserialize_with = "deserializer::string_to_param_page_size"
     )]
-    #[salvo(parameter(required = false, nullable = true, value_type =u32, default = 10, minimum = 1, maximum = 100))]
+    #[salvo(parameter(
+        required = false,
+        nullable = true,
+        default = 10,
+        minimum = 1,
+        maximum = 100
+    ))]
     pub page_size: u64,
 
     /// App ID
     #[serde(default, deserialize_with = "deserializer::string_to_option_i64")]
-    #[salvo(parameter(required = false, nullable = true, value_type =i64, default = 10, minimum = 1, maximum = 100))]
+    #[salvo(parameter(
+        required = false,
+        nullable = true,
+        default = 10,
+        minimum = 1,
+        maximum = 100
+    ))]
     pub app_id: Option<i64>,
 
     /// 类型ID
     #[serde(default, deserialize_with = "deserializer::string_to_option_i64")]
-    #[salvo(parameter(required = false, nullable = true, value_type =i64, default = 10, minimum = 1, maximum = 100))]
+    #[salvo(parameter(
+        required = false,
+        nullable = true,
+        default = 10,
+        minimum = 1,
+        maximum = 100
+    ))]
     pub kind_id: Option<i64>,
 
     /// 父级ID
     #[serde(default, deserialize_with = "deserializer::string_to_option_i64")]
-    #[salvo(parameter(required = false, nullable = true, value_type =i64, default = 10, minimum = 1, maximum = 100))]
+    #[salvo(parameter(
+        required = false,
+        nullable = true,
+        default = 10,
+        minimum = 1,
+        maximum = 100
+    ))]
     pub parent_id: Option<i64>,
 
     /// 关键字
@@ -62,7 +86,7 @@ pub struct ItemPaginateQuery {
         default,
         deserialize_with = "deserializer::string_to_option_naive_datetime"
     )]
-    #[salvo(parameter(required = false, nullable = true, value_type = NaiveDateTime))]
+    #[salvo(parameter(required = false, nullable = true))]
     pub created_start_time: Option<NaiveDateTime>,
 
     /// 创建结束时间
@@ -70,6 +94,6 @@ pub struct ItemPaginateQuery {
         default,
         deserialize_with = "deserializer::string_to_option_naive_datetime"
     )]
-    #[salvo(parameter(required = false, nullable = true, value_type = NaiveDateTime))]
+    #[salvo(parameter(required = false, nullable = true))]
     pub created_end_time: Option<NaiveDateTime>,
 }
