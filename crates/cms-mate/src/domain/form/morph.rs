@@ -28,7 +28,10 @@ pub struct MorphInstanceStoreForm {
 
     /// 实例ID
     #[serde(default, deserialize_with = "deserializer::string_to_option_i64")]
-    #[validate(custom(function = "validate_big_integer_present", message = "实例ID不能为空"))]
+    #[validate(
+        required(message = "实例ID不能为空"),
+        custom(function = "validate_big_integer_present", message = "实例ID不能为空")
+    )]
     pub instance_id: Option<i64>,
 
     /// 关联Item列表

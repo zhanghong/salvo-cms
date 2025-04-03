@@ -1,4 +1,4 @@
-use salvo::http::{StatusCode, StatusError};
+use salvo::http::{StatusCode, StatusError, errors::ParseError};
 use salvo::oapi::{self, EndpointOutRegister, ToSchema};
 use salvo::prelude::*;
 use serde::Serialize;
@@ -57,7 +57,9 @@ impl_from_error!(
     redis::RedisError => AppError::Redis,
     lapin::Error => AppError::Queue,
     deadpool_lapin::PoolError => AppError::Queue,
-    deadpool_lapin::CreatePoolError => AppError::Queue
+    deadpool_lapin::CreatePoolError => AppError::Queue,
+    serde_json::Error => AppError::BadRequest,
+    ParseError => AppError::BadRequest
 );
 
 // 为 AppError 实现 Into<AppResponse<HashMap<String, String>>>

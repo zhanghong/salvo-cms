@@ -8,27 +8,19 @@ use cms_core::utils::{deserializer, validate};
 // // 字段验证方法
 // // ------------------------------------
 fn validate_field_name(ptr: &&String) -> Result<(), ValidationError> {
-    let string = (*ptr).clone();
-    let str = string.as_str();
-    validate::string_length(str, true, 2, 30)
+    validate::string_length(ptr.as_str(), true, 2, 30)
 }
 
 fn validate_field_title(ptr: &&String) -> Result<(), ValidationError> {
-    let string = (*ptr).clone();
-    let str = string.as_str();
-    validate::string_length(str, true, 2, 30)
+    validate::string_length(ptr.as_str(), true, 2, 30)
 }
 
 fn validate_field_description(ptr: &&String) -> Result<(), ValidationError> {
-    let string = (*ptr).clone();
-    let str = string.as_str();
-    validate::string_length(str, false, 0, 200)
+    validate::string_length(ptr.as_str(), false, 0, 200)
 }
 
 fn validate_field_icon(ptr: &&String) -> Result<(), ValidationError> {
-    let string = (*ptr).clone();
-    let str = string.as_str();
-    validate::string_length(str, false, 0, 30)
+    validate::string_length(ptr.as_str(), false, 0, 30)
 }
 
 fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
@@ -43,12 +35,18 @@ fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
 pub struct AppStoreForm {
     /// 名称
     #[serde(default, deserialize_with = "deserializer::string_to_option_trimmed")]
-    #[validate(custom(function = "validate_field_name", message = "模块名称长度为2-20位"))]
+    #[validate(
+        required(message = "模块名称不能为空"),
+        custom(function = "validate_field_name", message = "模块标题长度为2-30位")
+    )]
     pub name: Option<String>,
 
     /// 标题
     #[serde(default, deserialize_with = "deserializer::string_to_option_trimmed")]
-    #[validate(custom(function = "validate_field_title", message = "模块标题长度为2-30位"))]
+    #[validate(
+        required(message = "模块标题不能为空"),
+        custom(function = "validate_field_title", message = "模块标题长度为2-30位")
+    )]
     pub title: Option<String>,
 
     /// 描述
