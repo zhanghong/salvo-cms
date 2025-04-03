@@ -111,8 +111,8 @@ impl AppMasterVO {
                 vo.editor_type = model.editor_type.to_owned();
                 vo.editor_id = model.editor_id;
                 vo.version_no = model.version_no;
-                vo.created_time = model.created_time();
-                vo.updated_time = model.updated_time();
+                vo.created_time = model.created_time().clone();
+                vo.updated_time = model.updated_time().clone();
             }
             _ => {}
         }
@@ -143,7 +143,7 @@ pub struct AppLoadVO {
 }
 
 impl AppLoadVO {
-    fn from_model_inner(model: &Model) -> Self {
+    fn from_model(model: &Model) -> Self {
         Self {
             id: model.id,
             name: model.name.to_owned(),
@@ -155,12 +155,12 @@ impl AppLoadVO {
 
 impl From<Model> for AppLoadVO {
     fn from(model: Model) -> Self {
-        Self::from_model_inner(&model)
+        Self::from_model(&model)
     }
 }
 
 impl From<&Model> for AppLoadVO {
     fn from(model: &Model) -> Self {
-        Self::from_model_inner(model)
+        Self::from_model(model)
     }
 }

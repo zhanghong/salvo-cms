@@ -135,8 +135,8 @@ impl KindMasterVO {
                 vo.editor_id = model.editor_id;
                 vo.version_no = model.version_no;
                 vo.is_multiple = model.is_multiple;
-                vo.created_time = model.created_time();
-                vo.updated_time = model.updated_time();
+                vo.created_time = model.created_time().clone();
+                vo.updated_time = model.updated_time().clone();
             }
             _ => {}
         }
@@ -168,7 +168,7 @@ pub struct KindLoadVO {
 }
 
 impl KindLoadVO {
-    fn from_model_inner(model: &Model) -> Self {
+    fn from_model(model: &Model) -> Self {
         Self {
             id: model.id,
             name: model.name.to_owned(),
@@ -180,12 +180,12 @@ impl KindLoadVO {
 
 impl From<Model> for KindLoadVO {
     fn from(model: Model) -> Self {
-        Self::from_model_inner(&model)
+        Self::from_model(&model)
     }
 }
 
 impl From<&Model> for KindLoadVO {
     fn from(model: &Model) -> Self {
-        Self::from_model_inner(model)
+        Self::from_model(model)
     }
 }

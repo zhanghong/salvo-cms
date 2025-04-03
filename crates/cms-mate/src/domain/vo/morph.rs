@@ -48,7 +48,7 @@ pub struct MorphInstanceVO {
 }
 
 impl MorphInstanceVO {
-    fn from_model_inner(model: &Model) -> Self {
+    fn from_model(model: &Model) -> Self {
         Self {
             id: model.id,
             editor_type: model.editor_type.to_owned(),
@@ -63,12 +63,12 @@ impl MorphInstanceVO {
 
 impl From<Model> for MorphInstanceVO {
     fn from(model: Model) -> Self {
-        Self::from_model_inner(&model)
+        Self::from_model(&model)
     }
 }
 
 impl From<&Model> for MorphInstanceVO {
     fn from(model: &Model) -> Self {
-        Self::from_model_inner(model)
+        Self::from_model(model)
     }
 }

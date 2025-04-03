@@ -179,23 +179,23 @@ impl ItemMasterVO {
             ..Default::default()
         };
 
-        match *view_enum {
+        match view_enum {
             ViewModeEnum::ManagerList => {
                 vo.editor_type = model.editor_type.to_owned();
                 vo.editor_id = model.editor_id;
                 vo.version_no = model.version_no;
-                vo.created_time = model.created_time();
-                vo.updated_time = model.updated_time();
+                vo.created_time = model.created_time().clone();
+                vo.updated_time = model.updated_time().clone();
             }
             ViewModeEnum::ManagerDetail => {
                 vo.editor_type = model.editor_type.to_owned();
                 vo.editor_id = model.editor_id;
                 vo.version_no = model.version_no;
                 vo.introduction = model.introduction.clone();
-                vo.pc_detail_url = model.pc_detail_url();
-                vo.wap_detail_url = model.wap_detail_url();
-                vo.created_time = model.created_time();
-                vo.updated_time = model.updated_time();
+                vo.pc_detail_url = model.pc_detail_url().clone();
+                vo.wap_detail_url = model.wap_detail_url().clone();
+                vo.created_time = model.created_time().clone();
+                vo.updated_time = model.updated_time().clone();
             }
             _ => {}
         }
@@ -249,7 +249,11 @@ pub struct ItemLoadVO {
 }
 
 impl ItemLoadVO {
-    fn from_model_inner(model: &Model) -> Self {
+    fn from_model(model: &Model) -> Self {
+        if model.id <= 0 || model.name.is_empty() || model.icon.is_empty() {
+            panic!("Invalid Model data: ID must be positive and name/icon cannot be empty");
+        }
+
         Self {
             id: model.id,
             app_id: model.app_id,
@@ -265,12 +269,12 @@ impl ItemLoadVO {
 
 impl From<Model> for ItemLoadVO {
     fn from(model: Model) -> Self {
-        Self::from_model_inner(&model)
+        Self::from_model(&model)
     }
 }
 
 impl From<&Model> for ItemLoadVO {
     fn from(model: &Model) -> Self {
-        Self::from_model_inner(model)
+        Self::from_model(model)
     }
 }
