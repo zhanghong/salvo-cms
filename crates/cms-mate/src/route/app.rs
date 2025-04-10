@@ -53,7 +53,7 @@ pub async fn manager_paginate(
         (status_code = 200, description = "success response")
     )
 )]
-pub async fn manager_create(depot: &mut Depot, json: JsonBody<AppStoreForm>) -> AppResult<String> {
+pub async fn manager_create(depot: &mut Depot, json: JsonBody<AppStoreForm>) -> AppResult<bool> {
     let form = json.into_inner();
     form.validate()?;
 
@@ -62,7 +62,7 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<AppStoreForm>) -> 
     dto.editor = get_current_editor(depot);
 
     AppService::store(&PlatformEnum::Manager, &dto, state).await?;
-    result_ok("oK".to_string())
+    result_ok(true)
 }
 
 /// 更新应用
@@ -78,7 +78,7 @@ pub async fn manager_update(
     depot: &mut Depot,
     id: PathParam<i64>,
     json: JsonBody<AppStoreForm>,
-) -> AppResult<String> {
+) -> AppResult<bool> {
     let form = json.into_inner();
     form.validate()?;
 
@@ -88,7 +88,7 @@ pub async fn manager_update(
     dto.editor = get_current_editor(depot);
 
     AppService::store(&PlatformEnum::Manager, &dto, state).await?;
-    result_ok("oK".to_string())
+    result_ok(true)
 }
 
 /// 删除应用

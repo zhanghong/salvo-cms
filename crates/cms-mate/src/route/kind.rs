@@ -59,7 +59,7 @@ pub async fn manager_paginate(
         (status_code = 200, description = "success response")
     )
 )]
-pub async fn manager_create(depot: &mut Depot, json: JsonBody<KindStoreForm>) -> AppResult<String> {
+pub async fn manager_create(depot: &mut Depot, json: JsonBody<KindStoreForm>) -> AppResult<bool> {
     let form = json.into_inner();
     form.validate()?;
 
@@ -68,7 +68,7 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<KindStoreForm>) ->
     dto.editor = get_current_editor(depot);
 
     KindService::store(&PlatformEnum::Manager, &dto, state).await?;
-    result_ok("oK".to_string())
+    result_ok(true)
 }
 
 /// 更新类型
@@ -84,7 +84,7 @@ pub async fn manager_update(
     depot: &mut Depot,
     id: PathParam<i64>,
     json: JsonBody<KindStoreForm>,
-) -> AppResult<String> {
+) -> AppResult<bool> {
     let form = json.into_inner();
     form.validate()?;
 
@@ -94,7 +94,7 @@ pub async fn manager_update(
     dto.editor = get_current_editor(depot);
 
     KindService::store(&PlatformEnum::Manager, &dto, state).await?;
-    result_ok("oK".to_string())
+    result_ok(true)
 }
 
 /// 删除类型
