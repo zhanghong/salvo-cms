@@ -17,6 +17,7 @@ use cms_core::error::AppError;
 use cms_core::service::EditorService;
 use cms_core::utils::time;
 
+use super::AppService;
 use crate::domain::dto::{KindQueryDTO, KindStoreDTO};
 use crate::domain::entity::app::{Column as AppColumn, Entity as AppEntity};
 use crate::domain::entity::kind::{
@@ -24,8 +25,6 @@ use crate::domain::entity::kind::{
 };
 use crate::domain::vo::{KindFormOptionVO, KindLoadVO, KindMasterVO, KindQueryOptionVO};
 use crate::enums::KindLoadEnum;
-
-use super::AppService;
 
 pub struct KindService {}
 
@@ -36,109 +35,92 @@ impl KindService {
         dto: &KindStoreDTO,
         state: &AppState,
     ) -> HandleResult<KindModel> {
-        let id: i64 = dto.id;
-        let is_create = if id > 0 { false } else { true };
+        let id = dto.id;
+        let is_create = id <= 0;
 
-        let mut old_app_id = 0;
-        let mut current_version_no = 0;
-        let mut model = if is_create {
-            KindActiveModel {
-                ..Default::default()
-            }
+        let (old_app_id, current_version_no, mut model) = if is_create {
+            (
+                0,
+                0,
+                KindActiveModel {
+                    ..Default::default()
+                },
+            )
         } else {
             let model = Self::fetch_by_id(id, state).await?;
-            old_app_id = model.app_id;
-            if let Some(no) = model.version_no.clone() {
-                current_version_no = no;
-            }
-            model.into()
+            let old_app_id = model.app_id;
+            let current_version_no = model.version_no.unwrap_or(0);
+            (old_app_id, current_version_no, model.into())
         };
 
         // 检查版本号
-        if let Some(version_no) = dto.version_no.clone() {
-            if !is_create && version_no.ne(&current_version_no) {
-                let err = AppError::BadRequest(String::from("版本号错误"));
-                return Err(err);
+        if let Some(version_no) = dto.version_no {
+            if !is_create && version_no != current_version_no {
+                return Err(AppError::BadRequest("版本号错误".to_string()));
             }
         }
         model.version_no = Set(Some(current_version_no + 1));
 
         let db = &state.db;
-
-        let mut new_app_id: i64 = 0;
-        if let Some(opt_app_id) = dto.app_id.clone() {
-            new_app_id = opt_app_id;
-        }
+        let new_app_id = dto.app_id.unwrap_or(0);
         if new_app_id < 1 {
-            let err = AppError::BadRequest(String::from("参数 app_id 必须大于0"));
-            return Err(err);
+            return Err(AppError::BadRequest("参数 app_id 必须大于0".to_string()));
         }
-        let app = AppService::fetch_by_id(new_app_id, state).await;
-        if app.is_err() {
-            let err = AppError::BadRequest(String::from("App 不存在"));
-            return Err(err);
-        }
-        let app = app.unwrap();
-        if app.is_enabled == false {
-            let err = AppError::BadRequest(String::from("App 未启用"));
-            return Err(err);
-        }
-        if old_app_id.ne(&new_app_id) {
+        Self::check_app_enable(new_app_id, state).await?;
+        if old_app_id != new_app_id {
             model.app_id = Set(new_app_id);
         }
 
-        let mut filter_extends = HashMap::<String, String>::new();
-        if let Some(name) = dto.name.clone() {
+        let mut filter_extends = HashMap::new();
+        if let Some(name) = &dto.name {
             filter_extends.insert("app_id".to_string(), "0".to_string());
-            let is_exists = Self::is_column_exist(
+            if Self::is_column_exist(
                 id,
                 KindColumn::Name,
-                sea_orm::Value::from(name.to_owned()),
+                sea_orm::Value::from(name),
                 &filter_extends,
                 db,
             )
-            .await?;
-            if is_exists {
-                let err = AppError::BadRequest(String::from("名称已存在"));
-                return Err(err);
+            .await?
+            {
+                return Err(AppError::BadRequest("名称已存在".to_string()));
             }
-            model.name = Set(name);
+            model.name = Set(name.clone());
         }
 
         filter_extends.insert("app_id".to_string(), new_app_id.to_string());
-        if let Some(title) = dto.title.clone() {
-            let is_exists = Self::is_column_exist(
+        if let Some(title) = &dto.title {
+            if Self::is_column_exist(
                 id,
                 KindColumn::Title,
-                sea_orm::Value::from(title.to_owned()),
+                sea_orm::Value::from(title),
                 &filter_extends,
                 db,
             )
-            .await?;
-            if is_exists {
-                let err = AppError::BadRequest(String::from("标题已存在"));
-                return Err(err);
+            .await?
+            {
+                return Err(AppError::BadRequest("标题已存在".to_string()));
             }
-            model.title = Set(title);
+            model.title = Set(title.clone());
         }
 
-        if let Some(max_level) = dto.max_level.clone() {
+        if let Some(max_level) = dto.max_level {
             model.max_level = Set(max_level);
         }
 
-        if let Some(description) = dto.description.clone() {
-            model.description = Set(description);
+        if let Some(description) = &dto.description {
+            model.description = Set(description.clone());
         }
 
-        if let Some(icon) = dto.icon.clone() {
-            model.icon = Set(icon);
+        if let Some(icon) = &dto.icon {
+            model.icon = Set(icon.clone());
         }
 
-        if let Some(sort) = dto.sort.clone() {
+        if let Some(sort) = dto.sort {
             model.sort = Set(sort);
         }
 
-        if let Some(is_enabled) = dto.is_enabled.clone() {
+        if let Some(is_enabled) = dto.is_enabled {
             model.is_enabled = Set(is_enabled);
         }
 
@@ -159,10 +141,23 @@ impl KindService {
         let txn = db.begin().await?;
         let model = model.save(&txn).await?;
         let model = model.try_into_model()?;
-        let _ = Self::batch_upload_count_in_apps(app_ids, state).await?;
+        Self::batch_upload_count_in_apps(app_ids, state).await?;
         txn.commit().await?;
 
         handle_ok(model)
+    }
+
+    /// 检查 App 是否存在
+    async fn check_app_enable(app_id: i64, state: &AppState) -> HandleResult<()> {
+        let result = AppService::fetch_by_id(app_id, state).await;
+        if result.is_err() {
+            return Err(AppError::BadRequest("App 不存在".to_string()));
+        }
+        let app = result.unwrap();
+        if !app.is_enabled {
+            return Err(AppError::BadRequest("App 未启用".to_string()));
+        }
+        handle_ok(())
     }
 
     /// 检查字段值是否唯一（查询）
@@ -198,25 +193,16 @@ impl KindService {
         let id = dto.skip_id;
         let db = &state.db;
 
-        let field_name = dto.field_name.to_owned();
-        let column = match field_name.to_lowercase().as_str() {
+        let column = match dto.field_name.to_lowercase().as_str() {
             "name" => KindColumn::Name,
             "title" => KindColumn::Title,
-            _ => {
-                let err = AppError::BadRequest(String::from("无效的字段"));
-                return Err(err);
-            }
+            _ => return Err(AppError::BadRequest("无效的字段".to_string())),
         };
 
-        let field_value = dto.field_value.to_owned();
-        let value = sea_orm::Value::from(field_value);
-
-        let filter_extends = dto
-            .extends
-            .clone()
-            .unwrap_or(HashMap::<String, String>::new());
+        let value = sea_orm::Value::from(dto.field_value.clone());
+        let filter_extends = dto.extends.clone().unwrap_or_default();
         let exist = Self::is_column_exist(id, column, value, &filter_extends, db).await?;
-        handle_ok(exist != true)
+        handle_ok(!exist)
     }
 
     /// 查询选项
@@ -265,24 +251,20 @@ impl KindService {
     ) -> HandleResult<bool> {
         let id = dto.id;
         if id < 1 {
-            let err = AppError::BadRequest(String::from("参数ID错误"));
-            return Err(err);
+            return Err(AppError::BadRequest("参数ID错误".to_string()));
         }
         let db = &state.db;
 
         let model = Self::fetch_by_id(id, state).await?;
         let mut model: KindActiveModel = model.into();
 
-        let field_name = dto.field_name.to_owned();
+        let field_name = dto.field_name.to_lowercase();
         let bool_value = dto.field_value;
-        match field_name.to_lowercase().as_str() {
+        match field_name.as_str() {
             "is_enabled" | "enabled" => {
                 model.is_enabled = Set(bool_value);
             }
-            _ => {
-                let err = AppError::BadRequest(String::from("更新字段错误"));
-                return Err(err);
-            }
+            _ => return Err(AppError::BadRequest("更新字段错误".to_string())),
         };
 
         let now = time::current_time();
@@ -292,7 +274,7 @@ impl KindService {
         model.editor_type = Set(editor.editor_type.string_value());
         model.editor_id = Set(editor.editor_id);
 
-        let _ = model.save(db).await?;
+        model.save(db).await?;
 
         handle_ok(true)
     }
@@ -305,22 +287,18 @@ impl KindService {
     ) -> HandleResult<KindMasterVO> {
         let id = dto.id;
         if id < 1 {
-            let err = AppError::BadRequest(String::from("参数ID错误"));
-            return Err(err);
+            return Err(AppError::BadRequest("参数ID错误".to_string()));
         }
 
         let model = Self::fetch_by_id(id, state).await?;
 
         let view_enum = ViewModeEnum::platform_to_detail_mode(platform);
-        if view_enum == ViewModeEnum::OpenDetail {
-            if !model.is_enabled {
-                let err = AppError::NotFound(String::from("访问记录不存在"));
-                return Err(err);
-            }
+        if view_enum == ViewModeEnum::OpenDetail && !model.is_enabled {
+            return Err(AppError::NotFound("访问记录不存在".to_string()));
         }
 
         let mut vo: KindMasterVO = KindMasterVO::mode_into(&view_enum, &model);
-        if let Some(load_models) = dto.load_models.clone() {
+        if let Some(load_models) = &dto.load_models {
             for enums in load_models {
                 match enums {
                     KindLoadEnum::Editor => {
@@ -384,7 +362,7 @@ impl KindService {
         let mut list: Vec<KindMasterVO> = Vec::with_capacity(len);
         let mut editor_ids: Vec<i64> = Vec::with_capacity(len);
         let mut app_ids: Vec<i64> = Vec::with_capacity(len);
-        for model in models.iter() {
+        for model in &models {
             editor_ids.push(model.editor_id);
             app_ids.push(model.app_id);
             let mut vo: KindMasterVO = KindMasterVO::mode_into(&view_enum, &model);
@@ -395,18 +373,18 @@ impl KindService {
             list.push(vo);
         }
 
-        if let Some(load_models) = dto.load_models.clone() {
+        if let Some(load_models) = &dto.load_models {
             for enums in load_models {
                 match enums {
                     KindLoadEnum::Editor => {
                         let map = EditorService::batch_load_by_ids(&editor_ids, state).await?;
-                        for vo in list.iter_mut() {
+                        for vo in &mut list {
                             vo.editor = map.get(&vo.editor_id).cloned();
                         }
                     }
                     KindLoadEnum::App => {
                         let map = AppService::batch_load_by_ids(&app_ids, state).await?;
-                        for vo in list.iter_mut() {
+                        for vo in &mut list {
                             vo.app = map.get(&vo.app_id).cloned();
                         }
                     }
@@ -422,10 +400,6 @@ impl KindService {
             list,
         };
 
-        // let editor_ids = models
-        //     .into_iter()
-        //     .map(|model| model.editor_id)
-        //     .collect::<Vec<i64>>();
         handle_ok(vo)
     }
 
@@ -437,15 +411,15 @@ impl KindService {
         let mut query = Self::scope_active_query();
         query = query.order_by_desc(KindColumn::Id);
 
-        if let Some(keyword) = dto.keyword.clone() {
+        if let Some(keyword) = &dto.keyword {
             let condition = Condition::any()
-                .add(KindColumn::Name.contains(&keyword))
-                .add(KindColumn::Title.contains(&keyword));
+                .add(KindColumn::Name.contains(keyword))
+                .add(KindColumn::Title.contains(keyword));
             query = query.filter(condition);
         }
 
-        if let Some(title) = dto.title.clone() {
-            query = query.filter(KindColumn::Title.contains(&title));
+        if let Some(title) = &dto.title {
+            query = query.filter(KindColumn::Title.contains(title));
         }
 
         if *platform == PlatformEnum::Open {
@@ -454,12 +428,12 @@ impl KindService {
             query = query.filter(KindColumn::IsEnabled.eq(enabled));
         }
 
-        if let Some(time) = dto.created_start_time.clone() {
-            query = query.filter(KindColumn::CreatedAt.gte(time));
+        if let Some(time) = &dto.created_start_time {
+            query = query.filter(KindColumn::CreatedAt.gte(*time));
         }
 
-        if let Some(time) = dto.created_end_time.clone() {
-            query = query.filter(KindColumn::CreatedAt.lte(time));
+        if let Some(time) = &dto.created_end_time {
+            query = query.filter(KindColumn::CreatedAt.lte(*time));
         }
 
         handle_ok(query)
@@ -477,7 +451,7 @@ impl KindService {
             .filter(KindColumn::Id.eq(id))
             .one(db)
             .await?
-            .ok_or_else(|| AppError::BadRequest(String::from("访问记录不存在")))?;
+            .ok_or_else(|| AppError::BadRequest("访问记录不存在".to_string()))?;
 
         handle_ok(model)
     }
@@ -495,9 +469,8 @@ impl KindService {
         }
         let model = result.unwrap();
         let editor = dto.editor.clone();
-        if Self::can_delete(&editor, &model) == false {
-            let err = AppError::BadRequest(String::from("无权限删除"));
-            return Err(err);
+        if !Self::can_delete(&editor, &model) {
+            return Err(AppError::BadRequest("无权限删除".to_string()));
         }
         let mut model: KindActiveModel = model.into();
         model.editor_type = Set(editor.editor_type.string_value());
@@ -505,7 +478,7 @@ impl KindService {
         model.is_deleted = Set(Some(true));
         let now = time::current_time();
         model.deleted_at = Set(Some(now));
-        let _ = model.save(db).await?;
+        model.save(db).await?;
 
         handle_ok(())
     }
@@ -531,7 +504,7 @@ impl KindService {
         state: &AppState,
     ) -> HandleResult<Vec<SelectOptionItem>> {
         let mut apps = AppService::fetch_option_list(platform, state).await?;
-        if apps.len() < 1 {
+        if apps.is_empty() {
             return handle_ok(vec![]);
         }
         let db = &state.db;
@@ -549,13 +522,13 @@ impl KindService {
                     _ => 0,
                 };
                 let mut children = vec![];
-                for model in models.iter() {
+                for model in &models {
                     if model.app_id == app_id {
                         let child: SelectOptionItem = model.into();
                         children.push(child);
                     }
                 }
-                if children.len() > 0 {
+                if !children.is_empty() {
                     item.children = Some(children);
                 }
                 item
@@ -588,9 +561,9 @@ impl KindService {
         ids: &Vec<i64>,
         state: &AppState,
     ) -> HandleResult<HashMap<i64, KindLoadVO>> {
-        let filted_ids: Vec<i64> = ids.into_iter().filter(|&&id| id > 0).cloned().collect();
+        let filted_ids: Vec<i64> = ids.iter().filter(|&&id| id > 0).cloned().collect();
         if filted_ids.is_empty() {
-            return handle_ok(HashMap::<i64, KindLoadVO>::new());
+            return handle_ok(HashMap::new());
         }
 
         let db = &state.db;
@@ -609,7 +582,7 @@ impl KindService {
 
     /// 批量更新应用的记录数量
     async fn batch_upload_count_in_apps(app_ids: Vec<i64>, state: &AppState) -> HandleResult<()> {
-        let app_ids: Vec<i64> = app_ids.iter().filter(|&&id| id > 0).cloned().collect();
+        let app_ids: Vec<i64> = app_ids.into_iter().filter(|id| *id > 0).collect();
         if app_ids.is_empty() {
             return handle_ok(());
         }
@@ -628,12 +601,11 @@ impl KindService {
             .map(|model| (model.relation_id, model.item_count))
             .collect();
 
-        for id in app_ids.iter() {
-            let count = map.get(id).unwrap_or(&0);
-
-            let _ = AppEntity::update_many()
-                .col_expr(AppColumn::KindCount, Expr::value(*count))
-                .filter(AppColumn::Id.eq(*id))
+        for id in app_ids {
+            let count = *map.get(&id).unwrap_or(&0);
+            AppEntity::update_many()
+                .col_expr(AppColumn::KindCount, Expr::value(count))
+                .filter(AppColumn::Id.eq(id))
                 .exec(db)
                 .await?;
         }
@@ -643,14 +615,11 @@ impl KindService {
 
     /// 是否可以删除记录
     pub fn can_delete(editor: &EditorCurrent, model: &KindModel) -> bool {
-        let has_item = match model.item_count {
-            Some(count) => count > 0,
-            None => true,
-        };
+        let has_item = model.item_count.map_or(true, |count| count > 0);
         if has_item {
             return false;
         }
 
-        return editor.editor_type == EditorTypeEnum::Admin;
+        editor.editor_type == EditorTypeEnum::Admin
     }
 }

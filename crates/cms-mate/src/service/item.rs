@@ -37,27 +37,30 @@ impl ItemService {
         state: &AppState,
     ) -> HandleResult<ItemModel> {
         let id: i64 = dto.id;
-        let is_create = if id > 0 { false } else { true };
+        let is_create = id <= 0;
 
-        let mut old_parent_id = 0;
-        let mut old_kind_id = 0;
-        let mut current_version_no = 0;
-        let mut model = if is_create {
-            ItemActiveModel {
-                ..Default::default()
-            }
+        let (old_parent_id, old_kind_id, current_version_no, mut model) = if is_create {
+            (
+                0,
+                0,
+                0,
+                ItemActiveModel {
+                    ..Default::default()
+                },
+            )
         } else {
             let model = Self::fetch_by_id(id, state).await?;
-            if let Some(no) = model.version_no.clone() {
-                current_version_no = no;
-            }
-            old_kind_id = model.kind_id;
-            old_parent_id = model.parent_id;
-            model.into()
+            let current_version_no = model.version_no.unwrap_or(0);
+            (
+                model.parent_id,
+                model.kind_id,
+                current_version_no,
+                model.into(),
+            )
         };
 
         // 检查版本号
-        if let Some(version_no) = dto.version_no.clone() {
+        if let Some(version_no) = dto.version_no {
             if !is_create && version_no.ne(&current_version_no) {
                 let err = AppError::BadRequest(String::from("版本号错误"));
                 return Err(err);
@@ -68,7 +71,7 @@ impl ItemService {
         let db = &state.db;
 
         let mut new_kind_id: i64 = 0;
-        if let Some(opt_kind_id) = dto.kind_id.clone() {
+        if let Some(opt_kind_id) = dto.kind_id {
             new_kind_id = opt_kind_id;
         }
         if new_kind_id < 1 {
@@ -89,7 +92,7 @@ impl ItemService {
         model.kind_id = Set(new_kind_id);
 
         let mut new_parent_id: i64 = 0;
-        if let Some(pid) = dto.parent_id.clone() {
+        if let Some(pid) = dto.parent_id {
             new_parent_id = pid;
             if new_parent_id > 0 {
                 let parent = Self::fetch_by_id(new_parent_id, state).await?;
@@ -108,11 +111,11 @@ impl ItemService {
         filter_extends.insert("kind_id".to_string(), new_kind_id.to_string());
         filter_extends.insert("parent_id".to_string(), new_parent_id.to_string());
 
-        if let Some(name) = dto.name.clone() {
+        if let Some(name) = &dto.name {
             let is_exists = Self::is_column_exist(
                 id,
                 ItemColumn::Name,
-                sea_orm::Value::from(name.to_owned()),
+                sea_orm::Value::from(name),
                 &filter_extends,
                 db,
             )
@@ -121,14 +124,14 @@ impl ItemService {
                 let err = AppError::BadRequest(String::from("名称已存在"));
                 return Err(err);
             }
-            model.name = Set(name);
+            model.name = Set(name.clone());
         }
 
-        if let Some(title) = dto.title.clone() {
+        if let Some(title) = &dto.title {
             let is_exists = Self::is_column_exist(
                 id,
                 ItemColumn::Title,
-                sea_orm::Value::from(title.to_owned()),
+                sea_orm::Value::from(title),
                 &filter_extends,
                 db,
             )
@@ -137,19 +140,19 @@ impl ItemService {
                 let err = AppError::BadRequest(String::from("标题已存在"));
                 return Err(err);
             }
-            model.title = Set(title);
+            model.title = Set(title.clone());
         }
 
-        if let Some(description) = dto.description.clone() {
-            model.description = Set(description);
+        if let Some(description) = &dto.description {
+            model.description = Set(description.clone());
         }
 
-        if let Some(introduction) = dto.introduction.clone() {
-            model.introduction = Set(Some(introduction));
+        if let Some(introduction) = &dto.introduction {
+            model.introduction = Set(Some(introduction.clone()));
         }
 
-        if let Some(icon) = dto.icon.clone() {
-            model.icon = Set(icon);
+        if let Some(icon) = &dto.icon {
+            model.icon = Set(icon.clone());
         }
 
         if dto.pc_detail_path.is_some() {
@@ -160,11 +163,11 @@ impl ItemService {
             model.wap_detail_path = Set(dto.wap_detail_path.clone());
         }
 
-        if let Some(sort) = dto.sort.clone() {
+        if let Some(sort) = dto.sort {
             model.sort = Set(sort);
         }
 
-        if let Some(is_enabled) = dto.is_enabled.clone() {
+        if let Some(is_enabled) = dto.is_enabled {
             model.is_enabled = Set(is_enabled);
         }
 

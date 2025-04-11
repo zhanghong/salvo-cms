@@ -22,6 +22,16 @@ use crate::domain::entity::app::{
 use crate::domain::vo::{AppFormOptionVO, AppLoadVO, AppMasterVO, AppQueryOptionVO};
 use crate::enums::AppLoadEnum;
 
+// 定义错误信息常量
+const VERSION_ERROR_MSG: &str = "版本号错误";
+const NAME_EXISTS_MSG: &str = "名称已存在";
+const TITLE_EXISTS_MSG: &str = "标题已存在";
+const INVALID_FIELD_MSG: &str = "无效的字段";
+const PARAM_ID_ERROR_MSG: &str = "参数ID错误";
+const UPDATE_FIELD_ERROR_MSG: &str = "更新字段错误";
+const RECORD_NOT_FOUND_MSG: &str = "访问记录不存在";
+const NO_PERMISSION_DELETE_MSG: &str = "无权限删除";
+
 pub struct AppService {}
 
 impl AppService {
@@ -31,79 +41,76 @@ impl AppService {
         dto: &AppStoreDTO,
         state: &AppState,
     ) -> HandleResult<AppModel> {
-        let id: i64 = dto.id;
-        let is_create = if id > 0 { false } else { true };
+        let id = dto.id;
+        let is_create = id <= 0;
 
-        let mut current_version_no = 0;
-        let mut model = if is_create {
-            AppActiveModel {
-                ..Default::default()
-            }
+        let (current_version_no, mut model) = if is_create {
+            (
+                0,
+                AppActiveModel {
+                    ..Default::default()
+                },
+            )
         } else {
             let model = Self::fetch_by_id(id, state).await?;
-            if let Some(no) = model.version_no.clone() {
-                current_version_no = no;
-            }
-            model.into()
+            let current_version_no = model.version_no.unwrap_or(0);
+            (current_version_no, model.into())
         };
 
         // 检查版本号
-        if let Some(version_no) = dto.version_no.clone() {
-            if !is_create && version_no.ne(&current_version_no) {
-                let err = AppError::BadRequest(String::from("版本号错误"));
-                return Err(err);
+        if let Some(version_no) = dto.version_no {
+            if !is_create && version_no != current_version_no {
+                return Err(AppError::BadRequest(VERSION_ERROR_MSG.to_string()));
             }
         }
         model.version_no = Set(Some(current_version_no + 1));
 
         let db = &state.db;
+        let filter_extends = HashMap::new();
 
-        let filter_extends = HashMap::<String, String>::new();
-        if let Some(name) = dto.name.clone() {
-            let is_exists = Self::is_column_exist(
+        if let Some(name) = &dto.name {
+            if Self::is_column_exist(
                 id,
                 AppColumn::Name,
-                sea_orm::Value::from(name.to_owned()),
+                sea_orm::Value::from(name),
                 &filter_extends,
                 db,
             )
-            .await?;
-            if is_exists {
-                let err = AppError::BadRequest(String::from("名称已存在"));
-                return Err(err);
+            .await?
+            {
+                return Err(AppError::BadRequest(NAME_EXISTS_MSG.to_string()));
             }
-            model.name = Set(name);
+            model.name = Set(name.clone());
         }
 
-        if let Some(title) = dto.title.clone() {
-            let is_exists = Self::is_column_exist(
+        if let Some(title) = &dto.title {
+            if Self::is_column_exist(
                 id,
                 AppColumn::Title,
-                sea_orm::Value::from(title.to_owned()),
+                sea_orm::Value::from(title),
                 &filter_extends,
                 db,
             )
-            .await?;
-            if is_exists {
-                let err = AppError::BadRequest(String::from("标题已存在"));
-                return Err(err);
+            .await?
+            {
+                return Err(AppError::BadRequest(TITLE_EXISTS_MSG.to_string()));
             }
-            model.title = Set(title);
+            model.title = Set(title.clone());
         }
 
-        if let Some(description) = dto.description.clone() {
-            model.description = Set(description);
+        if let Some(description) = &dto.description {
+            model.description = Set(description.clone());
         }
 
-        if let Some(icon) = dto.icon.clone() {
-            model.icon = Set(icon);
+        if let Some(icon) = &dto.icon {
+            model.icon = Set(icon.clone());
         }
 
-        if let Some(sort) = dto.sort.clone() {
+        if let Some(sort) = dto.sort {
             model.sort = Set(sort);
         }
 
-        if let Some(is_enabled) = dto.is_enabled.clone() {
+        if let Some(is_enabled) = dto.is_enabled {
             model.is_enabled = Set(is_enabled);
         }
 
@@ -153,25 +160,16 @@ impl AppService {
         let id = dto.skip_id;
         let db = &state.db;
 
-        let field_name = dto.field_name.to_owned();
-        let column = match field_name.to_lowercase().as_str() {
+        let column = match dto.field_name.to_lowercase().as_str() {
             "name" => AppColumn::Name,
             "title" => AppColumn::Title,
-            _ => {
-                let err = AppError::BadRequest(String::from("无效的字段"));
-                return Err(err);
-            }
+            _ => return Err(AppError::BadRequest(INVALID_FIELD_MSG.to_string())),
         };
 
-        let field_value = dto.field_value.to_owned();
-        let value = sea_orm::Value::from(field_value);
-
-        let filter_extends = dto
-            .extends
-            .clone()
-            .unwrap_or(HashMap::<String, String>::new());
+        let value = sea_orm::Value::from(dto.field_value.clone());
+        let filter_extends = dto.extends.clone().unwrap_or_default();
         let exist = Self::is_column_exist(id, column, value, &filter_extends, db).await?;
-        handle_ok(exist != true)
+        handle_ok(!exist)
     }
 
     /// 查询选项
@@ -211,24 +209,17 @@ impl AppService {
     ) -> HandleResult<bool> {
         let id = dto.id;
         if id < 1 {
-            let err = AppError::BadRequest(String::from("参数ID错误"));
-            return Err(err);
+            return Err(AppError::BadRequest(PARAM_ID_ERROR_MSG.to_string()));
         }
         let db = &state.db;
 
         let model = Self::fetch_by_id(id, state).await?;
         let mut model: AppActiveModel = model.into();
 
-        let field_name = dto.field_name.to_owned();
         let bool_value = dto.field_value;
-        match field_name.to_lowercase().as_str() {
-            "is_enabled" | "enabled" => {
-                model.is_enabled = Set(bool_value);
-            }
-            _ => {
-                let err = AppError::BadRequest(String::from("更新字段错误"));
-                return Err(err);
-            }
+        match dto.field_name.to_lowercase().as_str() {
+            "is_enabled" | "enabled" => model.is_enabled = Set(bool_value),
+            _ => return Err(AppError::BadRequest(UPDATE_FIELD_ERROR_MSG.to_string())),
         };
 
         let now = time::current_time();
@@ -251,22 +242,18 @@ impl AppService {
     ) -> HandleResult<AppMasterVO> {
         let id = dto.id;
         if id < 1 {
-            let err = AppError::BadRequest(String::from("参数ID错误"));
-            return Err(err);
+            return Err(AppError::BadRequest(PARAM_ID_ERROR_MSG.to_string()));
         }
 
         let model = Self::fetch_by_id(id, state).await?;
 
         let view_enum = ViewModeEnum::platform_to_detail_mode(platform);
-        if view_enum == ViewModeEnum::OpenDetail {
-            if !model.is_enabled {
-                let err = AppError::NotFound(String::from("访问记录不存在"));
-                return Err(err);
-            }
+        if view_enum == ViewModeEnum::OpenDetail && !model.is_enabled {
+            return Err(AppError::NotFound(RECORD_NOT_FOUND_MSG.to_string()));
         }
 
         let mut vo: AppMasterVO = AppMasterVO::mode_into(&view_enum, &model);
-        if let Some(load_models) = dto.load_models.clone() {
+        if let Some(ref load_models) = dto.load_models {
             for enums in load_models {
                 match enums {
                     AppLoadEnum::Editor => {
@@ -333,7 +320,7 @@ impl AppService {
             list.push(vo);
         }
 
-        if let Some(load_models) = dto.load_models.clone() {
+        if let Some(ref load_models) = dto.load_models {
             for enums in load_models {
                 match enums {
                     AppLoadEnum::Editor => {
@@ -365,15 +352,15 @@ impl AppService {
         let mut query = Self::scope_active_query();
         query = query.order_by_desc(AppColumn::Id);
 
-        if let Some(keyword) = dto.keyword.clone() {
+        if let Some(ref keyword) = dto.keyword {
             let condition = Condition::any()
-                .add(AppColumn::Name.contains(&keyword))
-                .add(AppColumn::Title.contains(&keyword));
+                .add(AppColumn::Name.contains(keyword))
+                .add(AppColumn::Title.contains(keyword));
             query = query.filter(condition);
         }
 
-        if let Some(title) = dto.title.clone() {
-            query = query.filter(AppColumn::Title.contains(&title));
+        if let Some(ref title) = dto.title {
+            query = query.filter(AppColumn::Title.contains(title));
         }
 
         if *platform == PlatformEnum::Open {
@@ -382,12 +369,12 @@ impl AppService {
             query = query.filter(AppColumn::IsEnabled.eq(enabled));
         }
 
-        if let Some(time) = dto.created_start_time.clone() {
-            query = query.filter(AppColumn::CreatedAt.gte(time));
+        if let Some(ref time) = dto.created_start_time {
+            query = query.filter(AppColumn::CreatedAt.gte(*time));
         }
 
-        if let Some(time) = dto.created_end_time.clone() {
-            query = query.filter(AppColumn::CreatedAt.lte(time));
+        if let Some(ref time) = dto.created_end_time {
+            query = query.filter(AppColumn::CreatedAt.lte(*time));
         }
 
         handle_ok(query)
@@ -405,7 +392,7 @@ impl AppService {
             .filter(AppColumn::Id.eq(id))
             .one(db)
             .await?
-            .ok_or_else(|| AppError::NotFound(String::from("访问记录不存在")))?;
+            .ok_or_else(|| AppError::NotFound(RECORD_NOT_FOUND_MSG.to_string()))?;
 
         handle_ok(model)
     }
@@ -423,9 +410,8 @@ impl AppService {
         }
         let model = result.unwrap();
         let editor = dto.editor.clone();
-        if Self::can_delete(&editor, &model) == false {
-            let err = AppError::BadRequest(String::from("无权限删除"));
-            return Err(err);
+        if !Self::can_delete(&editor, &model) {
+            return Err(AppError::BadRequest(NO_PERMISSION_DELETE_MSG.to_string()));
         }
         let mut model: AppActiveModel = model.into();
         model.editor_type = Set(editor.editor_type.string_value());
@@ -444,10 +430,7 @@ impl AppService {
         state: &AppState,
     ) -> HandleResult<Vec<SelectOptionItem>> {
         let cache_key = "mate:app:option_list";
-        let only_enabled = match *platform {
-            PlatformEnum::Open => true,
-            _ => false,
-        };
+        let only_enabled = *platform == PlatformEnum::Open;
 
         let stored_list =
             RedisService::get_json_list::<SelectOptionItem>(&state.redis, cache_key).await;
@@ -455,7 +438,7 @@ impl AppService {
             if only_enabled {
                 let filted_list = stored_list
                     .into_iter()
-                    .filter(|opt| opt.disabled.unwrap_or(false) == false)
+                    .filter(|opt| !opt.disabled.unwrap_or(false))
                     .collect();
 
                 return handle_ok(filted_list);
@@ -502,7 +485,7 @@ impl AppService {
     ) -> HandleResult<HashMap<i64, AppLoadVO>> {
         let filted_ids: Vec<i64> = ids.into_iter().filter(|&&id| id > 0).cloned().collect();
         if filted_ids.is_empty() {
-            return handle_ok(HashMap::<i64, AppLoadVO>::new());
+            return handle_ok(HashMap::new());
         }
 
         let db = &state.db;
@@ -521,7 +504,7 @@ impl AppService {
 
     /// 是否可以删除记录
     pub fn can_delete(editor: &EditorCurrent, model: &AppModel) -> bool {
-        if let Some(num) = model.kind_count.clone() {
+        if let Some(num) = model.kind_count {
             if num > 0 {
                 return false;
             }
@@ -529,6 +512,6 @@ impl AppService {
             return false;
         }
 
-        return editor.editor_type == EditorTypeEnum::Admin;
+        editor.editor_type == EditorTypeEnum::Admin
     }
 }
