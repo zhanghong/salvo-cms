@@ -38,21 +38,21 @@ async fn main() {
     let openapi_url = "/api-doc/openapi.json";
     let router = router
         .push(doc.into_router(openapi_url))
-        // .push(
-        //     SwaggerUi::new(openapi_url)
-        //         .title(api_title)
-        //         .into_router("swagger-ui"),
-        // )
-        // .push(
-        //     Scalar::new(openapi_url)
-        //         .title(api_title)
-        //         .into_router("scalar"),
-        // )
-        // .push(
-        //     ReDoc::new(openapi_url)
-        //         .title(api_title)
-        //         .into_router("redoc"),
-        // )
+        .push(
+            SwaggerUi::new(openapi_url)
+                .title(api_title)
+                .into_router("swagger-ui"),
+        )
+        .push(
+            Scalar::new(openapi_url)
+                .title(api_title)
+                .into_router("scalar"),
+        )
+        .push(
+            ReDoc::new(openapi_url)
+                .title(api_title)
+                .into_router("redoc"),
+        )
         .push(
             RapiDoc::new(openapi_url)
                 .title(api_title)

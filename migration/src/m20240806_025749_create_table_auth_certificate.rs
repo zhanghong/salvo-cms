@@ -13,8 +13,10 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(
                         ColumnDef::new(AuthCertificate::Id)
-                            .string_len(36)
-                            .primary_key(),
+                            .big_integer()
+                            .primary_key()
+                            .auto_increment()
+                            .comment("ID"),
                     )
                     .col(
                         ColumnDef::new(AuthCertificate::UserType)
@@ -75,7 +77,7 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("cret-by-user-id")
+                    .name("crets_idx_by_uid")
                     .table(AuthCertificate::Table)
                     .col(AuthCertificate::UserId)
                     .to_owned(),
@@ -92,6 +94,7 @@ impl MigrationTrait for Migration {
 
 #[derive(DeriveIden)]
 enum AuthCertificate {
+    #[sea_orm(iden = "auth_certificates")]
     Table,
     Id,
     UserType,

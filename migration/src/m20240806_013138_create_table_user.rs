@@ -47,7 +47,7 @@ impl MigrationTrait for Migration {
                             .comment("Name"),
                     )
                     .col(
-                        ColumnDef::new(User::Realname)
+                        ColumnDef::new(User::RealName)
                             .string_len(30)
                             .not_null()
                             .default("")
@@ -61,7 +61,7 @@ impl MigrationTrait for Migration {
                             .comment("昵称"),
                     )
                     .col(
-                        ColumnDef::new(User::UserType)
+                        ColumnDef::new(User::UserTypes)
                             .string_len(50)
                             .not_null()
                             .default("member")
@@ -203,7 +203,7 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("idx-by-email")
+                    .name("User_idx_by_email")
                     .table(User::Table)
                     .col(User::Email)
                     .to_owned(),
@@ -220,15 +220,16 @@ impl MigrationTrait for Migration {
 
 #[derive(DeriveIden)]
 enum User {
+    #[sea_orm(iden = "users")]
     Table,
     Id,
     EditorType,
     EditorId,
     No,
     Name,
-    Realname,
+    RealName,
     Nickname,
-    UserType,
+    UserTypes,
     Gender,
     Phone,
     AvatarPath,

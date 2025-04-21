@@ -56,7 +56,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(MateApp::Icon)
-                            .string_len(200)
+                            .string_len(50)
                             .not_null()
                             .default("")
                             .comment("图标"),
@@ -113,6 +113,7 @@ impl MigrationTrait for Migration {
 
 #[derive(DeriveIden)]
 enum MateApp {
+    #[sea_orm(iden = "mate_apps")]
     Table,
     Id,
     EditorType,

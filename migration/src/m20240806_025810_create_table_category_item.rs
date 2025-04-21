@@ -164,7 +164,7 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("cate-by-type")
+                    .name("categories_idx_by_itype")
                     .table(CategoryItem::Table)
                     .col(CategoryItem::ItemType)
                     .to_owned(),
@@ -181,6 +181,7 @@ impl MigrationTrait for Migration {
 
 #[derive(DeriveIden)]
 enum CategoryItem {
+    #[sea_orm(iden = "category_items")]
     Table,
     Id,
     EditorType,

@@ -59,7 +59,7 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("login-by-user-id")
+                    .name("logins_idx_by_uid")
                     .table(UserLogin::Table)
                     .col(UserLogin::UserId)
                     .to_owned(),
@@ -76,6 +76,7 @@ impl MigrationTrait for Migration {
 
 #[derive(DeriveIden)]
 enum UserLogin {
+    #[sea_orm(iden = "user_logins")]
     Table,
     Id,
     UserId,

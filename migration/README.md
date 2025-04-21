@@ -8,7 +8,7 @@
 cargo run -- generate MIGRATION_NAME
 ```
 
-### Apply all pending migrations
+### Apply all pending migrations (run in crate folder)
 
 ```sh
 cargo run

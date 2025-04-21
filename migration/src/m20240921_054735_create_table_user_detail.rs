@@ -155,6 +155,7 @@ impl MigrationTrait for Migration {
 
 #[derive(DeriveIden)]
 enum UserDetail {
+    #[sea_orm(iden = "user_details")]
     Table,
     Id,
     EditorType,

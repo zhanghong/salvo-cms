@@ -11,7 +11,7 @@ use cms_core::{
 };
 
 #[derive(Clone, Debug, Default, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
-#[sea_orm(table_name = "mate_item")]
+#[sea_orm(table_name = "mate_items")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i64,

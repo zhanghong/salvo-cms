@@ -86,7 +86,7 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("mate-morphable-by-app-kind")
+                    .name("mate_morphables_idx_by_app_id_and_kind_id")
                     .table(MateMorph::Table)
                     .col(MateMorph::AppId)
                     .col(MateMorph::KindId)
@@ -115,6 +115,7 @@ impl MigrationTrait for Migration {
 
 #[derive(DeriveIden)]
 enum MateMorph {
+    #[sea_orm(iden = "mate_morphes")]
     Table,
     Id,
     EditorType,

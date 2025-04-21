@@ -74,7 +74,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(MateItem::Icon)
-                            .string_len(30)
+                            .string_len(50)
                             .not_null()
                             .default("")
                             .comment("图标"),
@@ -166,7 +166,7 @@ impl MigrationTrait for Migration {
         manager
             .create_index(
                 Index::create()
-                    .name("mate-by-app-kind-deleted")
+                    .name("mate_items_idx_by_app_id_kind_id_and_deleted")
                     .table(MateItem::Table)
                     .col(MateItem::AppId)
                     .col(MateItem::KindId)
@@ -185,6 +185,7 @@ impl MigrationTrait for Migration {
 
 #[derive(DeriveIden)]
 enum MateItem {
+    #[sea_orm(iden = "mate_items")]
     Table,
     Id,
     EditorType,

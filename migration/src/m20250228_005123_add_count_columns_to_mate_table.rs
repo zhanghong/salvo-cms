@@ -116,6 +116,7 @@ impl MigrationTrait for Migration {
 
 #[derive(DeriveIden)]
 enum MateApp {
+    #[sea_orm(iden = "mate_apps")]
     Table,
     VersionNo,
     KindCount,
@@ -123,6 +124,7 @@ enum MateApp {
 
 #[derive(DeriveIden)]
 enum MateKind {
+    #[sea_orm(iden = "mate_kinds")]
     Table,
     VersionNo,
     ItemCount,
@@ -130,6 +132,7 @@ enum MateKind {
 
 #[derive(DeriveIden)]
 enum MateItem {
+    #[sea_orm(iden = "mate_items")]
     Table,
     VersionNo,
     ChildrenCount,
