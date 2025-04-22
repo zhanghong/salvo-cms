@@ -22,7 +22,7 @@ fn validate_field_name(ptr: &&String) -> Result<(), ValidationError> {
     validate::string_length(str, true, 5, 30)
 }
 
-fn validate_field_realname(ptr: &&String) -> Result<(), ValidationError> {
+fn validate_field_real_name(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
     validate::string_length(str, true, 2, 30)
@@ -96,8 +96,8 @@ fn validate_field_current_password(ptr: &&String) -> Result<(), ValidationError>
     "no": "1234567890",
     "password": 123456,
     "phone": "13800138000",
-    "realname": "real name",
-    "user_type": "member"
+    "real_name": "real name",
+    "user_types": "member"
 })))]
 pub struct UserCreateForm {
     /// 头像URL
@@ -149,11 +149,14 @@ pub struct UserCreateForm {
     pub phone: Option<String>,
 
     /// 真实姓名
-    #[validate(custom(function = "validate_field_realname", message = "真实姓名长度为2-30位"))]
-    pub realname: Option<String>,
+    #[validate(custom(
+        function = "validate_field_real_name",
+        message = "真实姓名长度为2-30位"
+    ))]
+    pub real_name: Option<String>,
 
     /// 角色类型
-    pub user_type: Option<String>,
+    pub user_types: Option<String>,
 
     // 详情信息
     pub detail: Option<DetailStoreForm>,
@@ -207,11 +210,14 @@ pub struct UserUpdateForm {
     pub phone: Option<String>,
 
     /// 真实姓名
-    #[validate(custom(function = "validate_field_realname", message = "真实姓名长度为2-30位"))]
-    pub realname: Option<String>,
+    #[validate(custom(
+        function = "validate_field_real_name",
+        message = "真实姓名长度为2-30位"
+    ))]
+    pub real_name: Option<String>,
 
     /// 角色类型
-    pub user_type: Option<String>,
+    pub user_types: Option<String>,
 
     // 详情信息
     pub detail: Option<DetailStoreForm>,

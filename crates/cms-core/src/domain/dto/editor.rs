@@ -12,9 +12,9 @@ pub struct EditorCurrent {
 impl EditorCurrent {
     fn from_claims(claims: &JwtClaimsDTO) -> Self {
         let editor_id = claims.user_id;
-        let user_type = claims.user_type.to_owned();
-        let user_type = user_type.to_lowercase();
-        let editor_type = match user_type.as_str() {
+        let user_types = claims.user_type.to_owned();
+        let user_types = user_types.to_lowercase();
+        let editor_type = match user_types.as_str() {
             "manager" => EditorTypeEnum::Admin,
             "open" => EditorTypeEnum::Member,
             _ => EditorTypeEnum::None,

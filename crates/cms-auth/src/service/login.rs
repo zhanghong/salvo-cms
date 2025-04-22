@@ -57,6 +57,7 @@ impl LoginService {
         }
 
         let md5_password = encrypt_password(user.salt.as_str(), password.as_str());
+        println!("md5_password: {}", md5_password);
         if md5_password.ne(&user.password) {
             let err = AppError::BadRequest(String::from("密码错误"));
             return Err(err);

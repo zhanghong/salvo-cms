@@ -46,7 +46,7 @@ pub struct UserItemVO {
 
     /// 真实姓名
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub realname: Option<String>,
+    pub real_name: Option<String>,
 
     /// 昵称
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -54,7 +54,7 @@ pub struct UserItemVO {
 
     /// 角色类型
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub user_types: Option<Vec<EditorTypeEnum>>,
+    pub user_typess: Option<Vec<EditorTypeEnum>>,
 
     /// 性别
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -119,7 +119,7 @@ impl UserItemVO {
             editor_id: model.editor_id,
             no: model.no.to_owned(),
             name: model.name.to_owned(),
-            realname: Some(model.realname.to_owned()),
+            real_name: Some(model.real_name.to_owned()),
             nickname: Some(model.nickname.to_owned()),
             gender: Some(model.gender),
             phone: Some(model.phone.to_owned()),

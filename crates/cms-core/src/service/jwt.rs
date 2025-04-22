@@ -2,6 +2,7 @@ use chrono::Duration;
 use jsonwebtoken::{self, EncodingKey};
 use salvo::prelude::*;
 use sea_orm::*;
+use uuid::Uuid;
 
 use crate::config::{AppState, JwtConfig};
 use crate::domain::dto::{EditorCurrent, JwtClaimsDTO, JwtTokenDTO};
@@ -25,9 +26,10 @@ impl JwtService {
         user_type: &str,
         state: &AppState,
     ) -> HandleResult<CertificateModel> {
-        let uuid: String = uuid::Uuid::new_v4().to_string();
-        let access = Self::generate_access_token(&uuid, user_id, user_type).unwrap();
-        let refresh = Self::generate_refresh_token(&uuid, user_id, user_type).unwrap();
+        let uuid = uuid::Uuid::new_v4();
+        let uuid_string = uuid.to_string();
+        let access = Self::generate_access_token(&uuid_string, user_id, user_type).unwrap();
+        let refresh = Self::generate_refresh_token(&uuid_string, user_id, user_type).unwrap();
 
         let now = time::current_time();
         let model = CertificateActiveModel {
@@ -43,7 +45,7 @@ impl JwtService {
             ..Default::default()
         };
         let model: CertificateModel = model.insert(&state.db).await?;
-        RedisService::set_jwt_key(&state.redis, &uuid, access.expired_time);
+        RedisService::set_jwt_key(&state.redis, &uuid_string, access.expired_time);
 
         handle_ok(model)
     }
@@ -237,11 +239,16 @@ impl JwtService {
                 return Err(err);
             }
         }
-        let uuid = dto.uuid.to_owned();
-        RedisService::del_jwt_key(&state.redis, &uuid);
-        let _ = CertificateEntity::delete_by_id(uuid)
-            .exec(&state.db)
-            .await?;
+        let uuid_string = dto.uuid.to_owned();
+        RedisService::del_jwt_key(&state.redis, &uuid_string);
+        match Uuid::parse_str(&uuid_string) {
+            Ok(uuid) => {
+                let _ = CertificateEntity::delete_by_id(uuid)
+                    .exec(&state.db)
+                    .await?;
+            }
+            Err(_) => {}
+        }
 
         handle_ok(())
     }

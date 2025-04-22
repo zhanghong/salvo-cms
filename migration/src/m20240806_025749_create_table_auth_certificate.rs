@@ -13,9 +13,9 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(
                         ColumnDef::new(AuthCertificate::Id)
-                            .big_integer()
+                            .uuid()
+                            // .default(Expr::cust("gen_random_uuid()"))
                             .primary_key()
-                            .auto_increment()
                             .comment("ID"),
                     )
                     .col(

@@ -69,9 +69,9 @@ impl UserService {
             model.name = Set(name);
         }
 
-        let realname = dto.realname.clone();
-        if realname.is_some() {
-            model.realname = Set(realname.unwrap());
+        let real_name = dto.real_name.clone();
+        if real_name.is_some() {
+            model.real_name = Set(real_name.unwrap());
         }
 
         let nickname = dto.nickname.clone();
@@ -79,17 +79,17 @@ impl UserService {
             model.nickname = Set(nickname.unwrap());
         }
 
-        let user_type = dto.types_list.clone();
-        if user_type.is_some() {
-            let list: Vec<EditorTypeEnum> = user_type.unwrap();
+        let user_types = dto.types_list.clone();
+        if user_types.is_some() {
+            let list: Vec<EditorTypeEnum> = user_types.unwrap();
             match platform {
                 PlatformEnum::Open => {
                     let type_name = EditorTypeEnum::Member.string_value();
-                    model.user_type = Set(type_name);
+                    model.user_types = Set(type_name);
                 }
                 _ => {
                     let type_names = EditorTypeEnum::to_comma_str(&list);
-                    model.user_type = Set(type_names);
+                    model.user_types = Set(type_names);
                 }
             };
         }

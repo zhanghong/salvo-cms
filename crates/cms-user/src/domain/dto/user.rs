@@ -29,7 +29,7 @@ pub struct UserStoreDTO {
     pub name: Option<String>,
 
     /// 真实姓名
-    pub realname: Option<String>,
+    pub real_name: Option<String>,
 
     /// 昵称
     pub nickname: Option<String>,
@@ -103,9 +103,9 @@ impl From<UserCreateForm> for UserStoreDTO {
             no: model.no,
             password: model.password,
             phone: model.phone,
-            realname: model.realname,
+            real_name: model.real_name,
             detail: detail_dto,
-            types_list: Self::str_to_type_vec(&model.user_type),
+            types_list: Self::str_to_type_vec(&model.user_types),
             ..Default::default()
         }
     }
@@ -129,9 +129,9 @@ impl From<UserUpdateForm> for UserStoreDTO {
             nickname: model.nickname,
             no: model.no,
             phone: model.phone,
-            realname: model.realname,
+            real_name: model.real_name,
             detail: detail_dto,
-            types_list: Self::str_to_type_vec(&model.user_type),
+            types_list: Self::str_to_type_vec(&model.user_types),
             ..Default::default()
         }
     }
@@ -177,7 +177,7 @@ pub struct UserViewDTO {
     pub id: i64,
 
     /// 当前密码
-    pub user_type: Option<EditorTypeEnum>,
+    pub user_types: Option<EditorTypeEnum>,
 
     /// 是否启用
     pub enabled: Option<bool>,
@@ -199,7 +199,7 @@ pub struct UserQueryDTO {
     pub page_size: Option<u64>,
 
     /// 用户类型
-    pub user_type: Option<EditorTypeEnum>,
+    pub user_types: Option<EditorTypeEnum>,
 
     /// 关键字
     pub keyword: Option<String>,
