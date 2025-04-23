@@ -10,7 +10,9 @@ use cms_core::domain::{
     handle_ok,
     vo::PaginateResultVO,
 };
-use cms_core::enums::{EditorTypeEnum, EnableEnum, PlatformEnum, ViewModeEnum};
+use cms_core::enums::{
+    EditorTypeEnum, EnableEnum, ErrorEnum as CoreErrorEnum, PlatformEnum, ViewModeEnum,
+};
 use cms_core::error::AppError;
 use cms_core::service::{EditorService, RedisService};
 use cms_core::utils::time;
@@ -21,16 +23,6 @@ use crate::domain::entity::app::{
 };
 use crate::domain::vo::{AppFormOptionVO, AppLoadVO, AppMasterVO, AppQueryOptionVO};
 use crate::enums::AppLoadEnum;
-
-// 定义错误信息常量
-const VERSION_ERROR_MSG: &str = "版本号错误";
-const NAME_EXISTS_MSG: &str = "名称已存在";
-const TITLE_EXISTS_MSG: &str = "标题已存在";
-const INVALID_FIELD_MSG: &str = "无效的字段";
-const PARAM_ID_ERROR_MSG: &str = "参数ID错误";
-const UPDATE_FIELD_ERROR_MSG: &str = "更新字段错误";
-const RECORD_NOT_FOUND_MSG: &str = "访问记录不存在";
-const NO_PERMISSION_DELETE_MSG: &str = "无权限删除";
 
 pub struct AppService {}
 
@@ -60,7 +52,7 @@ impl AppService {
         // 检查版本号
         if let Some(version_no) = dto.version_no {
             if !is_create && version_no != current_version_no {
-                return Err(AppError::BadRequest(VERSION_ERROR_MSG.to_string()));
+                return Err(Into::<AppError>::into(CoreErrorEnum::VersionNoInvalid));
             }
         }
         model.version_no = Set(Some(current_version_no + 1));
@@ -78,7 +70,7 @@ impl AppService {
             )
             .await?
             {
-                return Err(AppError::BadRequest(NAME_EXISTS_MSG.to_string()));
+                return Err(Into::<AppError>::into(CoreErrorEnum::NameExists));
             }
             model.name = Set(name.clone());
         }
@@ -93,7 +85,7 @@ impl AppService {
             )
             .await?
             {
-                return Err(AppError::BadRequest(TITLE_EXISTS_MSG.to_string()));
+                return Err(Into::<AppError>::into(CoreErrorEnum::TitleExists));
             }
             model.title = Set(title.clone());
         }
@@ -163,7 +155,7 @@ impl AppService {
         let column = match dto.field_name.to_lowercase().as_str() {
             "name" => AppColumn::Name,
             "title" => AppColumn::Title,
-            _ => return Err(AppError::BadRequest(INVALID_FIELD_MSG.to_string())),
+            _ => return Err(Into::<AppError>::into(CoreErrorEnum::FieldInvalid)),
         };
 
         let value = sea_orm::Value::from(dto.field_value.clone());
@@ -209,7 +201,7 @@ impl AppService {
     ) -> HandleResult<bool> {
         let id = dto.id;
         if id < 1 {
-            return Err(AppError::BadRequest(PARAM_ID_ERROR_MSG.to_string()));
+            return Err(Into::<AppError>::into(CoreErrorEnum::ParamIdInvalid));
         }
         let db = &state.db;
 
@@ -219,7 +211,9 @@ impl AppService {
         let bool_value = dto.field_value;
         match dto.field_name.to_lowercase().as_str() {
             "is_enabled" | "enabled" => model.is_enabled = Set(bool_value),
-            _ => return Err(AppError::BadRequest(UPDATE_FIELD_ERROR_MSG.to_string())),
+            _ => {
+                return Err(Into::<AppError>::into(CoreErrorEnum::UpdateFieldInvalid));
+            }
         };
 
         let now = time::current_time();
@@ -242,14 +236,14 @@ impl AppService {
     ) -> HandleResult<AppMasterVO> {
         let id = dto.id;
         if id < 1 {
-            return Err(AppError::BadRequest(PARAM_ID_ERROR_MSG.to_string()));
+            return Err(Into::<AppError>::into(CoreErrorEnum::ParamIdInvalid));
         }
 
         let model = Self::fetch_by_id(id, state).await?;
 
         let view_enum = ViewModeEnum::platform_to_detail_mode(platform);
         if view_enum == ViewModeEnum::OpenDetail && !model.is_enabled {
-            return Err(AppError::NotFound(RECORD_NOT_FOUND_MSG.to_string()));
+            return Err(Into::<AppError>::into(CoreErrorEnum::RecordNotFound));
         }
 
         let mut vo: AppMasterVO = AppMasterVO::mode_into(&view_enum, &model);
@@ -392,7 +386,7 @@ impl AppService {
             .filter(AppColumn::Id.eq(id))
             .one(db)
             .await?
-            .ok_or_else(|| AppError::NotFound(RECORD_NOT_FOUND_MSG.to_string()))?;
+            .ok_or_else(|| Into::<AppError>::into(CoreErrorEnum::ParamIdInvalid))?;
 
         handle_ok(model)
     }
@@ -411,7 +405,7 @@ impl AppService {
         let model = result.unwrap();
         let editor = dto.editor.clone();
         if !Self::can_delete(&editor, &model) {
-            return Err(AppError::BadRequest(NO_PERMISSION_DELETE_MSG.to_string()));
+            return Err(Into::<AppError>::into(CoreErrorEnum::NoPermissionDelete));
         }
         let mut model: AppActiveModel = model.into();
         model.editor_type = Set(editor.editor_type.string_value());

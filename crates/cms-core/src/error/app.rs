@@ -9,6 +9,8 @@ use validator::ValidationErrors;
 
 use crate::domain::AppResponse;
 
+use super::ErrorTrait;
+
 // 自定义错误类型
 #[derive(Error, Debug, Serialize, Clone)]
 pub enum AppError {
@@ -129,5 +131,11 @@ impl EndpointOutRegister for AppError {
                     .add_content("application/json", StatusError::to_schema(components)),
             );
         }
+    }
+}
+
+impl<T: ErrorTrait> From<T> for AppError {
+    fn from(error: T) -> Self {
+        AppError::BadRequest(error.message())
     }
 }
