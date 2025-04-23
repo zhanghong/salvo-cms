@@ -1,8 +1,7 @@
-// 引入必要的trait
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::error::ErrorTrait;
+use crate::error::AppError;
 
 const MSG_VERSION_INVALID: &str = "版本号错误";
 const MSG_NAME_EXISTS: &str = "名称已存在";
@@ -25,19 +24,7 @@ pub enum ErrorEnum {
     NoPermissionDelete,
 }
 
-impl ErrorTrait for ErrorEnum {
-    fn code(&self) -> i64 {
-        match self {
-            ErrorEnum::VersionNoInvalid => 10001,
-            ErrorEnum::NameExists => 10002,
-            ErrorEnum::TitleExists => 10003,
-            ErrorEnum::FieldInvalid => 10004,
-            ErrorEnum::ParamIdInvalid => 10005,
-            ErrorEnum::UpdateFieldInvalid => 10006,
-            ErrorEnum::RecordNotFound => 10007,
-            ErrorEnum::NoPermissionDelete => 10008,
-        }
-    }
+impl ErrorEnum {
     fn message(&self) -> String {
         let str = match self {
             ErrorEnum::VersionNoInvalid => MSG_VERSION_INVALID,
@@ -50,5 +37,22 @@ impl ErrorTrait for ErrorEnum {
             ErrorEnum::NoPermissionDelete => MSG_NO_PERMISSION_DELETE,
         };
         str.to_string()
+    }
+
+    pub fn into_app_error(self) -> AppError
+    where
+        Self: Sized,
+    {
+        match self {
+            ErrorEnum::RecordNotFound => AppError::NotFound(self.message()),
+            ErrorEnum::NoPermissionDelete => AppError::Forbidden,
+            _ => AppError::BadRequest(self.message()),
+        }
+    }
+}
+
+impl Into<AppError> for ErrorEnum {
+    fn into(self) -> AppError {
+        self.into_app_error()
     }
 }
