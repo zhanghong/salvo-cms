@@ -36,9 +36,7 @@ use crate::{
     parameters(AppPaginateQuery),
     tags("Mate模块/管理端/App管理"),
     security(["bearer" = ["bearer"]]),
-    responses(
-        (status_code = 200, description = "success response")
-    )
+    status_codes(200, 401)
 )]
 pub async fn manager_paginate(
     depot: &mut Depot,

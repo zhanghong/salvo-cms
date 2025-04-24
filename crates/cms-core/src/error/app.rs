@@ -113,12 +113,21 @@ impl Writer for AppError {
     }
 }
 
+// 提取 OpenAPI 响应注册逻辑
+const OPENAPI_RESPONSES: [(u16, &str, &str); 3] = [
+    (500, "Internal server error", "Internal server error"),
+    (404, "Not found", "Not found"),
+    (400, "Bad request", "Bad request"),
+];
+
 impl EndpointOutRegister for AppError {
     fn register(components: &mut oapi::Components, operation: &mut oapi::Operation) {
-        operation.responses.insert(
-            StatusCode::from_u16(200).unwrap().as_str(),
-            oapi::Response::new(String::from("Internal server error"))
-                .add_content("application/json", StatusError::to_schema(components)),
-        );
+        for &(code, description, _) in &OPENAPI_RESPONSES {
+            operation.responses.insert(
+                StatusCode::from_u16(code).unwrap().as_str(),
+                oapi::Response::new(description)
+                    .add_content("application/json", StatusError::to_schema(components)),
+            );
+        }
     }
 }

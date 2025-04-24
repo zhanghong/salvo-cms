@@ -17,6 +17,7 @@ use crate::domain::entity::app::Model;
 pub struct AppFormOptionVO {
     /// 启用状态
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[salvo(schema(required = true, nullable = false, value_type = Vec<SelectOptionItem>, example = json!([{"value":true,"label":"启用"},{"value":false,"label":"禁用"}])))]
     pub enables: Option<Vec<SelectOptionItem>>,
 }
 
@@ -28,6 +29,7 @@ pub struct AppFormOptionVO {
 pub struct AppQueryOptionVO {
     /// 启用状态
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[salvo(schema(required = true, nullable = false, value_type = Vec<SelectOptionItem>, example = json!([{"value":true,"label":"启用"},{"value":false,"label":"禁用"}])))]
     pub enables: Option<Vec<SelectOptionItem>>,
 }
 
@@ -40,56 +42,87 @@ pub struct AppQueryOptionVO {
 #[salvo(schema(name = "Mate模块/App/App主VO"))]
 pub struct AppMasterVO {
     /// 主键
+    #[salvo(parameter(required = true, nullable = false, minimum = 1, example = 1))]
     pub id: i64,
 
     /// 编辑用户类型
     #[serde(skip_serializing)]
+    #[salvo(parameter(required = false, nullable = false, max_length = 10, example = "admin"))]
     pub editor_type: String,
 
     /// 编辑用户ID
     #[serde(skip_serializing)]
+    #[salvo(parameter(required = false, nullable = false, minimum = 0, example = 1))]
     pub editor_id: i64,
 
     /// 名称
+    #[salvo(parameter(
+        required = true,
+        nullable = false,
+        max_length = 30,
+        example = "product"
+    ))]
     pub name: String,
 
     /// 标题
+    #[salvo(parameter(required = true, nullable = false, max_length = 30, example = "商品"))]
     pub title: String,
 
     /// 描述
+    #[salvo(parameter(
+        required = true,
+        nullable = false,
+        max_length = 200,
+        example = "商品描述..."
+    ))]
     pub description: String,
 
     /// 图标
+    #[salvo(schema(
+        required = true,
+        nullable = false,
+        max_length = 30,
+        pattern = r"^[a-zA-Z0-9_-]+$",
+        example = "icon-product"
+    ))]
     pub icon: String,
 
     /// 版本号
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[salvo(schema(required = false, nullable = false, value_type = i32, minimum = 1, example = 3))]
     pub version_no: Option<i32>,
 
     /// 排序编号
+    #[salvo(schema(required = true, nullable = false, value_type = i16, minimum = 0, maximum = 9999, example = 80, default = 99))]
     pub sort: i16,
 
     /// 是否启用
+    #[salvo(schema(required = false, nullable = true, value_type = bool, example = true, default = true))]
     pub is_enabled: bool,
 
     /// 是否可以更新
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[salvo(schema(required = false, nullable = false, value_type = bool, example = true, default = true))]
     pub can_update: Option<bool>,
 
     /// 是否可以删除
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[salvo(schema(required = false, nullable = false, value_type = bool, example = true, default = true))]
     pub can_delete: Option<bool>,
 
     /// 创建时间
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[salvo(schema(required = false, nullable = false, value_type = String, format = "yyyy-mm-dd HH:MM:SS", example = "2023-08-10 10:00:00"))]
     pub created_time: Option<String>,
 
     /// 更新时间
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[salvo(schema(required = false, nullable = true, value_type = String, format = "yyyy-mm-dd HH:MM:SS", example = "2023-08-10 10:00:00"))]
     pub updated_time: Option<String>,
 
     /// 编辑用户
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[salvo(schema(required = false, nullable = true, value_type = EditorLoadVO))]
     pub editor: Option<EditorLoadVO>,
 }
 

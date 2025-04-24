@@ -39,6 +39,7 @@ pub struct AppStoreForm {
         required(message = "模块名称不能为空"),
         custom(function = "validate_field_name", message = "模块标题长度为2-30位")
     )]
+    #[salvo(schema(required = true, nullable = false, value_type = String, min_length = 2, max_length = 30, pattern = r"^[a-zA-Z0-9_-]+$", example = "product"))]
     pub name: Option<String>,
 
     /// 标题
@@ -47,6 +48,7 @@ pub struct AppStoreForm {
         required(message = "模块标题不能为空"),
         custom(function = "validate_field_title", message = "模块标题长度为2-30位")
     )]
+    #[salvo(schema(required = true, nullable = false, value_type = String, min_length = 2, max_length = 30, example = "商品"))]
     pub title: Option<String>,
 
     /// 描述
@@ -55,6 +57,7 @@ pub struct AppStoreForm {
         function = "validate_field_description",
         message = "模块简介长度不能超过200个字符"
     ))]
+    #[salvo(schema(required = false, nullable = true, value_type = String, max_length = 200, example = "模块简介...."))]
     pub description: Option<String>,
 
     /// 图标
@@ -63,18 +66,22 @@ pub struct AppStoreForm {
         function = "validate_field_icon",
         message = "模块图标长度不能超过30个字符"
     ))]
+    #[salvo(schema(required = false, nullable = true, value_type = String, max_length = 30, pattern = r"^[a-zA-Z0-9_-]+$", example = "icon-product"))]
     pub icon: Option<String>,
 
     /// 版本号
     #[serde(default, deserialize_with = "deserializer::string_to_option_i32")]
+    #[salvo(schema(required = false, nullable = true, value_type = i32, minimum = 1, example = 3))]
     pub version_no: Option<i32>,
 
     /// 排序编号
     #[serde(default, deserialize_with = "deserializer::string_to_option_i16")]
     #[validate(custom(function = "validate_field_sort", message = "排序编号必须在0-9999之间"))]
+    #[salvo(schema(required = false, nullable = true, value_type = i16, minimum = 0, maximum = 9999, example = 80, default = 99))]
     pub sort: Option<i16>,
 
     /// 是否启用
     #[serde(default, deserialize_with = "deserializer::string_to_option_bool")]
+    #[salvo(schema(required = false, nullable = true, value_type = bool, example = true, default = true))]
     pub is_enabled: Option<bool>,
 }

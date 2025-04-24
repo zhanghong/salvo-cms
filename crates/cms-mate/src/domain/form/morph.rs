@@ -24,6 +24,7 @@ pub struct MorphInstanceStoreForm {
         required(message = "实例类型不能为空"),
         length(min = 1, message = "实例类型不能为空")
     )]
+    #[salvo(schema(required = true, nullable = false, value_type = String, min_length = 2, max_length = 30, pattern = r"^[a-zA-Z0-9_-]+$", example = "product_item"))]
     pub instance_type: Option<String>,
 
     /// 实例ID
@@ -32,8 +33,10 @@ pub struct MorphInstanceStoreForm {
         required(message = "实例ID不能为空"),
         custom(function = "validate_big_integer_present", message = "实例ID不能为空")
     )]
+    #[salvo(schema(required = true, nullable = false, value_type = i64, minimum = 1, example = 3))]
     pub instance_id: Option<i64>,
 
     /// 关联Item列表
+    #[salvo(schema(required = true, nullable = false, value_type = HashMap<String, String>, example = json!({"item_id": "1", "item_type": "product_item"})))]
     pub items: Option<HashMap<String, String>>,
 }
