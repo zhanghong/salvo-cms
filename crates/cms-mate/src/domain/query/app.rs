@@ -35,17 +35,17 @@ pub struct AppPaginateQuery {
 
     /// 关键字
     #[serde(default, deserialize_with = "deserializer::string_to_option_trimmed")]
-    #[salvo(parameter(required = false, nullable = true, value_type = String, example = "admin"))]
+    #[salvo(parameter(required = false, nullable = false, value_type = String, example = "admin"))]
     pub keyword: Option<String>,
 
     /// 标题
     #[serde(default, deserialize_with = "deserializer::string_to_option_trimmed")]
-    #[salvo(parameter(required = false, nullable = true, value_type = String, example = "admin"))]
+    #[salvo(parameter(required = false, nullable = false, value_type = String, example = "admin"))]
     pub title: Option<String>,
 
     /// 启用状态
     #[serde(default, deserialize_with = "deserializer::string_to_option_bool")]
-    #[salvo(parameter(required = false, nullable = true, value_type = bool, example = true))]
+    #[salvo(parameter(required = false, nullable = false, value_type = bool, example = true))]
     pub is_enabled: Option<bool>,
 
     /// 创建开始时间
@@ -53,7 +53,7 @@ pub struct AppPaginateQuery {
         default,
         deserialize_with = "deserializer::string_to_option_naive_datetime"
     )]
-    #[salvo(parameter(required = false, nullable = true, value_type = String, format = "yyyy-MM-dd", example = "2023-01-01"))]
+    #[salvo(parameter(required = false, nullable = false, value_type = String, format = "yyyy-MM-dd", example = "2023-01-01"))]
     pub created_start_time: Option<NaiveDateTime>,
 
     /// 创建结束时间
@@ -61,6 +61,6 @@ pub struct AppPaginateQuery {
         default,
         deserialize_with = "deserializer::string_to_option_naive_datetime"
     )]
-    #[salvo(parameter(required = false, nullable = true, value_type = String, format = "yyyy-MM-dd", example = "2023-01-01"))]
+    #[salvo(parameter(required = false, nullable = false, value_type = String, format = "yyyy-MM-dd", example = "2023-01-01"))]
     pub created_end_time: Option<NaiveDateTime>,
 }

@@ -4,8 +4,9 @@ use validator::Validate;
 
 use cms_core::{
     config::AppState,
+    consts,
     domain::{
-        AppResult,
+        AppResult, ResponseError, ResponseSuccess,
         dto::{FieldBoolUpdateDTO, ModelLogicDeleteDTO, ModelViewDTO},
         form::{FieldBoolUpdateForm, FieldValueUniqueForm},
         result_ok,
@@ -30,13 +31,13 @@ use crate::{
 ///
 /// 管理端分页查询
 #[endpoint(
-    summary = "分页查询",
-    description = "管理端分页查询",
     operation_id = "mate_app_manager_paginate",
-    parameters(AppPaginateQuery),
-    tags("Mate模块/管理端/App管理"),
     security(["bearer" = ["bearer"]]),
-    status_codes(200, 401)
+    tags("Mate模块/管理端/App管理"),
+    responses(
+        (status_code = 200, body = ResponseSuccess<PaginateResultVO<AppMasterVO>>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
+        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
+    )
 )]
 pub async fn manager_paginate(
     depot: &mut Depot,
@@ -57,10 +58,12 @@ pub async fn manager_paginate(
 /// 管理端创建应用
 #[endpoint(
     operation_id = "mate_app_manager_create",
-    tags("Mate模块/管理端/App管理"),
     security(["bearer" = ["bearer"]]),
+    tags("Mate模块/管理端/App管理"),
     responses(
-        (status_code = 200, description = "success response")
+        (status_code = 200, body = ResponseSuccess<bool>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
+        (status_code = 400, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_BAD_REQUEST),
+        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
     )
 )]
 pub async fn manager_create(depot: &mut Depot, json: JsonBody<AppStoreForm>) -> AppResult<bool> {
@@ -80,10 +83,12 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<AppStoreForm>) -> 
 /// 管理端更新应用
 #[endpoint(
     operation_id = "mate_app_manager_update",
-    tags("Mate模块/管理端/App管理"),
     security(["bearer" = ["bearer"]]),
+    tags("Mate模块/管理端/App管理"),
     responses(
-        (status_code = 200, description = "success response")
+        (status_code = 200, body = ResponseSuccess<bool>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
+        (status_code = 400, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_BAD_REQUEST),
+        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
     )
 )]
 pub async fn manager_update(
@@ -108,10 +113,12 @@ pub async fn manager_update(
 /// 管理端删除应用
 #[endpoint(
     operation_id = "mate_app_manager_delete",
-    tags("Mate模块/管理端/App管理"),
     security(["bearer" = ["bearer"]]),
+    tags("Mate模块/管理端/App管理"),
     responses(
-        (status_code = 200, description = "success response")
+        (status_code = 200, body = ResponseSuccess<bool>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
+        (status_code = 400, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_BAD_REQUEST),
+        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
     )
 )]
 pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<bool> {
@@ -132,10 +139,11 @@ pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<
 /// 管理端表单选项
 #[endpoint(
     operation_id = "mate_app_manager_form",
-    tags("Mate模块/管理端/App管理"),
     security(["bearer" = ["bearer"]]),
+    tags("Mate模块/管理端/App管理"),
     responses(
-        (status_code = 200, description = "success response")
+        (status_code = 200, body = ResponseSuccess<AppFormOptionVO>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
+        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
     )
 )]
 pub async fn manager_form(depot: &mut Depot) -> AppResult<AppFormOptionVO> {
@@ -149,10 +157,11 @@ pub async fn manager_form(depot: &mut Depot) -> AppResult<AppFormOptionVO> {
 /// 管理端查询选项
 #[endpoint(
     operation_id = "mate_app_manager_query",
-    tags("Mate模块/管理端/App管理"),
     security(["bearer" = ["bearer"]]),
+    tags("Mate模块/管理端/App管理"),
     responses(
-        (status_code = 200, description = "success response")
+        (status_code = 200, body = ResponseSuccess<AppQueryOptionVO>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
+        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
     )
 )]
 pub async fn manager_query(depot: &mut Depot) -> AppResult<AppQueryOptionVO> {
@@ -166,10 +175,11 @@ pub async fn manager_query(depot: &mut Depot) -> AppResult<AppQueryOptionVO> {
 /// 管理端字段值唯一性校验
 #[endpoint(
     operation_id = "mate_app_check_field_unique",
-    tags("Mate模块/管理端/App管理"),
     security(["bearer" = ["bearer"]]),
+    tags("Mate模块/管理端/App管理"),
     responses(
-        (status_code = 200, description = "success response")
+        (status_code = 200, body = ResponseSuccess<bool>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
+        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
     )
 )]
 pub async fn check_field_unique(
@@ -189,14 +199,11 @@ pub async fn check_field_unique(
 /// 管理端更新Bool字段值
 #[endpoint(
     operation_id = "mate_app_update_bool_field",
-    tags("Mate模块/管理端/App管理"),
     security(["bearer" = ["bearer"]]),
-    parameters(
-        ("id", description = "Record ID", example = "1"),
-        ("json", description = "JSON", example = "{}", style = Form)
-    ),
+    tags("Mate模块/管理端/App管理"),
     responses(
-        (status_code = 200, description = "success response")
+        (status_code = 200, body = ResponseSuccess<bool>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
+        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
     )
 )]
 pub async fn update_bool_field(
@@ -222,13 +229,12 @@ pub async fn update_bool_field(
 /// 管理端查看详情
 #[endpoint(
     operation_id = "mate_app_manager_view",
-    tags("Mate模块/管理端/App管理"),
     security(["bearer" = ["bearer"]]),
-    parameters(
-        ("id", description = "Record ID", example = "1")
-    ),
+    tags("Mate模块/管理端/App管理"),
     responses(
-        (status_code = 200, description = "success response")
+        (status_code = 200, body = ResponseSuccess<AppMasterVO>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
+        (status_code = 404, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_NOT_FOUND),
+        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
     )
 )]
 pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<AppMasterVO> {

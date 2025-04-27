@@ -53,7 +53,7 @@ pub struct ItemStoreForm {
         required(message = "模块ID不能为空"),
         custom(function = "validate_big_integer_present", message = "模块ID不能为空")
     )]
-    #[salvo(schema(required = false, nullable = true, value_type = i64, minimum = 1, example = 1))]
+    #[salvo(schema(required = false, nullable = false, value_type = i64, minimum = 1, example = 1))]
     pub app_id: Option<i64>,
 
     /// 类型ID
@@ -89,7 +89,7 @@ pub struct ItemStoreForm {
         function = "validate_field_description",
         message = "描述长度不能超过200个字符"
     ))]
-    #[salvo(schema(required = false, nullable = true, value_type = String, max_length = 200, example = "分类描述...."))]
+    #[salvo(schema(required = false, nullable = false, value_type = String, max_length = 200, example = "分类描述...."))]
     pub description: Option<String>,
 
     /// 介绍
@@ -98,13 +98,13 @@ pub struct ItemStoreForm {
         function = "validate_field_introduction",
         message = "介绍长度不能超过500个字符"
     ))]
-    #[salvo(schema(required = false, nullable = true, value_type = String, max_length = 500, example = "分类介绍...."))]
+    #[salvo(schema(required = false, nullable = false, value_type = String, max_length = 500, example = "分类介绍...."))]
     pub introduction: Option<String>,
 
     /// Icon
     #[serde(default, deserialize_with = "deserializer::string_to_option_trimmed")]
     #[validate(custom(function = "validate_field_icon", message = "图标长度不能超过30个字符"))]
-    #[salvo(schema(required = false, nullable = true, value_type = String, max_length = 30, pattern = r"^[a-zA-Z0-9_-]+$", example = "icon-category"))]
+    #[salvo(schema(required = false, nullable = false, value_type = String, max_length = 30, pattern = r"^[a-zA-Z0-9_-]+$", example = "icon-category"))]
     pub icon: Option<String>,
 
     /// PC端封面图片
@@ -113,7 +113,7 @@ pub struct ItemStoreForm {
         function = "validate_field_upload_path",
         message = "PC端封面图片路径无效"
     ))]
-    #[salvo(schema(required = false, nullable = true, value_type = String, max_length = 100, example = "http://URL_ADDRESS"))]
+    #[salvo(schema(required = false, nullable = false, value_type = String, max_length = 100, example = "http://URL_ADDRESS"))]
     pub pc_detail_path: Option<String>,
 
     /// 手机端封面图片
@@ -122,27 +122,27 @@ pub struct ItemStoreForm {
         function = "validate_field_upload_path",
         message = "手机端封面图片路径无效"
     ))]
-    #[salvo(schema(required = false, nullable = true, value_type = String, max_length = 100, example = "http://URL_ADDRESS"))]
+    #[salvo(schema(required = false, nullable = false, value_type = String, max_length = 100, example = "http://URL_ADDRESS"))]
     pub wap_detail_path: Option<String>,
 
     /// 父级ID
     #[serde(default, deserialize_with = "deserializer::string_to_option_i64")]
-    #[salvo(schema(required = false, nullable = true, value_type = i64, minimum = 0, default = 0, example = 3))]
+    #[salvo(schema(required = false, nullable = false, value_type = i64, minimum = 0, default = 0, example = 3))]
     pub parent_id: Option<i64>,
 
     /// 版本号
     #[serde(default, deserialize_with = "deserializer::string_to_option_i32")]
-    #[salvo(schema(required = false, nullable = true, value_type = i32, minimum = 1, example = 3))]
+    #[salvo(schema(required = false, nullable = false, value_type = i32, minimum = 1, example = 3))]
     pub version_no: Option<i32>,
 
     /// 排序编号
     #[serde(default, deserialize_with = "deserializer::string_to_option_i16")]
     #[validate(custom(function = "validate_field_sort", message = "排序编号必须在0-9999之间"))]
-    #[salvo(schema(required = false, nullable = true, value_type = i16, minimum = 0, maximum = 9999, example = 80, default = 99))]
+    #[salvo(schema(required = false, nullable = false, value_type = i16, minimum = 0, maximum = 9999, example = 80, default = 99))]
     pub sort: Option<i16>,
 
     /// 是否启用
     #[serde(default, deserialize_with = "deserializer::string_to_option_bool")]
-    #[salvo(schema(required = false, nullable = true, value_type = bool, example = true, default = true))]
+    #[salvo(schema(required = false, nullable = false, value_type = bool, example = true, default = true))]
     pub is_enabled: Option<bool>,
 }
