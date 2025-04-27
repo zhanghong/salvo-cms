@@ -7,6 +7,7 @@ use serde::Serialize;
 
 // 统一响应结构
 #[derive(Debug, Serialize, ToSchema)]
+#[salvo(schema(name = "App Response"))]
 pub struct AppResponse<T: Serialize> {
     /// 状态码
     code: u32,
@@ -44,7 +45,7 @@ impl<T: Serialize> AppResponse<T> {
 #[async_trait]
 impl<T> Writer for AppResponse<T>
 where
-    T: Serialize + Send + Sync + Debug + 'static,
+    T: Serialize + salvo::prelude::ToSchema + Send + Sync + Debug + 'static,
 {
     async fn write(mut self, _req: &mut Request, depot: &mut Depot, res: &mut Response) {
         let json_string = serde_json::to_string(&self).unwrap_or_default();
@@ -55,7 +56,7 @@ where
 
 impl<T> EndpointOutRegister for AppResponse<T>
 where
-    T: Serialize + ToSchema + 'static,
+    T: Serialize + salvo::prelude::ToSchema + 'static,
 {
     fn register(components: &mut oapi::Components, operation: &mut oapi::Operation) {
         operation.responses.insert(

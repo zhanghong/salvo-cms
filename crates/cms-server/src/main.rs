@@ -1,5 +1,6 @@
 use dotenvy::dotenv;
-use salvo::oapi::OpenApi;
+use salvo::oapi::security::Http;
+use salvo::oapi::{OpenApi, SecurityScheme};
 use salvo::prelude::*;
 
 use cms_core::config::{AppState, WebConfig};
@@ -31,6 +32,12 @@ async fn main() {
     let doc = OpenApi::new(
         web_config.app_name().as_str(),
         web_config.app_version().as_str(),
+    )
+    .add_security_scheme(
+        "bearer",
+        SecurityScheme::Http(
+            Http::new(salvo::oapi::security::HttpAuthScheme::Bearer).bearer_format("JSON"),
+        ),
     )
     .merge_router(&router);
 
