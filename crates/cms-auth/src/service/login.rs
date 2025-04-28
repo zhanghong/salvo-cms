@@ -13,7 +13,7 @@ use cms_core::{
 
 use crate::domain::entity::login::{ActiveModel as LoginActiveModel, Model as LoginModel};
 use crate::domain::entity::user::{
-    ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity, Model as UserModel,
+    ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity,
 };
 use crate::domain::vo::LoginTokenCreateVO;
 use crate::domain::{dto::LoginStoreDTO, vo::LoginTokenUpdateVO};
@@ -26,53 +26,48 @@ impl LoginService {
         dto: &LoginStoreDTO,
         state: &AppState,
     ) -> HandleResult<LoginTokenCreateVO> {
-        let username: Option<String> = dto.username.clone();
-        if username.is_none() {
-            let err = AppError::BadRequest(String::from("登录名不能为空"));
-            return Err(err);
-        }
+        let username = match dto.username.as_ref() {
+            Some(username) => username.trim().to_lowercase(),
+            None => return Err(AppError::BadRequest(String::from("登录名不能为空"))),
+        };
 
-        // TODO: 验证密码
-        let password = dto.password.clone();
-        if password.is_none() {
-            let err = AppError::BadRequest(String::from("密码不能为空"));
-            return Err(err);
-        }
-        let password = password.unwrap();
+        let password = match dto.password.as_ref() {
+            Some(password) => password.trim(),
+            None => return Err(AppError::BadRequest(String::from("密码不能为空"))),
+        };
 
-        let username = username.unwrap().to_lowercase().trim().to_string();
         let condition = Condition::any()
             .add(UserColumn::Name.eq(&username))
             .add(UserColumn::Phone.eq(&username))
             .add(UserColumn::Email.eq(&username));
-        let user = UserEntity::find().filter(condition).one(&state.db).await?;
-        if user.is_none() {
-            let err = AppError::BadRequest(String::from("用户不存在"));
-            return Err(err);
-        }
-        let user: UserModel = user.unwrap();
+
+        let user = match UserEntity::find().filter(condition).one(&state.db).await? {
+            Some(user) => user,
+            None => return Err(AppError::BadRequest(String::from("用户不存在"))),
+        };
+
         if user.is_enabled == false {
-            let err = AppError::BadRequest(String::from("用户已被禁用"));
-            return Err(err);
+            return Err(AppError::BadRequest(String::from("用户已被禁用")));
         }
 
-        let md5_password = encrypt_password(user.salt.as_str(), password.as_str());
-        println!("md5_password: {}", md5_password);
+        let md5_password = encrypt_password(user.salt.as_str(), password);
         if md5_password.ne(&user.password) {
-            let err = AppError::BadRequest(String::from("密码错误"));
-            return Err(err);
+            return Err(AppError::BadRequest(String::from("密码错误")));
         }
 
         let login_type = match platform {
             PlatformEnum::Manager => "manager",
             _ => "member",
         };
+
         let cert: CertificateModel = JwtService::create(user.id, login_type, state)
             .await
             .unwrap();
+
         let avatar = user.avatar_url();
         let roles: Vec<String> = vec![login_type.to_string()];
         let permissions: Vec<String> = vec![];
+
         let vo = LoginTokenCreateVO {
             user_id: user.id,
             username: user.name.to_owned(),

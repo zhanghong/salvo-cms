@@ -4,7 +4,7 @@ use validator::Validate;
 
 use cms_core::{
     config::AppState,
-    domain::{AppResult, dto::JwtClaimsDTO, result_ok},
+    domain::{AppResult, ResponseSuccess, dto::JwtClaimsDTO, result_ok},
     enums::PlatformEnum,
 };
 
@@ -19,10 +19,12 @@ use crate::{
 ///
 /// 管理端密码登录
 #[endpoint(
-  tags("权鉴模块/管理端/登录"),
-  responses(
-      (status_code = 200, description = "success response")
-  )
+    operation_id = "auth_app_manager_login_by_password",
+    tags("权鉴模块/管理端/登录"),
+    status_codes(200, 400),
+    responses(
+        (status_code = 200, body = ResponseSuccess<LoginTokenCreateVO>)
+    )
 )]
 pub async fn manager_create(
     depot: &mut Depot,
@@ -53,11 +55,14 @@ pub async fn manager_create(
 ///
 /// 管理端刷新 AccessToken
 #[endpoint(
+    operation_id = "auth_app_manager_update_token",
+    security(["bearer" = ["bearer"]]),
     tags("权鉴模块/管理端/登录"),
+    status_codes(200, 400, 401),
     responses(
-        (status_code = 200, description = "success response")
+        (status_code = 200, body = ResponseSuccess<LoginTokenUpdateVO>)
     )
-  )]
+)]
 pub async fn manager_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> {
     let state = depot.obtain::<AppState>().unwrap();
     let claims: Option<JwtClaimsDTO> = match depot.jwt_auth_state() {
@@ -77,12 +82,15 @@ pub async fn manager_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> 
 ///
 /// 管理端删除 AccessToken
 #[endpoint(
+    operation_id = "auth_app_manager_delete_token",
+    security(["bearer" = ["bearer"]]),
     tags("权鉴模块/管理端/登录"),
+    status_codes(200, 400, 401),
     responses(
-        (status_code = 200, description = "success response")
+        (status_code = 200, body = ResponseSuccess<bool>)
     )
-  )]
-pub async fn manager_delete(depot: &mut Depot) -> AppResult<()> {
+)]
+pub async fn manager_delete(depot: &mut Depot) -> AppResult<bool> {
     let state = depot.obtain::<AppState>().unwrap();
     let claims: Option<JwtClaimsDTO> = match depot.jwt_auth_state() {
         JwtAuthState::Authorized => {
@@ -94,18 +102,20 @@ pub async fn manager_delete(depot: &mut Depot) -> AppResult<()> {
     };
 
     LoginService::delete(claims, state).await?;
-    result_ok(())
+    result_ok(true)
 }
 
 /// 密码登录
 ///
 /// 用户端密码登录
 #[endpoint(
+    operation_id = "auth_app_open_login_by_password",
     tags("权鉴模块/用户端/登录"),
+    status_codes(200, 400),
     responses(
-        (status_code = 200, description = "success response")
+        (status_code = 200, body = ResponseSuccess<LoginTokenCreateVO>)
     )
-  )]
+)]
 pub async fn open_create(
     depot: &mut Depot,
     req: &mut Request,
@@ -135,11 +145,14 @@ pub async fn open_create(
 ///
 /// 用户端刷新 AccessToken
 #[endpoint(
-      tags("权鉴模块/用户端/登录"),
-      responses(
-          (status_code = 200, description = "success response")
-      )
-    )]
+    operation_id = "auth_app_open_update_token",
+    security(["bearer" = ["bearer"]]),
+    tags("权鉴模块/用户端/登录"),
+    status_codes(200, 400, 401),
+    responses(
+        (status_code = 200, body = ResponseSuccess<LoginTokenUpdateVO>)
+    )
+)]
 pub async fn open_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> {
     let state = depot.obtain::<AppState>().unwrap();
     let claims: Option<JwtClaimsDTO> = match depot.jwt_auth_state() {
@@ -159,12 +172,15 @@ pub async fn open_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> {
 ///
 /// 用户端删除 AccessToken
 #[endpoint(
-      tags("权鉴模块/用户端/登录"),
-      responses(
-          (status_code = 200, description = "success response")
-      )
-    )]
-pub async fn open_delete(depot: &mut Depot) -> AppResult<()> {
+    operation_id = "auth_app_open_delete_token",
+    security(["bearer" = ["bearer"]]),
+    tags("权鉴模块/用户端/登录"),
+    status_codes(200, 400, 401),
+    responses(
+        (status_code = 200, body = ResponseSuccess<bool>)
+    )
+)]
+pub async fn open_delete(depot: &mut Depot) -> AppResult<bool> {
     let state = depot.obtain::<AppState>().unwrap();
     let claims: Option<JwtClaimsDTO> = match depot.jwt_auth_state() {
         JwtAuthState::Authorized => {
@@ -176,5 +192,5 @@ pub async fn open_delete(depot: &mut Depot) -> AppResult<()> {
     };
 
     LoginService::delete(claims, state).await?;
-    result_ok(())
+    result_ok(true)
 }

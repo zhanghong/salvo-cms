@@ -2,10 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::domain::form::LoginByPasswordForm;
 
-// ------------------------------------
-// 创建/更新用户
-// ------------------------------------
-// Service 层创建/更新用户使用的结构体
+/// 用户登录 DTO 结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct LoginStoreDTO {
     // 登录方式
