@@ -3,9 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use cms_core::utils::deserializer;
 
-// ------------------------------------
-// 分页查询 Morph
-// ------------------------------------
+/// Morph分页查询条件
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToParameters)]
 #[salvo(parameters(default_parameter_in = Query))]
 #[salvo(schema(name = "Mate模块/Morph/Morph查询条件"))]

@@ -8,9 +8,7 @@ use crate::{
     enums::AppLoadEnum,
 };
 
-// ------------------------------------
-// 创建/更新
-// ------------------------------------
+/// App Store DTO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct AppStoreDTO {
     /// 主键
@@ -68,9 +66,7 @@ impl From<&AppStoreForm> for AppStoreDTO {
     }
 }
 
-// ------------------------------------
-// 查询
-// ------------------------------------
+/// App 查询 DTO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct AppQueryDTO {
     /// 编辑用户

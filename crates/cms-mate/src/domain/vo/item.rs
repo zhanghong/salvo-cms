@@ -11,9 +11,7 @@ use super::app::AppLoadVO;
 use super::kind::KindLoadVO;
 use crate::domain::entity::item::Model;
 
-// ------------------------------------
-// 创建/更新表单选项
-// ------------------------------------
+/// Item 表单选项 VO
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 #[salvo(schema(name = "Mate模块/Item/Item表单选项VO"))]
 pub struct ItemFormOptionVO {
@@ -34,9 +32,7 @@ pub struct ItemFormOptionVO {
     pub enables: Option<Vec<SelectOptionItem>>,
 }
 
-// ------------------------------------
-// 查询表单选项
-// ------------------------------------
+/// Item 查询表单选项 VO
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 #[salvo(schema(name = "Mate模块/Item/Item查询选项VO"))]
 pub struct ItemQueryOptionVO {
@@ -57,9 +53,7 @@ pub struct ItemQueryOptionVO {
     pub enables: Option<Vec<SelectOptionItem>>,
 }
 
-// ------------------------------------
-// 详情 VO
-// ------------------------------------
+/// Item 主 VO
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
@@ -204,9 +198,7 @@ impl ItemMasterVO {
     }
 }
 
-// ------------------------------------
-// 关联 VO
-// ------------------------------------
+/// Item 关联 VO
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]

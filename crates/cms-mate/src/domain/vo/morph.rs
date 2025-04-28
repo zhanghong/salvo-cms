@@ -5,9 +5,7 @@ use serde::{Deserialize, Serialize};
 use super::ItemLoadVO;
 use crate::domain::entity::morph::Model;
 
-// ------------------------------------
-// 详情 VO
-// ------------------------------------
+/// Morph 实例关联 VO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
 #[salvo(schema(name = "Mate模块/Morph/Morph Instance VO"))]
 pub struct MorphInstanceVO {

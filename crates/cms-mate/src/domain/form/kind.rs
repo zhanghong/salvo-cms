@@ -35,9 +35,7 @@ fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
     validate::numeric_range(Some(num), true, 0, 9999)
 }
 
-// ------------------------------------
-// 创建/更新 Kind
-// ------------------------------------
+/// Kind Store Form
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
 #[salvo(schema(name = "Mate模块/Kind/Kind表单"))]
 pub struct KindStoreForm {

@@ -4,9 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use cms_core::utils::{deserializer, parameter};
 
-// ------------------------------------
-// 分页查询 Kind
-// ------------------------------------
+/// Kind 查询条件
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToParameters)]
 #[salvo(parameters(default_parameter_in = Query))]
 #[salvo(schema(name = "Mate模块/Kind/Kind查询条件"))]

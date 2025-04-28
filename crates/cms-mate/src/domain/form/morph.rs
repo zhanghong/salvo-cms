@@ -12,9 +12,7 @@ fn validate_big_integer_present(num: i64) -> Result<(), ValidationError> {
     validate::numeric_equal_or_greater_than(Some(num), 0)
 }
 
-// ------------------------------------
-// 创建/更新 Item Morph
-// ------------------------------------
+/// Mprph Store Form
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
 #[salvo(schema(name = "Mate模块/Morph/Morph表单"))]
 pub struct MorphInstanceStoreForm {

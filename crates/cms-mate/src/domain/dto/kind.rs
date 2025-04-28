@@ -8,9 +8,7 @@ use crate::{
     enums::KindLoadEnum,
 };
 
-// ------------------------------------
-// 创建/更新
-// ------------------------------------
+/// Kind Store DTO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct KindStoreDTO {
     /// 主键
@@ -80,9 +78,7 @@ impl From<&KindStoreForm> for KindStoreDTO {
     }
 }
 
-// ------------------------------------
-// 查询
-// ------------------------------------
+/// Kind 查询 DTO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct KindQueryDTO {
     /// 编辑用户

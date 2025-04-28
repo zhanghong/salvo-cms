@@ -4,9 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use cms_core::utils::{deserializer, parameter};
 
-// ------------------------------------
-// 分页查询 Item
-// ------------------------------------
+/// 分页查询 Item
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToParameters)]
 #[salvo(parameters(default_parameter_in = Query))]
 #[salvo(schema(name = "Mate模块/Item/Item查询条件"))]

@@ -11,9 +11,7 @@ use crate::domain::entity::kind::Model;
 
 use super::AppLoadVO;
 
-// ------------------------------------
-// 创建/更新表单选项
-// ------------------------------------
+/// Kind 表单选项 VO
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 #[salvo(schema(name = "Mate模块/Kind/Kind表单选项VO"))]
 pub struct KindFormOptionVO {
@@ -25,9 +23,7 @@ pub struct KindFormOptionVO {
     pub enables: Option<Vec<SelectOptionItem>>,
 }
 
-// ------------------------------------
-// 查询表单选项
-// ------------------------------------
+/// Kind 查询表单选项 VO
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 #[salvo(schema(name = "Mate模块/Kind/Kind查询选项VO"))]
 pub struct KindQueryOptionVO {
@@ -40,9 +36,7 @@ pub struct KindQueryOptionVO {
     pub enables: Option<Vec<SelectOptionItem>>,
 }
 
-// ------------------------------------
-// 详情 VO
-// ------------------------------------
+/// kind 主 VO
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
@@ -145,9 +139,7 @@ impl KindMasterVO {
     }
 }
 
-// ------------------------------------
-// 关联 VO
-// ------------------------------------
+/// Kind 关联 VO
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]

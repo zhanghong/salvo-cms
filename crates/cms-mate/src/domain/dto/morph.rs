@@ -8,10 +8,7 @@ use crate::{
     enums::MorphLoadEnum,
 };
 
-// ------------------------------------
-// 创建/更新用户
-// ------------------------------------
-// Service 层创建/更新用户使用的结构体
+/// MorphInstance Store DTO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct MorphInstanceStoreDTO {
     /// 编辑用户
@@ -49,9 +46,7 @@ impl From<&MorphInstanceStoreForm> for MorphInstanceStoreDTO {
     }
 }
 
-// ------------------------------------
-// 查询
-// ------------------------------------
+/// Morph 实例查询
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct MorphInstanceQueryDTO {
     /// 编辑用户

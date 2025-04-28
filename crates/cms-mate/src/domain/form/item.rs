@@ -41,9 +41,7 @@ fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
     validate::numeric_range(Some(num), true, 0, 9999)
 }
 
-// ------------------------------------
-// 创建/更新 Item
-// ------------------------------------
+/// Item 表单
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
 #[salvo(schema(name = "Mate模块/Item/Item表单"))]
 pub struct ItemStoreForm {

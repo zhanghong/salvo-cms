@@ -8,9 +8,7 @@ use crate::{
     enums::ItemLoadEnum,
 };
 
-// ------------------------------------
-// 创建/更新
-// ------------------------------------
+/// Item Store DTO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct ItemStoreDTO {
     /// 主键
@@ -92,9 +90,7 @@ impl From<&ItemStoreForm> for ItemStoreDTO {
     }
 }
 
-// ------------------------------------
-// 查询
-// ------------------------------------
+/// Item 查询 DTO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct ItemQueryDTO {
     /// 编辑用户

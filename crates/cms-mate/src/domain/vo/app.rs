@@ -9,9 +9,7 @@ use cms_core::{
 
 use crate::domain::entity::app::Model;
 
-// ------------------------------------
-// 创建/更新表单选项
-// ------------------------------------
+/// App 表单选项 VO
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 #[salvo(schema(name = "Mate模块/App/App表单选项VO"))]
 pub struct AppFormOptionVO {
@@ -21,9 +19,7 @@ pub struct AppFormOptionVO {
     pub enables: Option<Vec<SelectOptionItem>>,
 }
 
-// ------------------------------------
-// 查询表单选项
-// ------------------------------------
+/// App 查询表单选项 VO
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 #[salvo(schema(name = "Mate模块/App/App查询选项VO"))]
 pub struct AppQueryOptionVO {
@@ -33,9 +29,7 @@ pub struct AppQueryOptionVO {
     pub enables: Option<Vec<SelectOptionItem>>,
 }
 
-// ------------------------------------
-// 详情 VO
-// ------------------------------------
+/// App 主 VO
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
@@ -154,9 +148,7 @@ impl AppMasterVO {
     }
 }
 
-// ------------------------------------
-// 关联 VO
-// ------------------------------------
+/// App 关联 VO
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
