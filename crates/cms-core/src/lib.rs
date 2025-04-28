@@ -1,5 +1,4 @@
 pub mod config;
-pub mod consts;
 pub mod domain;
 pub mod enums;
 pub mod error;

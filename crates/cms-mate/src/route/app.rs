@@ -4,9 +4,8 @@ use validator::Validate;
 
 use cms_core::{
     config::AppState,
-    consts,
     domain::{
-        AppResult, ResponseError, ResponseSuccess,
+        AppResult, ResponseSuccess,
         dto::{FieldBoolUpdateDTO, ModelLogicDeleteDTO, ModelViewDTO},
         form::{FieldBoolUpdateForm, FieldValueUniqueForm},
         result_ok,
@@ -34,9 +33,9 @@ use crate::{
     operation_id = "mate_app_manager_paginate",
     security(["bearer" = ["bearer"]]),
     tags("Mate模块/管理端/App管理"),
+    status_codes(200, 401),
     responses(
-        (status_code = 200, body = ResponseSuccess<PaginateResultVO<AppMasterVO>>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
-        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
+        (status_code = 200, body = ResponseSuccess<PaginateResultVO<AppMasterVO>>)
     )
 )]
 pub async fn manager_paginate(
@@ -60,10 +59,9 @@ pub async fn manager_paginate(
     operation_id = "mate_app_manager_create",
     security(["bearer" = ["bearer"]]),
     tags("Mate模块/管理端/App管理"),
+    status_codes(200, 400, 401),
     responses(
-        (status_code = 200, body = ResponseSuccess<bool>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
-        (status_code = 400, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_BAD_REQUEST),
-        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
+        (status_code = 200, body = ResponseSuccess<bool>)
     )
 )]
 pub async fn manager_create(depot: &mut Depot, json: JsonBody<AppStoreForm>) -> AppResult<bool> {
@@ -85,10 +83,9 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<AppStoreForm>) -> 
     operation_id = "mate_app_manager_update",
     security(["bearer" = ["bearer"]]),
     tags("Mate模块/管理端/App管理"),
+    status_codes(200, 400, 401, 404),
     responses(
-        (status_code = 200, body = ResponseSuccess<bool>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
-        (status_code = 400, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_BAD_REQUEST),
-        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
+        (status_code = 200, body = ResponseSuccess<bool>)
     )
 )]
 pub async fn manager_update(
@@ -115,10 +112,9 @@ pub async fn manager_update(
     operation_id = "mate_app_manager_delete",
     security(["bearer" = ["bearer"]]),
     tags("Mate模块/管理端/App管理"),
+    status_codes(200, 400, 401, 404),
     responses(
-        (status_code = 200, body = ResponseSuccess<bool>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
-        (status_code = 400, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_BAD_REQUEST),
-        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
+        (status_code = 200, body = ResponseSuccess<bool>)
     )
 )]
 pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<bool> {
@@ -141,9 +137,9 @@ pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<
     operation_id = "mate_app_manager_form",
     security(["bearer" = ["bearer"]]),
     tags("Mate模块/管理端/App管理"),
+    status_codes(200, 400, 401),
     responses(
-        (status_code = 200, body = ResponseSuccess<AppFormOptionVO>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
-        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
+        (status_code = 200, body = ResponseSuccess<AppFormOptionVO>)
     )
 )]
 pub async fn manager_form(depot: &mut Depot) -> AppResult<AppFormOptionVO> {
@@ -159,9 +155,9 @@ pub async fn manager_form(depot: &mut Depot) -> AppResult<AppFormOptionVO> {
     operation_id = "mate_app_manager_query",
     security(["bearer" = ["bearer"]]),
     tags("Mate模块/管理端/App管理"),
+    status_codes(200, 400, 401),
     responses(
-        (status_code = 200, body = ResponseSuccess<AppQueryOptionVO>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
-        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
+        (status_code = 200, body = ResponseSuccess<AppQueryOptionVO>)
     )
 )]
 pub async fn manager_query(depot: &mut Depot) -> AppResult<AppQueryOptionVO> {
@@ -177,9 +173,9 @@ pub async fn manager_query(depot: &mut Depot) -> AppResult<AppQueryOptionVO> {
     operation_id = "mate_app_check_field_unique",
     security(["bearer" = ["bearer"]]),
     tags("Mate模块/管理端/App管理"),
+    status_codes(200, 400, 401),
     responses(
-        (status_code = 200, body = ResponseSuccess<bool>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
-        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
+        (status_code = 200, body = ResponseSuccess<bool>)
     )
 )]
 pub async fn check_field_unique(
@@ -201,9 +197,9 @@ pub async fn check_field_unique(
     operation_id = "mate_app_update_bool_field",
     security(["bearer" = ["bearer"]]),
     tags("Mate模块/管理端/App管理"),
+    status_codes(200, 400, 401, 404),
     responses(
-        (status_code = 200, body = ResponseSuccess<bool>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
-        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
+        (status_code = 200, body = ResponseSuccess<bool>)
     )
 )]
 pub async fn update_bool_field(
@@ -231,10 +227,9 @@ pub async fn update_bool_field(
     operation_id = "mate_app_manager_view",
     security(["bearer" = ["bearer"]]),
     tags("Mate模块/管理端/App管理"),
+    status_codes(200, 401, 404),
     responses(
-        (status_code = 200, body = ResponseSuccess<AppMasterVO>, description = consts::RESPONSE_DESCRIPTION_SUCCESS),
-        (status_code = 404, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_NOT_FOUND),
-        (status_code = 401, body = ResponseError, description = consts::RESPONSE_DESCRIPTION_UNAUTHORIZED)
+        (status_code = 200, body = ResponseSuccess<AppMasterVO>)
     )
 )]
 pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<AppMasterVO> {

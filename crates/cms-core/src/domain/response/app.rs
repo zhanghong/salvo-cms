@@ -96,6 +96,6 @@ pub struct ResponseError {
 
     /// 返回数据
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[salvo(schema(required = true, value_type = HashMap<String, String>))]
+    #[salvo(schema(required = false, nullable = true, value_type = HashMap<String, String>))]
     data: Option<HashMap<String, String>>,
 }
