@@ -2,56 +2,12 @@ use redis_macros::{FromRedisValue, ToRedisArgs};
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
-use cms_core::{
-    domain::{SelectOptionItem, vo::EditorLoadVO},
-    enums::ViewModeEnum,
-};
+use cms_core::{domain::vo::EditorLoadVO, enums::ViewModeEnum};
 
-use super::app::AppLoadVO;
-use super::kind::KindLoadVO;
+use super::app_load_vo::AppLoadVO;
+use super::item_load_vo::ItemLoadVO;
+use super::kind_load_vo::KindLoadVO;
 use crate::domain::entity::item::Model;
-
-/// Item 表单选项 VO
-#[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
-#[salvo(schema(name = "Mate模块/Item/Item表单选项VO"))]
-pub struct ItemFormOptionVO {
-    /// App 选项
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub apps: Option<Vec<SelectOptionItem>>,
-
-    /// 类型
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub kinds: Option<Vec<SelectOptionItem>>,
-
-    /// 父级
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub parents: Option<Vec<SelectOptionItem>>,
-
-    /// 启用状态
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub enables: Option<Vec<SelectOptionItem>>,
-}
-
-/// Item 查询表单选项 VO
-#[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
-#[salvo(schema(name = "Mate模块/Item/Item查询选项VO"))]
-pub struct ItemQueryOptionVO {
-    /// App 选项
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub apps: Option<Vec<SelectOptionItem>>,
-
-    /// 类型
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub kinds: Option<Vec<SelectOptionItem>>,
-
-    /// 父级
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub parents: Option<Vec<SelectOptionItem>>,
-
-    /// 启用状态
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub enables: Option<Vec<SelectOptionItem>>,
-}
 
 /// Item 主 VO
 #[derive(
@@ -195,78 +151,5 @@ impl ItemMasterVO {
         }
 
         vo
-    }
-}
-
-/// Item 关联 VO
-#[derive(
-    Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
-)]
-#[salvo(schema(name = "Mate模块/Item/Item关联VO"))]
-pub struct ItemLoadVO {
-    /// 主键
-    pub id: i64,
-
-    /// App ID
-    #[serde(skip_serializing)]
-    pub app_id: i64,
-
-    /// 类型ID
-    #[serde(skip_serializing)]
-    pub kind_id: i64,
-
-    /// 名称
-    pub name: String,
-
-    /// 标题
-    pub title: String,
-
-    /// 描述
-    pub description: String,
-
-    /// 图标
-    pub icon: String,
-
-    /// 模块
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub app: Option<AppLoadVO>,
-
-    /// 类型
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub kind: Option<KindLoadVO>,
-
-    /// 子级
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub children: Option<Vec<ItemLoadVO>>,
-}
-
-impl ItemLoadVO {
-    fn from_model(model: &Model) -> Self {
-        if model.id <= 0 || model.name.is_empty() || model.icon.is_empty() {
-            panic!("Invalid Model data: ID must be positive and name/icon cannot be empty");
-        }
-
-        Self {
-            id: model.id,
-            app_id: model.app_id,
-            kind_id: model.kind_id,
-            name: model.name.to_owned(),
-            title: model.title.to_owned(),
-            description: model.description.to_owned(),
-            icon: model.icon.to_owned(),
-            ..Default::default()
-        }
-    }
-}
-
-impl From<Model> for ItemLoadVO {
-    fn from(model: Model) -> Self {
-        Self::from_model(&model)
-    }
-}
-
-impl From<&Model> for ItemLoadVO {
-    fn from(model: &Model) -> Self {
-        Self::from_model(model)
     }
 }
