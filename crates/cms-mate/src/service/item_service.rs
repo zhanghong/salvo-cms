@@ -4,18 +4,19 @@ use std::collections::HashMap;
 
 use cms_core::config::AppState;
 use cms_core::domain::{
-    HandleResult, SelectOptionItem,
+    HandleResult,
     dto::{
-        EditorCurrent, FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO,
+        EditorCurrentDTO, FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO,
         ModelRelationCountDTO, ModelViewDTO,
     },
     handle_ok,
+    model::SelectOptionModel,
     vo::PaginateResultVO,
 };
 use cms_core::enums::{EditorTypeEnum, EnableEnum, PlatformEnum, ViewModeEnum};
 use cms_core::error::AppError;
 use cms_core::service::EditorService;
-use cms_core::utils::time;
+use cms_core::utils::time_utils;
 
 use crate::domain::dto::{ItemQueryDTO, ItemStoreDTO};
 use crate::domain::entity::item::{
@@ -171,7 +172,7 @@ impl ItemService {
             model.is_enabled = Set(is_enabled);
         }
 
-        let time = time::current_time();
+        let time = time_utils::current_time();
         model.updated_at = Set(Some(time));
 
         if is_create {
@@ -331,7 +332,7 @@ impl ItemService {
             }
         };
 
-        let now = time::current_time();
+        let now = time_utils::current_time();
         model.updated_at = Set(Some(now));
 
         let editor = dto.editor.clone();
@@ -582,7 +583,7 @@ impl ItemService {
         model.editor_type = Set(editor.editor_type.string_value());
         model.editor_id = Set(editor.editor_id);
         model.is_deleted = Set(Some(true));
-        let now = time::current_time();
+        let now = time_utils::current_time();
         model.deleted_at = Set(Some(now));
         let _ = model.save(db).await?;
 
@@ -593,7 +594,7 @@ impl ItemService {
     pub async fn fetch_root_option_list(
         platform: &PlatformEnum,
         state: &AppState,
-    ) -> HandleResult<Vec<SelectOptionItem>> {
+    ) -> HandleResult<Vec<SelectOptionModel>> {
         let db = &state.db;
         let mut query = Self::scope_active_query();
         if *platform == PlatformEnum::Open {
@@ -601,22 +602,22 @@ impl ItemService {
         }
         query = query.filter(ItemColumn::ParentId.eq(0));
         let models = query.all(db).await?;
-        let list: Vec<SelectOptionItem> = models.into_iter().map(|model| model.into()).collect();
+        let list: Vec<SelectOptionModel> = models.into_iter().map(|model| model.into()).collect();
         handle_ok(list)
     }
 
-    /// SelectOptionItem 列表
+    /// SelectOptionModel 列表
     pub async fn fetch_option_list(
         platform: &PlatformEnum,
         state: &AppState,
-    ) -> HandleResult<Vec<SelectOptionItem>> {
+    ) -> HandleResult<Vec<SelectOptionModel>> {
         let db = &state.db;
         let mut query = Self::scope_active_query();
         if *platform == PlatformEnum::Open {
             query = query.filter(ItemColumn::IsEnabled.eq(true));
         }
         let models = query.all(db).await?;
-        let list: Vec<SelectOptionItem> = models.into_iter().map(|model| model.into()).collect();
+        let list: Vec<SelectOptionModel> = models.into_iter().map(|model| model.into()).collect();
         handle_ok(list)
     }
 
@@ -735,7 +736,7 @@ impl ItemService {
     }
 
     /// 是否可以删除记录
-    pub fn can_delete(editor: &EditorCurrent, model: &ItemModel) -> bool {
+    pub fn can_delete(editor: &EditorCurrentDTO, model: &ItemModel) -> bool {
         let has_children = match model.children_count {
             Some(count) => count > 0,
             None => true,

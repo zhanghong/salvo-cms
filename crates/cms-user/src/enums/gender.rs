@@ -1,7 +1,7 @@
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
-use cms_core::domain::{SelectOptionItem, SelectValueEnum};
+use cms_core::{domain::model::SelectOptionModel, enums::SelectValueEnum};
 
 // 性别枚举
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
@@ -40,7 +40,7 @@ impl GenderEnum {
     }
 
     /// 将枚举转换为选项列表
-    pub fn to_option_list() -> Vec<SelectOptionItem> {
+    pub fn to_option_list() -> Vec<SelectOptionModel> {
         vec![
             GenderEnum::Unknown.into(),
             GenderEnum::Male.into(),
@@ -82,11 +82,11 @@ impl<'de> Deserialize<'de> for GenderEnum {
     }
 }
 
-/// 转成 SelectOptionItem
-impl Into<SelectOptionItem> for GenderEnum {
-    fn into(self) -> SelectOptionItem {
+/// 转成 SelectOptionModel
+impl Into<SelectOptionModel> for GenderEnum {
+    fn into(self) -> SelectOptionModel {
         let value = self.as_value() as i64;
-        SelectOptionItem {
+        SelectOptionModel {
             label: self.as_title(),
             value: SelectValueEnum::Number(value),
             ..Default::default()

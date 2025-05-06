@@ -6,12 +6,11 @@ use crate::error::AppError;
 pub mod dto;
 pub mod entity;
 pub mod form;
+pub mod model;
 pub mod vo;
 
-mod option;
 mod response;
 
-pub use option::{SelectOptionItem, SelectValueEnum};
 pub use response::{AppResponse, ResponseError, ResponseSuccess};
 
 pub type HandleResult<T> = AnyResult<T, AppError>;

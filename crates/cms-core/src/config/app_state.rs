@@ -2,8 +2,8 @@ use deadpool_lapin::Pool;
 use redis::Client;
 use sea_orm::DatabaseConnection;
 
-use super::DbConfig;
-use super::RabbitMQPool;
+use super::DatabaseConfig;
+use super::RabbitMQConfig;
 use super::RedisConfig;
 
 #[derive(Clone, Debug)]
@@ -15,9 +15,9 @@ pub struct AppState {
 
 impl AppState {
     pub async fn init() -> Self {
-        let db_config = DbConfig::from_env().expect("Failed to load db config");
+        let db_config = DatabaseConfig::from_env().expect("Failed to load db config");
         let redis_config = RedisConfig::from_env().expect("Failed to load redis config");
-        let rabbitmq_config = RabbitMQPool::from_env().expect("Failed to load queue config");
+        let rabbitmq_config = RabbitMQConfig::from_env().expect("Failed to load queue config");
 
         let db = db_config.build_connection().await.unwrap();
         let redis = redis_config.build_client().await.unwrap();

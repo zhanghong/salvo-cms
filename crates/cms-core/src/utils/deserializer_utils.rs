@@ -5,7 +5,7 @@ use serde_json::Value;
 use std::str::FromStr;
 use tracing::{debug, warn};
 
-use super::parameter;
+use super::parameter_utils;
 
 // ------------------------------------------------------------------------
 // 字符串类型处理方法
@@ -313,8 +313,8 @@ where
 {
     let res = string_to_number(deserializer);
     let num = match res {
-        Ok(num) => parameter::page_no_set(Some(num)),
-        _ => parameter::page_size_set(None),
+        Ok(num) => parameter_utils::page_no_set(Some(num)),
+        _ => parameter_utils::page_size_set(None),
     };
     Ok(num)
 }
@@ -335,8 +335,8 @@ where
 {
     let res = string_to_number(deserializer);
     let num = match res {
-        Ok(num) => parameter::page_size_set(Some(num)),
-        _ => parameter::page_size_set(None),
+        Ok(num) => parameter_utils::page_size_set(Some(num)),
+        _ => parameter_utils::page_size_set(None),
     };
     Ok(num)
 }

@@ -2,7 +2,8 @@ use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 use tracing::warn;
 
-use crate::domain::{SelectOptionItem, SelectValueEnum};
+use super::SelectValueEnum;
+use crate::domain::model::SelectOptionModel;
 
 // 定义常量字符串
 const ADMIN_TITLE: &str = "管理员";
@@ -57,7 +58,7 @@ impl EditorTypeEnum {
     }
 
     /// 将枚举转换为选项列表
-    pub fn to_option_list() -> Vec<SelectOptionItem> {
+    pub fn to_option_list() -> Vec<SelectOptionModel> {
         vec![
             EditorTypeEnum::Admin,
             EditorTypeEnum::Member,
@@ -132,11 +133,11 @@ impl<'de> Deserialize<'de> for EditorTypeEnum {
     }
 }
 
-/// 转成 SelectOptionItem
-impl Into<SelectOptionItem> for EditorTypeEnum {
-    fn into(self) -> SelectOptionItem {
+/// 转成 SelectOptionModel
+impl Into<SelectOptionModel> for EditorTypeEnum {
+    fn into(self) -> SelectOptionModel {
         let value = self.as_value();
-        SelectOptionItem {
+        SelectOptionModel {
             label: self.as_title().to_string(),
             value: SelectValueEnum::Str(value),
             ..Default::default()

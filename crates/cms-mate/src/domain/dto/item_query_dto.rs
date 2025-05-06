@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-use cms_core::domain::dto::EditorCurrent;
+use cms_core::domain::dto::EditorCurrentDTO;
 
 use crate::{domain::query::ItemPaginateQuery, enums::ItemLoadEnum};
 
@@ -9,7 +9,7 @@ use crate::{domain::query::ItemPaginateQuery, enums::ItemLoadEnum};
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct ItemQueryDTO {
     /// 编辑用户
-    pub editor: EditorCurrent,
+    pub editor: EditorCurrentDTO,
 
     /// 页码
     pub page: u64,

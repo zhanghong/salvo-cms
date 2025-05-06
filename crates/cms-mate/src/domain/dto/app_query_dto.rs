@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-use cms_core::domain::dto::EditorCurrent;
+use cms_core::domain::dto::EditorCurrentDTO;
 
 use crate::{domain::query::AppPaginateQuery, enums::AppLoadEnum};
 
@@ -9,7 +9,7 @@ use crate::{domain::query::AppPaginateQuery, enums::AppLoadEnum};
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct AppQueryDTO {
     /// 编辑用户
-    pub editor: EditorCurrent,
+    pub editor: EditorCurrentDTO,
 
     /// 页码
     pub page: u64,

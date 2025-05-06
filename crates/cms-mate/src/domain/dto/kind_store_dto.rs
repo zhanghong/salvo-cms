@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use cms_core::domain::dto::EditorCurrent;
+use cms_core::domain::dto::EditorCurrentDTO;
 
 use crate::domain::form::KindStoreForm;
 
@@ -11,7 +11,7 @@ pub struct KindStoreDTO {
     pub id: i64,
 
     /// 编辑用户
-    pub editor: EditorCurrent,
+    pub editor: EditorCurrentDTO,
 
     /// 模块ID
     pub app_id: Option<i64>,

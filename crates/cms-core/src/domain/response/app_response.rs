@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fmt::Debug;
 
 use salvo::http::StatusCode;
@@ -68,34 +67,4 @@ where
                 .add_content("application/json", Self::to_schema(components)),
         )
     }
-}
-
-/// 统一响应结构(成功)
-#[derive(Debug, Serialize, ToSchema)]
-#[salvo(schema(name = "App Response Success"))]
-pub struct ResponseSuccess<T: Serialize> {
-    /// 状态码
-    code: u32,
-
-    /// 返回数据
-    #[salvo(schema(required = true, value_type = T))]
-    data: T,
-}
-
-// 统一响应结构(失败)
-#[derive(Debug, Serialize, ToSchema)]
-#[salvo(schema(name = "App Response Error"))]
-pub struct ResponseError {
-    /// 状态码
-    #[salvo(schema(required = true, value_type = u32))]
-    code: u32,
-
-    /// 错误信息
-    #[salvo(schema(required = true, value_type = String))]
-    message: String,
-
-    /// 返回数据
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[salvo(schema(required = false, nullable = true, value_type = HashMap<String, String>))]
-    data: Option<HashMap<String, String>>,
 }

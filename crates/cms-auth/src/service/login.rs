@@ -8,7 +8,7 @@ use cms_core::{
     enums::PlatformEnum,
     error::AppError,
     service::JwtService,
-    utils::{encrypt::encrypt_password, time},
+    utils::{encrypt_utils::encrypt_password, time_utils},
 };
 
 use crate::domain::entity::login::{ActiveModel as LoginActiveModel, Model as LoginModel};
@@ -76,13 +76,13 @@ impl LoginService {
             roles,
             permissions,
             access_token: cert.access_token.to_owned(),
-            access_expired: time::to_db_time(&cert.access_expired_at),
+            access_expired: time_utils::to_db_time(&cert.access_expired_at),
             refresh_token: cert.refresh_token.to_owned(),
-            refresh_expired: time::to_db_time(&cert.refresh_expired_at),
+            refresh_expired: time_utils::to_db_time(&cert.refresh_expired_at),
         };
 
         // 记录登录日志
-        let now = time::current_time();
+        let now = time_utils::current_time();
         let login = LoginActiveModel {
             user_id: Set(user.id),
             login_type: Set(login_type.to_owned()),
@@ -111,9 +111,9 @@ impl LoginService {
 
         let vo = LoginTokenUpdateVO {
             access_token: cert.access_token.to_owned(),
-            access_expired: time::to_db_time(&cert.access_expired_at),
+            access_expired: time_utils::to_db_time(&cert.access_expired_at),
             refresh_token: cert.refresh_token.to_owned(),
-            refresh_expired: time::to_db_time(&cert.refresh_expired_at),
+            refresh_expired: time_utils::to_db_time(&cert.refresh_expired_at),
         };
         handle_ok(vo)
     }

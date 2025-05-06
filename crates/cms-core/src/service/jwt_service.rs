@@ -5,7 +5,7 @@ use sea_orm::*;
 use uuid::Uuid;
 
 use crate::config::{AppState, JwtConfig};
-use crate::domain::dto::{EditorCurrent, JwtClaimsDTO, JwtTokenDTO};
+use crate::domain::dto::{EditorCurrentDTO, JwtClaimsDTO, JwtTokenDTO};
 use crate::domain::entity::certificate::{
     ActiveModel as CertificateActiveModel, Column as CertificateColummn,
     Entity as CertificateEntity, Model as CertificateModel,
@@ -13,7 +13,7 @@ use crate::domain::entity::certificate::{
 use crate::domain::{HandleResult, handle_ok};
 use crate::enums::TokenTypeEnum;
 use crate::error::AppError;
-use crate::utils::time;
+use crate::utils::time_utils;
 
 use super::RedisService;
 
@@ -31,15 +31,15 @@ impl JwtService {
         let access = Self::generate_access_token(&uuid_string, user_id, user_type).unwrap();
         let refresh = Self::generate_refresh_token(&uuid_string, user_id, user_type).unwrap();
 
-        let now = time::current_time();
+        let now = time_utils::current_time();
         let model = CertificateActiveModel {
             id: Set(uuid.to_owned()),
             user_id: Set(user_id),
             user_type: Set(user_type.to_owned()),
             access_token: Set(access.token_value.to_owned()),
-            access_expired_at: Set(time::from_timestamp(access.expired_time)),
+            access_expired_at: Set(time_utils::from_timestamp(access.expired_time)),
             refresh_token: Set(refresh.token_value.to_owned()),
-            refresh_expired_at: Set(time::from_timestamp(refresh.expired_time)),
+            refresh_expired_at: Set(time_utils::from_timestamp(refresh.expired_time)),
             created_at: Set(now),
             updated_at: Set(now),
             ..Default::default()
@@ -76,8 +76,8 @@ impl JwtService {
             .await?
             .unwrap();
 
-        let current_timestamp = time::current_timestamp();
-        let refresh_expired_time = time::to_timestamp(model.refresh_expired_at.clone());
+        let current_timestamp = time_utils::current_timestamp();
+        let refresh_expired_time = time_utils::to_timestamp(model.refresh_expired_at.clone());
         if current_timestamp > refresh_expired_time {
             let err = AppError::Unauthorized;
             return Err(err);
@@ -89,14 +89,14 @@ impl JwtService {
         let mut model: CertificateActiveModel = model.into();
         let access = Self::generate_access_token(&uuid, user_id, user_type).unwrap();
         model.access_token = Set(access.token_value.to_owned());
-        model.access_expired_at = Set(time::from_timestamp(access.expired_time));
+        model.access_expired_at = Set(time_utils::from_timestamp(access.expired_time));
 
         if current_timestamp + (3 * 24 * 60 * 60) > refresh_expired_time {
             let refresh = Self::generate_refresh_token(&uuid, user_id, user_type).unwrap();
             model.refresh_token = Set(refresh.token_value.to_owned());
-            model.refresh_expired_at = Set(time::from_timestamp(refresh.expired_time));
+            model.refresh_expired_at = Set(time_utils::from_timestamp(refresh.expired_time));
         }
-        model.updated_at = Set(time::current_time());
+        model.updated_at = Set(time_utils::current_time());
         let model: CertificateModel = model.update(db).await?;
         RedisService::set_jwt_key(&state.redis, &uuid, access.expired_time);
 
@@ -112,7 +112,7 @@ impl JwtService {
         let cfg = JwtConfig::from_env().expect("Failed to load jwt config");
         let secret_bytes = cfg.secret_bytes();
         let days = cfg.get_access_expire_days();
-        let now = time::current_time();
+        let now = time_utils::current_time();
         let expired_time = (now + Duration::days(days)).and_utc().timestamp();
 
         let claims = JwtClaimsDTO {
@@ -164,7 +164,7 @@ impl JwtService {
             }
         }
 
-        let editor: EditorCurrent = claims.into();
+        let editor: EditorCurrentDTO = claims.into();
         depot.insert("current_editor", editor);
 
         handle_ok(())
@@ -179,7 +179,7 @@ impl JwtService {
         let cfg = JwtConfig::from_env().expect("Failed to load jwt config");
         let secret_bytes = cfg.secret_bytes();
         let days = cfg.get_refresh_expire_days();
-        let now = time::current_time();
+        let now = time_utils::current_time();
         let expired_time = (now + Duration::days(days)).and_utc().timestamp();
 
         let claims = JwtClaimsDTO {

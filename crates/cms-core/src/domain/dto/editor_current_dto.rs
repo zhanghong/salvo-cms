@@ -4,12 +4,12 @@ use super::JwtClaimsDTO;
 use crate::enums::EditorTypeEnum;
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
-pub struct EditorCurrent {
+pub struct EditorCurrentDTO {
     pub editor_id: i64,
     pub editor_type: EditorTypeEnum,
 }
 
-impl EditorCurrent {
+impl EditorCurrentDTO {
     fn from_claims(claims: &JwtClaimsDTO) -> Self {
         let editor_id = claims.user_id;
         let user_types = claims.user_type.to_owned();
@@ -33,13 +33,13 @@ impl EditorCurrent {
     }
 }
 
-impl From<JwtClaimsDTO> for EditorCurrent {
+impl From<JwtClaimsDTO> for EditorCurrentDTO {
     fn from(claims: JwtClaimsDTO) -> Self {
         Self::from_claims(&claims)
     }
 }
 
-impl From<&JwtClaimsDTO> for EditorCurrent {
+impl From<&JwtClaimsDTO> for EditorCurrentDTO {
     fn from(claims: &JwtClaimsDTO) -> Self {
         Self::from_claims(claims)
     }

@@ -2,7 +2,7 @@ use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
 
-use cms_core::utils::validate;
+use cms_core::utils::validate_utils;
 
 use super::DetailStoreForm;
 use crate::enums::GenderEnum;
@@ -13,25 +13,25 @@ use crate::enums::GenderEnum;
 fn validate_field_no(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_length(str, false, 5, 15)
+    validate_utils::string_length(str, false, 5, 15)
 }
 
 fn validate_field_name(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_length(str, true, 5, 30)
+    validate_utils::string_length(str, true, 5, 30)
 }
 
 fn validate_field_real_name(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_length(str, true, 2, 30)
+    validate_utils::string_length(str, true, 2, 30)
 }
 
 fn validate_field_nickname(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_length(str, true, 2, 30)
+    validate_utils::string_length(str, true, 2, 30)
 }
 
 fn validate_field_gender(ptr: &&GenderEnum) -> Result<(), ValidationError> {
@@ -42,39 +42,39 @@ fn validate_field_gender(ptr: &&GenderEnum) -> Result<(), ValidationError> {
         GenderEnum::Unknown => true,
         _ => false,
     };
-    validate::is_allow_enum_value(flag)
+    validate_utils::is_allow_enum_value(flag)
 }
 
 fn validate_field_phone(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::phone_number(str, false)
+    validate_utils::phone_number(str, false)
 }
 
 fn validate_field_avatar_path(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    let _ = validate::string_length(str, false, 0, 150)?;
-    validate::url_address(str, false)
+    let _ = validate_utils::string_length(str, false, 0, 150)?;
+    validate_utils::url_address(str, false)
 }
 
 fn validate_field_email(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    let _ = validate::string_length(str, false, 5, 50)?;
-    validate::email_address(str, false)
+    let _ = validate_utils::string_length(str, false, 5, 50)?;
+    validate_utils::email_address(str, false)
 }
 
 fn validate_field_password(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_length(str, true, 6, 20)
+    validate_utils::string_length(str, true, 6, 20)
 }
 
 fn validate_field_current_password(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_length(str, false, 6, 20)
+    validate_utils::string_length(str, false, 6, 20)
 }
 
 // ------------------------------------

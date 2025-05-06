@@ -3,7 +3,7 @@ use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
 
-use cms_core::utils::validate;
+use cms_core::utils::validate_utils;
 
 // // ------------------------------------
 // // 字段验证方法
@@ -11,47 +11,47 @@ use cms_core::utils::validate;
 fn validate_field_identity_no(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_length(str, false, 18, 18)
+    validate_utils::string_length(str, false, 18, 18)
 }
 
 fn validate_big_integer_present(num: i64) -> Result<(), ValidationError> {
-    validate::numeric_equal_or_greater_than(Some(num), 0)
+    validate_utils::numeric_equal_or_greater_than(Some(num), 0)
 }
 
 fn validate_field_address(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_max_length(str, 150)
+    validate_utils::string_max_length(str, 150)
 }
 
 fn validate_field_emotional(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_max_length(str, 50)
+    validate_utils::string_max_length(str, 50)
 }
 
 fn validate_field_graduated_from(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_max_length(str, 80)
+    validate_utils::string_max_length(str, 80)
 }
 
 fn validate_field_company_name(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_max_length(str, 100)
+    validate_utils::string_max_length(str, 100)
 }
 
 fn validate_field_staff_title(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_max_length(str, 50)
+    validate_utils::string_max_length(str, 50)
 }
 
 fn validate_field_text_content(ptr: &&String) -> Result<(), ValidationError> {
     let string = (*ptr).clone();
     let str = string.as_str();
-    validate::string_max_length(str, 500)
+    validate_utils::string_max_length(str, 500)
 }
 
 // ------------------------------------

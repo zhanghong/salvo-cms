@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use cms_core::domain::dto::EditorCurrent;
+use cms_core::domain::dto::EditorCurrentDTO;
 
 use crate::domain::form::MorphInstanceStoreForm;
 
@@ -9,7 +9,7 @@ use crate::domain::form::MorphInstanceStoreForm;
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct MorphInstanceStoreDTO {
     /// 编辑用户
-    pub editor: EditorCurrent,
+    pub editor: EditorCurrentDTO,
 
     /// 名称
     pub instance_type: Option<String>,

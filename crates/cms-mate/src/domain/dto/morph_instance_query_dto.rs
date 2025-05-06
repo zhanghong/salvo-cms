@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use cms_core::domain::dto::EditorCurrent;
+use cms_core::domain::dto::EditorCurrentDTO;
 
 use crate::{domain::query::MorphInstanceQuery, enums::MorphLoadEnum};
 
@@ -8,7 +8,7 @@ use crate::{domain::query::MorphInstanceQuery, enums::MorphLoadEnum};
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct MorphInstanceQueryDTO {
     /// 编辑用户
-    pub editor: EditorCurrent,
+    pub editor: EditorCurrentDTO,
 
     /// 实例类型
     pub instance_type: Option<String>,

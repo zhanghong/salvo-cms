@@ -5,10 +5,7 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::env;
 
-use cms_core::{
-    domain::{SelectOptionItem, SelectValueEnum},
-    utils::time,
-};
+use cms_core::{domain::model::SelectOptionModel, enums::SelectValueEnum, utils::time_utils};
 
 #[derive(Clone, Debug, Default, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
 #[sea_orm(table_name = "mate_items")]
@@ -109,17 +106,17 @@ impl Model {
     }
 
     pub fn created_time(&self) -> Option<String> {
-        self.created_at.map(|time| time::to_db_time(&time))
+        self.created_at.map(|time| time_utils::to_db_time(&time))
     }
 
     pub fn updated_time(&self) -> Option<String> {
-        self.updated_at.map(|time| time::to_db_time(&time))
+        self.updated_at.map(|time| time_utils::to_db_time(&time))
     }
 
-    /// Converts the model into a `SelectOptionItem`.
-    pub fn to_option_item(&self) -> SelectOptionItem {
+    /// Converts the model into a `SelectOptionModel`.
+    pub fn to_option_item(&self) -> SelectOptionModel {
         let group = format!("kind-{}-prt-{}", self.kind_id, self.parent_id);
-        SelectOptionItem {
+        SelectOptionModel {
             label: self.title.to_string(),
             value: SelectValueEnum::Number(self.id),
             disabled: Some(!self.is_enabled),
@@ -131,16 +128,16 @@ impl Model {
     }
 }
 
-impl Into<SelectOptionItem> for Model {
-    fn into(self) -> SelectOptionItem {
+impl Into<SelectOptionModel> for Model {
+    fn into(self) -> SelectOptionModel {
         self.to_option_item()
     }
 }
 
-impl Into<SelectOptionItem> for &Model {
-    fn into(self) -> SelectOptionItem {
+impl Into<SelectOptionModel> for &Model {
+    fn into(self) -> SelectOptionModel {
         let group = format!("{}-{}", self.kind_id, self.parent_id);
-        SelectOptionItem {
+        SelectOptionModel {
             label: self.title.to_string(),
             value: SelectValueEnum::Number(self.id),
             disabled: Some(!self.is_enabled),

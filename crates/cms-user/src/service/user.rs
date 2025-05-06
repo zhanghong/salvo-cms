@@ -11,7 +11,7 @@ use cms_core::domain::{
 use cms_core::enums::{EditorTypeEnum, PlatformEnum};
 use cms_core::error::AppError;
 use cms_core::service::EditorService;
-use cms_core::utils::{encrypt::encrypt_password, random, time};
+use cms_core::utils::{encrypt_utils::encrypt_password, random_utils, time_utils};
 
 use crate::domain::dto::{
     DetailStoreDTO, UserQueryDTO, UserStoreDTO, UserUpdatePasswordDTO, UserViewDTO,
@@ -161,7 +161,7 @@ impl UserService {
         };
         model.is_test = Set(is_test);
 
-        let time = time::current_time();
+        let time = time_utils::current_time();
         model.updated_at = Set(time);
 
         if is_create {
@@ -171,7 +171,7 @@ impl UserService {
             let no = match no {
                 Some(str) => str,
                 None => {
-                    let rand_str = random::alpha_string(RAND_NO_LENGTH);
+                    let rand_str = random_utils::alpha_string(RAND_NO_LENGTH);
                     format!("U{}", rand_str)
                 }
             };
@@ -190,7 +190,7 @@ impl UserService {
                     return Err(err);
                 }
 
-                let salt = random::alpha_string(RAND_SALT_LENGTH);
+                let salt = random_utils::alpha_string(RAND_SALT_LENGTH);
                 let password = encrypt_password(salt.as_str(), password_str);
                 model.salt = Set(salt);
                 model.password = Set(password);
@@ -307,7 +307,7 @@ impl UserService {
             model.expertises = Set(expertises);
         }
 
-        let now = time::current_time();
+        let now = time_utils::current_time();
         if is_create {
             model.created_at = Set(now);
         }
@@ -434,7 +434,7 @@ impl UserService {
             return Err(err);
         }
 
-        let salt = random::alpha_string(RAND_SALT_LENGTH);
+        let salt = random_utils::alpha_string(RAND_SALT_LENGTH);
         let password = encrypt_password(salt.as_str(), new_password.as_str());
         // if password.eq(model.password.as_str()) {
         //     let err = AppError::BadRequest(String::from("新密码不能与旧密码相同"));
@@ -444,7 +444,7 @@ impl UserService {
         let mut active: UserActiveModel = model.into();
         active.password = Set(password.to_owned());
         active.salt = Set(salt.to_owned());
-        active.updated_at = Set(time::current_time());
+        active.updated_at = Set(time_utils::current_time());
         let _ = active.update(db).await?;
 
         handle_ok(true)
@@ -658,7 +658,7 @@ impl UserService {
         if let Ok(model) = result {
             let mut model: UserActiveModel = model.into();
             model.is_deleted = Set(true);
-            let now = time::current_time();
+            let now = time_utils::current_time();
             model.deleted_at = Set(Some(now));
             let _ = model.save(db).await?;
         }

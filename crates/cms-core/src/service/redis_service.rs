@@ -6,7 +6,7 @@ use redis_macros::Json;
 use serde::{Deserialize, Serialize};
 use std::marker::{Send, Sync};
 
-use crate::utils::time;
+use crate::utils::time_utils;
 
 pub struct RedisService {}
 
@@ -45,7 +45,7 @@ impl RedisService {
     }
 
     pub fn set_jwt_key(client: &Client, jwt_id: &String, expired_time: i64) {
-        let current_timestamp = time::current_timestamp();
+        let current_timestamp = time_utils::current_timestamp();
         let mut seconds: i64 = expired_time - current_timestamp;
         if seconds < 0 {
             seconds = 1;

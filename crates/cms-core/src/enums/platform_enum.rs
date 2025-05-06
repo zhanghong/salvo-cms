@@ -1,7 +1,8 @@
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{SelectOptionItem, SelectValueEnum};
+use super::SelectValueEnum;
+use crate::domain::model::SelectOptionModel;
 
 const OPEN_TITLE: &str = "用户端";
 const MANAGER_TITLE: &str = "管理端";
@@ -51,10 +52,10 @@ impl PlatformEnum {
     }
 }
 
-impl Into<SelectOptionItem> for PlatformEnum {
-    fn into(self) -> SelectOptionItem {
+impl Into<SelectOptionModel> for PlatformEnum {
+    fn into(self) -> SelectOptionModel {
         let value = self.as_value();
-        SelectOptionItem {
+        SelectOptionModel {
             label: self.as_title().to_string(),
             value: SelectValueEnum::Str(value),
             ..Default::default()

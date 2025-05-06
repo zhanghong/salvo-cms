@@ -2,7 +2,7 @@ use cms_core::domain::vo::EditorLoadVO;
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
-use cms_core::{domain::SelectOptionItem, enums::EditorTypeEnum};
+use cms_core::{domain::model::SelectOptionModel, enums::EditorTypeEnum};
 
 use crate::domain::entity::user::Model;
 use crate::enums::GenderEnum;
@@ -15,10 +15,10 @@ use super::DetailVO;
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
 pub struct UserFormOptionVO {
     /// 性别选项
-    pub genders: Option<Vec<SelectOptionItem>>,
+    pub genders: Option<Vec<SelectOptionModel>>,
 
     /// 用户类型选项
-    pub types: Option<Vec<SelectOptionItem>>,
+    pub types: Option<Vec<SelectOptionModel>>,
 }
 
 // ------------------------------------

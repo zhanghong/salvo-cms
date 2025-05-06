@@ -4,18 +4,19 @@ use std::collections::HashMap;
 
 use cms_core::config::AppState;
 use cms_core::domain::{
-    HandleResult, SelectOptionItem, SelectValueEnum,
+    HandleResult,
     dto::{
-        EditorCurrent, FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO,
+        EditorCurrentDTO, FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO,
         ModelRelationCountDTO, ModelViewDTO,
     },
     handle_ok,
+    model::SelectOptionModel,
     vo::PaginateResultVO,
 };
-use cms_core::enums::{EditorTypeEnum, EnableEnum, PlatformEnum, ViewModeEnum};
+use cms_core::enums::{EditorTypeEnum, EnableEnum, PlatformEnum, SelectValueEnum, ViewModeEnum};
 use cms_core::error::AppError;
 use cms_core::service::EditorService;
-use cms_core::utils::time;
+use cms_core::utils::time_utils;
 
 use super::AppService;
 use crate::domain::dto::{KindQueryDTO, KindStoreDTO};
@@ -124,7 +125,7 @@ impl KindService {
             model.is_enabled = Set(is_enabled);
         }
 
-        let time = time::current_time();
+        let time = time_utils::current_time();
         model.updated_at = Set(Some(time));
 
         if is_create {
@@ -267,7 +268,7 @@ impl KindService {
             _ => return Err(AppError::BadRequest("更新字段错误".to_string())),
         };
 
-        let now = time::current_time();
+        let now = time_utils::current_time();
         model.updated_at = Set(Some(now));
 
         let editor = dto.editor.clone();
@@ -476,33 +477,33 @@ impl KindService {
         model.editor_type = Set(editor.editor_type.string_value());
         model.editor_id = Set(editor.editor_id);
         model.is_deleted = Set(Some(true));
-        let now = time::current_time();
+        let now = time_utils::current_time();
         model.deleted_at = Set(Some(now));
         model.save(db).await?;
 
         handle_ok(())
     }
 
-    /// SelectOptionItem 列表
+    /// SelectOptionModel 列表
     pub async fn fetch_option_list(
         platform: &PlatformEnum,
         state: &AppState,
-    ) -> HandleResult<Vec<SelectOptionItem>> {
+    ) -> HandleResult<Vec<SelectOptionModel>> {
         let db = &state.db;
         let mut query = Self::scope_active_query();
         if *platform == PlatformEnum::Open {
             query = query.filter(KindColumn::IsEnabled.eq(true));
         }
         let models = query.all(db).await?;
-        let list: Vec<SelectOptionItem> = models.into_iter().map(|model| model.into()).collect();
+        let list: Vec<SelectOptionModel> = models.into_iter().map(|model| model.into()).collect();
         handle_ok(list)
     }
 
-    /// SelectOptionItem 列表
+    /// SelectOptionModel 列表
     pub async fn fetch_option_with_app(
         platform: &PlatformEnum,
         state: &AppState,
-    ) -> HandleResult<Vec<SelectOptionItem>> {
+    ) -> HandleResult<Vec<SelectOptionModel>> {
         let mut apps = AppService::fetch_option_list(platform, state).await?;
         if apps.is_empty() {
             return handle_ok(vec![]);
@@ -524,7 +525,7 @@ impl KindService {
                 let mut children = vec![];
                 for model in &models {
                     if model.app_id == app_id {
-                        let child: SelectOptionItem = model.into();
+                        let child: SelectOptionModel = model.into();
                         children.push(child);
                     }
                 }
@@ -614,7 +615,7 @@ impl KindService {
     }
 
     /// 是否可以删除记录
-    pub fn can_delete(editor: &EditorCurrent, model: &KindModel) -> bool {
+    pub fn can_delete(editor: &EditorCurrentDTO, model: &KindModel) -> bool {
         let has_item = model.item_count.map_or(true, |count| count > 0);
         if has_item {
             return false;

@@ -3,7 +3,8 @@ use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
 // 引入领域模型中的相关类型
-use crate::domain::{SelectOptionItem, SelectValueEnum};
+use super::SelectValueEnum;
+use crate::domain::model::SelectOptionModel;
 
 // 定义常量字符串
 const ENABLE_TITLE: &str = "启用";
@@ -43,7 +44,7 @@ impl EnableEnum {
     }
 
     // 生成一个包含所有枚举值的选项列表
-    pub fn to_option_list() -> Vec<SelectOptionItem> {
+    pub fn to_option_list() -> Vec<SelectOptionModel> {
         vec![EnableEnum::Yes, EnableEnum::No]
             .into_iter()
             .map(|e| e.into())
@@ -51,11 +52,11 @@ impl EnableEnum {
     }
 }
 
-// 实现EnableEnum到SelectOptionItem的转换
-impl Into<SelectOptionItem> for EnableEnum {
-    fn into(self) -> SelectOptionItem {
+// 转换成 SelectOptionModel
+impl Into<SelectOptionModel> for EnableEnum {
+    fn into(self) -> SelectOptionModel {
         let value = self.option_value();
-        SelectOptionItem {
+        SelectOptionModel {
             label: self.as_title().to_string(), // 转换为 String 类型
             value: SelectValueEnum::Number(value),
             ..Default::default()

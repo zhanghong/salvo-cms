@@ -3,11 +3,13 @@ use std::collections::HashMap;
 
 use cms_core::config::AppState;
 use cms_core::domain::{
-    HandleResult, SelectOptionItem,
+    HandleResult,
     dto::{
-        EditorCurrent, FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO, ModelViewDTO,
+        EditorCurrentDTO, FieldBoolUpdateDTO, FieldValueUniqueDTO, ModelLogicDeleteDTO,
+        ModelViewDTO,
     },
     handle_ok,
+    model::SelectOptionModel,
     vo::PaginateResultVO,
 };
 use cms_core::enums::{
@@ -15,7 +17,7 @@ use cms_core::enums::{
 };
 use cms_core::error::AppError;
 use cms_core::service::{EditorService, RedisService};
-use cms_core::utils::time;
+use cms_core::utils::time_utils;
 
 use crate::domain::dto::{AppQueryDTO, AppStoreDTO};
 use crate::domain::entity::app::{
@@ -106,7 +108,7 @@ impl AppService {
             model.is_enabled = Set(is_enabled);
         }
 
-        let time = time::current_time();
+        let time = time_utils::current_time();
         model.updated_at = Set(Some(time));
 
         if is_create {
@@ -216,7 +218,7 @@ impl AppService {
             }
         };
 
-        let now = time::current_time();
+        let now = time_utils::current_time();
         model.updated_at = Set(Some(now));
 
         let editor = dto.editor.clone();
@@ -411,23 +413,23 @@ impl AppService {
         model.editor_type = Set(editor.editor_type.string_value());
         model.editor_id = Set(editor.editor_id);
         model.is_deleted = Set(Some(true));
-        let now = time::current_time();
+        let now = time_utils::current_time();
         model.deleted_at = Set(Some(now));
         let _ = model.save(db).await?;
 
         handle_ok(())
     }
 
-    /// SelectOptionItem 列表
+    /// SelectOptionModel 列表
     pub async fn fetch_option_list(
         platform: &PlatformEnum,
         state: &AppState,
-    ) -> HandleResult<Vec<SelectOptionItem>> {
+    ) -> HandleResult<Vec<SelectOptionModel>> {
         let cache_key = "mate:app:option_list";
         let only_enabled = *platform == PlatformEnum::Open;
 
         let stored_list =
-            RedisService::get_json_list::<SelectOptionItem>(&state.redis, cache_key).await;
+            RedisService::get_json_list::<SelectOptionModel>(&state.redis, cache_key).await;
         if !stored_list.is_empty() {
             if only_enabled {
                 let filted_list = stored_list
@@ -447,8 +449,8 @@ impl AppService {
             query = query.filter(AppColumn::IsEnabled.eq(true));
         }
         let models = query.all(db).await?;
-        let list: Vec<SelectOptionItem> = models.into_iter().map(|model| model.into()).collect();
-        RedisService::set_json_list::<SelectOptionItem>(&state.redis, cache_key, &list).await;
+        let list: Vec<SelectOptionModel> = models.into_iter().map(|model| model.into()).collect();
+        RedisService::set_json_list::<SelectOptionModel>(&state.redis, cache_key, &list).await;
 
         handle_ok(list)
     }
@@ -497,7 +499,7 @@ impl AppService {
     }
 
     /// 是否可以删除记录
-    pub fn can_delete(editor: &EditorCurrent, model: &AppModel) -> bool {
+    pub fn can_delete(editor: &EditorCurrentDTO, model: &AppModel) -> bool {
         if let Some(num) = model.kind_count {
             if num > 0 {
                 return false;

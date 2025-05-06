@@ -4,7 +4,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use validator::{Validate, ValidationError};
 
-use crate::utils::validate::{hash_map_max_length, numeric_greater_than_zero, string_present};
+use crate::utils::validate_utils::{
+    hash_map_max_length, numeric_greater_than_zero, string_present,
+};
 
 // ------------------------------------
 // Field validate
@@ -47,23 +49,4 @@ pub struct FieldValueUniqueForm {
     #[validate(custom(function = "validate_extends_size", message = "扩展参数必须小于等于 5"))]
     #[salvo(schema(required = false, nullable = false, value_type = HashMap<String, String>, example = json!({"parent_id": "1"})))]
     pub extends: Option<HashMap<String, String>>,
-}
-
-// ------------------------------------
-// 创建/更新用户
-// ------------------------------------
-#[derive(
-    Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema, ToParameters,
-)]
-#[salvo(schema(name = "Core模块/Base/FieldBoolUpdateForm"))]
-pub struct FieldBoolUpdateForm {
-    /// 字段名
-    #[validate(custom(function = "string_present", message = "字段名不能为空"))]
-    #[salvo(schema(required = true, nullable = false, value_type = String, example = "name"))]
-    pub field_name: Option<String>,
-
-    /// 字段值
-    #[validate(required(message = "字段值"))]
-    #[salvo(schema(required = true, nullable = false, value_type = String, example = "product_category"))]
-    pub field_value: Option<bool>,
 }

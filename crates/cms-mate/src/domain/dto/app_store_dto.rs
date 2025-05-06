@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use cms_core::domain::dto::EditorCurrent;
+use cms_core::domain::dto::EditorCurrentDTO;
 
 use crate::domain::form::AppStoreForm;
 
@@ -11,7 +11,7 @@ pub struct AppStoreDTO {
     pub id: i64,
 
     /// 编辑用户
-    pub editor: EditorCurrent,
+    pub editor: EditorCurrentDTO,
 
     /// 名称
     pub name: Option<String>,
