@@ -1,3 +1,3 @@
-mod login;
+mod login_store_dto;
 
-pub use login::LoginStoreDTO;
+pub use login_store_dto::LoginStoreDTO;

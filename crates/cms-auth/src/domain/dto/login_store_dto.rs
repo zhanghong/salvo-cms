@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::domain::form::LoginByPasswordForm;
+use crate::domain::form::PasswordLoginForm;
 
 /// 用户登录 DTO 结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
@@ -20,7 +20,7 @@ pub struct LoginStoreDTO {
 }
 
 impl LoginStoreDTO {
-    pub fn by_password_form(model: &LoginByPasswordForm) -> Self {
+    pub fn by_password_form(model: &PasswordLoginForm) -> Self {
         Self {
             login_type: "password".to_string(),
             username: model.username.clone(),
@@ -30,14 +30,14 @@ impl LoginStoreDTO {
     }
 }
 
-impl From<LoginByPasswordForm> for LoginStoreDTO {
-    fn from(model: LoginByPasswordForm) -> Self {
+impl From<PasswordLoginForm> for LoginStoreDTO {
+    fn from(model: PasswordLoginForm) -> Self {
         Self::by_password_form(&model)
     }
 }
 
-impl From<&LoginByPasswordForm> for LoginStoreDTO {
-    fn from(model: &LoginByPasswordForm) -> Self {
+impl From<&PasswordLoginForm> for LoginStoreDTO {
+    fn from(model: &PasswordLoginForm) -> Self {
         Self::by_password_form(model)
     }
 }

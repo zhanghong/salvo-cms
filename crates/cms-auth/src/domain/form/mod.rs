@@ -1,3 +1,3 @@
-mod login;
+mod password_login_form;
 
-pub use login::LoginByPasswordForm;
+pub use password_login_form::PasswordLoginForm;

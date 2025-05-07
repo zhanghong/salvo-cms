@@ -5,7 +5,7 @@ use salvo::prelude::*;
 use cms_core::config::{AppState, WebConfig};
 
 mod domain;
-mod route;
+mod handler;
 mod service;
 
 #[tokio::main]
@@ -33,7 +33,7 @@ async fn main() {
 
     let router = Router::new()
         .hoop(affix_state::inject(state))
-        .push(Router::with_path("/auth").push(route::init_router()));
+        .push(Router::with_path("/auth").push(handler::init_router()));
 
     let doc = OpenApi::new(
         web_config.app_name().as_str(),

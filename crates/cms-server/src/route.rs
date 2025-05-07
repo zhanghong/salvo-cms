@@ -2,7 +2,7 @@ use salvo::cors::Cors;
 use salvo::http::Method;
 use salvo::prelude::*;
 
-use cms_auth::route::init_router as auth_router;
+use cms_auth::handler::init_router as auth_router;
 use cms_core::config::AppState;
 use cms_core::handler::init_router as core_router;
 use cms_core::middleware::jwt_authorizor_init;

@@ -11,7 +11,7 @@ use cms_core::{
 use crate::domain::dto::LoginStoreDTO;
 use crate::domain::vo::LoginTokenUpdateVO;
 use crate::{
-    domain::{form::LoginByPasswordForm, vo::LoginTokenCreateVO},
+    domain::{form::PasswordLoginForm, vo::LoginTokenCreateVO},
     service::LoginService,
 };
 
@@ -29,7 +29,7 @@ use crate::{
 pub async fn manager_create(
     depot: &mut Depot,
     req: &mut Request,
-    json: JsonBody<LoginByPasswordForm>,
+    json: JsonBody<PasswordLoginForm>,
 ) -> AppResult<LoginTokenCreateVO> {
     let form = json.into_inner();
     form.validate()?;
@@ -119,7 +119,7 @@ pub async fn manager_delete(depot: &mut Depot) -> AppResult<bool> {
 pub async fn open_create(
     depot: &mut Depot,
     req: &mut Request,
-    json: JsonBody<LoginByPasswordForm>,
+    json: JsonBody<PasswordLoginForm>,
 ) -> AppResult<LoginTokenCreateVO> {
     let form = json.into_inner();
     form.validate()?;

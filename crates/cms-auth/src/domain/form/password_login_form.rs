@@ -5,7 +5,7 @@ use validator::Validate;
 /// 密码登录表单
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
 #[salvo(schema(name = "权鉴模块/登录/密码登录"))]
-pub struct LoginByPasswordForm {
+pub struct PasswordLoginForm {
     /// 登录名
     #[validate(
         required(message = "登录名不能为空"),
