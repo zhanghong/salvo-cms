@@ -1,5 +1,5 @@
-mod gender;
-mod load;
+mod gender_enum;
+mod user_load_enum;
 
-pub use gender::GenderEnum;
-pub use load::UserLoadEnum;
+pub use gender_enum::GenderEnum;
+pub use user_load_enum::UserLoadEnum;

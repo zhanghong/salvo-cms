@@ -2,7 +2,7 @@ use cms_core::domain::vo::EditorLoadVO;
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
 
-use cms_core::{domain::model::SelectOptionModel, enums::EditorTypeEnum};
+use cms_core::enums::EditorTypeEnum;
 
 use crate::domain::entity::user::Model;
 use crate::enums::GenderEnum;
@@ -10,23 +10,10 @@ use crate::enums::GenderEnum;
 use super::DetailVO;
 
 // ------------------------------------
-// 创建/更新用户
+// 用户详情 VO
 // ------------------------------------
-#[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
-pub struct UserFormOptionVO {
-    /// 性别选项
-    pub genders: Option<Vec<SelectOptionModel>>,
-
-    /// 用户类型选项
-    pub types: Option<Vec<SelectOptionModel>>,
-}
-
-// ------------------------------------
-// 用户详情
-// ------------------------------------
-// Service 层创建/更新用户使用的结构体
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
-pub struct UserItemVO {
+pub struct UserMasterVO {
     /// 主键
     pub id: i64,
 
@@ -107,7 +94,7 @@ pub struct UserItemVO {
     pub detail: Option<DetailVO>,
 }
 
-impl UserItemVO {
+impl UserMasterVO {
     fn from_model_inner(model: &Model) -> Self {
         let avatar_url = model.avatar_url();
         let created_time = model.created_time();
@@ -136,13 +123,13 @@ impl UserItemVO {
     }
 }
 
-impl From<Model> for UserItemVO {
+impl From<Model> for UserMasterVO {
     fn from(model: Model) -> Self {
         Self::from_model_inner(&model)
     }
 }
 
-impl From<&Model> for UserItemVO {
+impl From<&Model> for UserMasterVO {
     fn from(model: &Model) -> Self {
         Self::from_model_inner(model)
     }

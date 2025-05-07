@@ -7,7 +7,7 @@ use cms_core::config::AppState;
 use cms_core::handler::init_router as core_router;
 use cms_core::middleware::jwt_authorizor_init;
 use cms_mate::handler::init_router as mate_router;
-use cms_user::route::init_router as user_router;
+use cms_user::handler::init_router as user_router;
 
 pub fn init_router(state: AppState) -> Router {
     let jwt_auth = jwt_authorizor_init();

@@ -22,7 +22,7 @@ use crate::domain::entity::detail::{
 use crate::domain::entity::user::{
     ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity, Model as UserModel,
 };
-use crate::domain::vo::{UserFormOptionVO, UserItemVO};
+use crate::domain::vo::{UserFormOptionVO, UserMasterVO};
 use crate::enums::{GenderEnum, UserLoadEnum};
 
 pub struct UserService {}
@@ -454,7 +454,7 @@ impl UserService {
         platform: &PlatformEnum,
         dto: &UserViewDTO,
         state: &AppState,
-    ) -> HandleResult<UserItemVO> {
+    ) -> HandleResult<UserMasterVO> {
         let id = dto.id;
         if id < 1 {
             let err = AppError::BadRequest(String::from("无效的用户ID"));
@@ -473,7 +473,7 @@ impl UserService {
             }
         }
 
-        let mut vo: UserItemVO = model.into();
+        let mut vo: UserMasterVO = model.into();
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
@@ -502,7 +502,7 @@ impl UserService {
         platform: &PlatformEnum,
         dto: &UserQueryDTO,
         state: &AppState,
-    ) -> HandleResult<PaginateResultVO<UserItemVO>> {
+    ) -> HandleResult<PaginateResultVO<UserMasterVO>> {
         let db = &state.db;
         let mut page = dto.page.unwrap_or(1);
         if page < 1 {
@@ -520,11 +520,11 @@ impl UserService {
         let total = paginator.num_items_and_pages().await?;
         let models = paginator.fetch_page(page - 1).await?;
         let len = models.len();
-        let mut list: Vec<UserItemVO> = Vec::with_capacity(len);
+        let mut list: Vec<UserMasterVO> = Vec::with_capacity(len);
         let mut editor_ids: Vec<i64> = Vec::with_capacity(len);
         for model in models.iter() {
             editor_ids.push(model.editor_id);
-            let vo: UserItemVO = model.into();
+            let vo: UserMasterVO = model.into();
             list.push(vo);
         }
 

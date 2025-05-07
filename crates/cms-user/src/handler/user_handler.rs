@@ -19,7 +19,7 @@ use crate::{
         dto::{UserQueryDTO, UserStoreDTO, UserUpdatePasswordDTO, UserViewDTO},
         form::{UserCreateForm, UserUpdateForm, UserUpdatePasswordForm},
         query::UserPaginateQuery,
-        vo::{UserFormOptionVO, UserItemVO},
+        vo::{UserFormOptionVO, UserMasterVO},
     },
     enums::UserLoadEnum,
     service::UserService,
@@ -38,7 +38,7 @@ use crate::{
 pub async fn manager_paginate(
     depot: &mut Depot,
     query: UserPaginateQuery,
-) -> AppResult<PaginateResultVO<UserItemVO>> {
+) -> AppResult<PaginateResultVO<UserMasterVO>> {
     let state = depot.obtain::<AppState>().unwrap();
     let mut dto: UserQueryDTO = query.into();
     dto.load_models = Some(vec![UserLoadEnum::Editor]);
@@ -197,7 +197,7 @@ pub async fn manager_update_password(
         (status_code = 200, description = "success response")
     )
 )]
-pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<UserItemVO> {
+pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<UserMasterVO> {
     let load_models: Vec<UserLoadEnum> = vec![UserLoadEnum::Editor, UserLoadEnum::Detail];
     let dto = UserViewDTO {
         id: id.into_inner(),

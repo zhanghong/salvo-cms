@@ -1,3 +1,3 @@
-mod user;
+mod user_service;
 
-pub use user::UserService;
+pub use user_service::UserService;

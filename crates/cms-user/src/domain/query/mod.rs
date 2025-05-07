@@ -1,3 +1,3 @@
-mod user;
+mod user_paginate_query;
 
-pub use user::UserPaginateQuery;
+pub use user_paginate_query::UserPaginateQuery;

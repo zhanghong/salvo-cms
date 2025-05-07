@@ -1,3 +1,3 @@
-mod rabbitmq;
+mod rabbitmq_service;
 
-pub use rabbitmq::RabbitMQService;
+pub use rabbitmq_service::RabbitMQService;
