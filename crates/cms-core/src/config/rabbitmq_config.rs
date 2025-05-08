@@ -23,10 +23,10 @@ impl RabbitMQConfig {
         if let Err(err) = dotenv() {
             warn!("Failed to load .env file: {}", err);
         }
-        match envy::prefixed("CMS_REDIS_").from_env::<RabbitMQConfig>() {
+        match envy::prefixed("CMS_RABBITMQ_").from_env::<RabbitMQConfig>() {
             Ok(config) => Ok(config),
             Err(err) => {
-                error!("Failed to parse Redis configuration: {}", err);
+                error!("Failed to parse RabbitMQ configuration: {}", err);
                 Err(err)
             }
         }
@@ -74,5 +74,107 @@ impl RabbitMQConfig {
                 )))
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::env;
+
+    fn setup_env(vars: &[(&str, &str)]) {
+        unsafe {
+            for (key, value) in vars {
+                env::set_var(key, value);
+            }
+        }
+    }
+
+    fn clear_env_vars() {
+        let keys = [
+            "CMS_RABBITMQ_HOST",
+            "CMS_RABBITMQ_PORT",
+            "CMS_RABBITMQ_USERNAME",
+            "CMS_RABBITMQ_PASSWORD",
+            "CMS_RABBITMQ_VHOST",
+        ];
+        unsafe {
+            for key in keys {
+                env::remove_var(key);
+            }
+        }
+    }
+
+    #[test]
+    fn test_rabbitmq_config_from_env() {
+        clear_env_vars();
+        setup_env(&[
+            ("CMS_RABBITMQ_HOST", "127.0.0.1"),
+            ("CMS_RABBITMQ_PORT", "5672"),
+            ("CMS_RABBITMQ_USERNAME", "guest"),
+            ("CMS_RABBITMQ_PASSWORD", "guest"),
+            ("CMS_RABBITMQ_VHOST", "/test"),
+        ]);
+
+        let config = RabbitMQConfig::from_env().expect("Failed to load config");
+
+        assert_eq!(config.host.as_deref().unwrap(), "127.0.0.1");
+        assert_eq!(config.port.unwrap(), 5672);
+        assert_eq!(config.username.as_deref().unwrap(), "guest");
+        assert_eq!(config.password.as_deref().unwrap(), "guest");
+        assert_eq!(config.vhost.as_deref().unwrap(), "/test");
+    }
+
+    #[test]
+    fn test_rabbitmq_config_url_with_auth() {
+        let config = RabbitMQConfig {
+            host: Some("127.0.0.1".to_string()),
+            port: Some(5672),
+            username: Some("guest".to_string()),
+            password: Some("guest".to_string()),
+            vhost: Some("/test".to_string()),
+        };
+
+        assert_eq!(config.url(), "amqp://guest:guest@127.0.0.1:5672//test");
+    }
+
+    #[test]
+    fn test_rabbitmq_config_url_without_auth() {
+        let config = RabbitMQConfig {
+            host: Some("127.0.0.1".to_string()),
+            port: Some(5672),
+            username: None,
+            password: None,
+            vhost: Some("/test".to_string()),
+        };
+
+        assert_eq!(config.url(), "amqp://127.0.0.1:5672//test");
+    }
+
+    #[test]
+    fn test_rabbitmq_config_default_values() {
+        let config = RabbitMQConfig {
+            host: None,
+            port: None,
+            username: None,
+            password: None,
+            vhost: None,
+        };
+
+        assert_eq!(config.url(), "amqp://localhost:5672//cms");
+    }
+
+    #[tokio::test]
+    async fn test_build_pool() {
+        let config = RabbitMQConfig {
+            host: Some("127.0.0.1".to_string()),
+            port: Some(5672),
+            username: Some("guest".to_string()),
+            password: Some("guest".to_string()),
+            vhost: Some("/".to_string()),
+        };
+
+        let result = config.build_pool().await;
+        assert!(result.is_ok());
     }
 }

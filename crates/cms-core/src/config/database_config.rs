@@ -107,3 +107,161 @@ impl DatabaseConfig {
         handle_ok(connection)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::env;
+
+    // 清除所有 CMS_DB_ 前缀的环境变量
+    fn clear_env_vars() {
+        unsafe {
+            for key in env::vars()
+                .filter(|(k, _)| k.starts_with("CMS_DB_"))
+                .map(|(k, _)| k)
+                .collect::<Vec<_>>()
+            {
+                env::remove_var(key);
+            }
+        }
+    }
+
+    #[test]
+    fn test_from_env_success() {
+        clear_env_vars();
+        unsafe {
+            env::set_var("CMS_DB_PROTOCOL", "postgres");
+            env::set_var("CMS_DB_HOST", "db.example.com");
+            env::set_var("CMS_DB_PORT", "5432");
+            env::set_var("CMS_DB_USER", "admin");
+            env::set_var("CMS_DB_PASSWORD", "secret");
+            env::set_var("CMS_DB_NAME", "mydb");
+            env::set_var("CMS_DB_SCHEMA", "public");
+            env::set_var("CMS_DB_MAX_CONNECTIONS", "20");
+            env::set_var("CMS_DB_MIN_CONNECTIONS", "5");
+            env::set_var("CMS_DB_CONNECT_TIMEOUT", "30");
+            env::set_var("CMS_DB_ACQUIRE_TIMEOUT", "20");
+            env::set_var("CMS_DB_IDLE_TIMEOUT", "60");
+            env::set_var("CMS_DB_MAX_LIFETIME", "3600");
+            env::set_var("CMS_DB_SQLX_LOGGING", "false");
+        }
+
+        let config = DatabaseConfig::from_env().unwrap();
+
+        assert_eq!(config.protocol, Some("postgres".to_string()));
+        assert_eq!(config.host, Some("db.example.com".to_string()));
+        assert_eq!(config.port, Some(5432));
+        assert_eq!(config.user, "admin");
+        assert_eq!(config.password, "secret");
+        assert_eq!(config.name, "mydb");
+        assert_eq!(config.schema, Some("public".to_string()));
+        assert_eq!(config.max_connections, Some(20));
+        assert_eq!(config.min_connections, Some(5));
+        assert_eq!(config.connect_timeout, Some(30));
+        assert_eq!(config.acquire_timeout, Some(20));
+        assert_eq!(config.idle_timeout, Some(60));
+        assert_eq!(config.max_lifetime, Some(3600));
+        assert_eq!(config.sqlx_logging, Some(false));
+    }
+
+    #[test]
+    fn test_url_default_mysql() {
+        let config = DatabaseConfig {
+            protocol: None,
+            host: Some("localhost".to_string()),
+            port: None,
+            user: "root".to_string(),
+            password: "password".to_string(),
+            name: "test_db".to_string(),
+            schema: None,
+            max_connections: None,
+            min_connections: None,
+            connect_timeout: None,
+            acquire_timeout: None,
+            idle_timeout: None,
+            max_lifetime: None,
+            sqlx_logging: None,
+        };
+
+        let url = config.url().unwrap();
+        assert_eq!(url, "mysql://root:password@localhost:3306/test_db");
+    }
+
+    #[test]
+    fn test_url_postgres_with_schema() {
+        let config = DatabaseConfig {
+            protocol: Some("postgres".to_string()),
+            host: Some("localhost".to_string()),
+            port: Some(5432),
+            user: "admin".to_string(),
+            password: "pass".to_string(),
+            name: "mydb".to_string(),
+            schema: Some("custom".to_string()),
+            max_connections: None,
+            min_connections: None,
+            connect_timeout: None,
+            acquire_timeout: None,
+            idle_timeout: None,
+            max_lifetime: None,
+            sqlx_logging: None,
+        };
+
+        let url = config.url().unwrap();
+        assert_eq!(
+            url,
+            "postgres://admin:pass@localhost:5432/mydb?schema=custom"
+        );
+    }
+
+    #[test]
+    fn test_url_invalid_portoctl() {
+        let config = DatabaseConfig {
+            protocol: Some("sqlite".to_string()),
+            host: Some("localhost".to_string()),
+            port: None,
+            user: "user".to_string(),
+            password: "pass".to_string(),
+            name: "db".to_string(),
+            schema: None,
+            max_connections: None,
+            min_connections: None,
+            connect_timeout: None,
+            acquire_timeout: None,
+            idle_timeout: None,
+            max_lifetime: None,
+            sqlx_logging: None,
+        };
+
+        let result = config.url();
+        assert!(result.is_err());
+        assert!(
+            result
+                .unwrap_err()
+                .contains("Unsupported database protocol")
+        );
+    }
+
+    #[test]
+    fn test_url_empty_host() {
+        let config = DatabaseConfig {
+            protocol: None,
+            host: Some("".to_string()),
+            port: None,
+            user: "user".to_string(),
+            password: "pass".to_string(),
+            name: "db".to_string(),
+            schema: None,
+            max_connections: None,
+            min_connections: None,
+            connect_timeout: None,
+            acquire_timeout: None,
+            idle_timeout: None,
+            max_lifetime: None,
+            sqlx_logging: None,
+        };
+
+        let result = config.url();
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "Host cannot be empty");
+    }
+}

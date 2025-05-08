@@ -65,3 +65,117 @@ impl JwtConfig {
             .max(0) // 确保值非负
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::env;
+
+    fn clear_env_vars() {
+        unsafe {
+            for key in env::vars()
+                .filter(|(k, _)| k.starts_with("CMS_JWT_"))
+                .map(|(k, _)| k)
+                .collect::<Vec<_>>()
+            {
+                env::remove_var(key);
+            }
+        }
+    }
+
+    #[test]
+    fn test_jwt_config_from_env_all_set() {
+        clear_env_vars();
+        unsafe {
+            env::set_var("CMS_JWT_SECRET_KEY", "my-secret");
+            env::set_var("CMS_JWT_ACCESS_EXPIRE_DAYS", "10");
+            env::set_var("CMS_JWT_REFRESH_EXPIRE_DAYS", "30");
+        }
+
+        let config = JwtConfig::from_env().unwrap();
+
+        assert_eq!(config.secret_key(), "my-secret");
+        assert_eq!(config.get_access_expire_days(), 10);
+        assert_eq!(config.get_refresh_expire_days(), 30);
+    }
+
+    #[test]
+    fn test_secret_bytes_with_custom_key() {
+        let config = JwtConfig {
+            secret_key: Some("my_secret".to_string()),
+            access_expire_days: None,
+            refresh_expire_days: None,
+        };
+        assert_eq!(config.secret_bytes(), b"my_secret");
+    }
+
+    #[test]
+    fn test_secret_bytes_with_default_key() {
+        let config = JwtConfig {
+            secret_key: None,
+            access_expire_days: None,
+            refresh_expire_days: None,
+        };
+        assert_eq!(config.secret_bytes(), b"Cms Jwt Secret Key");
+    }
+
+    #[test]
+    fn test_get_access_expire_days_with_custom_value() {
+        let config = JwtConfig {
+            secret_key: None,
+            access_expire_days: Some(10),
+            refresh_expire_days: None,
+        };
+        assert_eq!(config.get_access_expire_days(), 10);
+    }
+
+    #[test]
+    fn test_get_access_expire_days_with_default_value() {
+        let config = JwtConfig {
+            secret_key: None,
+            access_expire_days: None,
+            refresh_expire_days: None,
+        };
+        assert_eq!(config.get_access_expire_days(), 7);
+    }
+
+    #[test]
+    fn test_get_access_expire_days_with_negative_value() {
+        let config = JwtConfig {
+            secret_key: None,
+            access_expire_days: Some(-1),
+            refresh_expire_days: None,
+        };
+        assert_eq!(config.get_access_expire_days(), 0);
+    }
+
+    #[test]
+    fn test_get_refresh_expire_days_with_custom_value() {
+        let config = JwtConfig {
+            secret_key: None,
+            access_expire_days: None,
+            refresh_expire_days: Some(100),
+        };
+        assert_eq!(config.get_refresh_expire_days(), 100);
+    }
+
+    #[test]
+    fn test_get_refresh_expire_days_with_default_value() {
+        let config = JwtConfig {
+            secret_key: None,
+            access_expire_days: None,
+            refresh_expire_days: None,
+        };
+        assert_eq!(config.get_refresh_expire_days(), 365);
+    }
+
+    #[test]
+    fn test_get_refresh_expire_days_with_negative_value() {
+        let config = JwtConfig {
+            secret_key: None,
+            access_expire_days: None,
+            refresh_expire_days: Some(-10),
+        };
+        assert_eq!(config.get_refresh_expire_days(), 0);
+    }
+}
