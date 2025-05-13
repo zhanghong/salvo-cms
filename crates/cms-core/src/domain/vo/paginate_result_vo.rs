@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 // 分页查询 VO
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
+#[salvo(schema(name = "Core/Base/PaginateResultVO"))]
 pub struct PaginateResultVO<T: Serialize> {
     /// 当前页码
     pub current_page: u64,

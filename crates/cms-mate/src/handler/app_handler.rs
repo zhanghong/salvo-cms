@@ -5,7 +5,7 @@ use validator::Validate;
 use cms_core::{
     config::AppState,
     domain::{
-        AppResult, ResponseSuccess,
+        AppResult, ResponseError, ResponseSuccess,
         dto::{FieldBoolUpdateDTO, ModelLogicDeleteDTO, ModelViewDTO},
         form::{FieldBoolUpdateForm, FieldValueUniqueForm},
         result_ok,
@@ -35,7 +35,41 @@ use crate::{
     tags("Mate模块/管理端/App管理"),
     status_codes(200, 401),
     responses(
-        (status_code = 200, body = ResponseSuccess<PaginateResultVO<AppMasterVO>>)
+        (status_code = 200, body = ResponseSuccess<PaginateResultVO<AppMasterVO>>, example = json!({
+            "code": 200,
+            "data": {
+                "current_page": 1,
+                "page_size": 10,
+                "total": 1,
+                "list": [
+                    {
+                        "id": 1,
+                        "name": "product",
+                        "title": "商品",
+                        "description": "商品",
+                        "icon": "",
+                        "sort": 99,
+                        "is_enabled": true,
+                        "can_update": true,
+                        "can_delete": false,
+                        "created_time": "2025-04-29 11:10:15",
+                        "updated_time": "2025-04-29 11:10:21",
+                        "editor": {
+                            "id": 1,
+                            "no": "Administrator",
+                            "name": "zhanghong",
+                            "phone": "18302902891",
+                            "email": "zhanghong@test.com",
+                            "avatar_url": ""
+                        }
+                    }
+                ]
+            }
+        })),
+        (status_code = 401, body = ResponseError, example = json!({
+            "code": 401,
+            "message": "Unauthorized"
+        }))
     )
 )]
 pub async fn manager_paginate(

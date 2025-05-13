@@ -10,6 +10,7 @@ use crate::domain::entity::editor::Model;
 #[derive(
     Deserialize, Serialize, FromRedisValue, ToRedisArgs, Debug, Clone, PartialEq, Default, ToSchema,
 )]
+#[salvo(schema(name = "Core/Base/EditorLoadVO"))]
 pub struct EditorLoadVO {
     /// 主键
     pub id: i64,

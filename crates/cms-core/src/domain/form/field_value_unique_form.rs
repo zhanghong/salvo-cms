@@ -25,7 +25,7 @@ fn validate_extends_size(map: &&HashMap<String, String>) -> Result<(), Validatio
 #[derive(
     Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema, ToParameters,
 )]
-#[salvo(schema(name = "Core模块/Base/FieldValueUniqueForm"))]
+#[salvo(schema(name = "Core/Base/FieldValueUniqueForm"))]
 pub struct FieldValueUniqueForm {
     /// 字段名
     #[validate(custom(function = "string_present", message = "字段名不能为空"))]

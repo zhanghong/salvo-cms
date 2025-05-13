@@ -55,11 +55,11 @@ async fn main() {
                 .title(api_title)
                 .into_router("scalar"),
         )
-        .push(
-            ReDoc::new(openapi_url)
-                .title(api_title)
-                .into_router("redoc"),
-        )
+        // .push(
+        //     ReDoc::new(openapi_url)
+        //         .title(api_title)
+        //         .into_router("redoc"),
+        // )
         .push(
             RapiDoc::new(openapi_url)
                 .title(api_title)

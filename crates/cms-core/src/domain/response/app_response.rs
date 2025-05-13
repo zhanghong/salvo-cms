@@ -7,7 +7,7 @@ use serde::Serialize;
 
 // 统一响应结构
 #[derive(Debug, Serialize, ToSchema)]
-#[salvo(schema(name = "App Response"))]
+#[salvo(schema(name = "Core/Base/AppResponse"))]
 pub struct AppResponse<T: Serialize> {
     /// 状态码
     code: u32,

@@ -1,10 +1,37 @@
 use redis_macros::{FromRedisValue, ToRedisArgs};
-use salvo::oapi::ToSchema;
+use salvo::oapi::{
+    Array, BasicType, Object, Ref, RefOr, Schema, SchemaType, ToSchema, schema::OneOf,
+};
 use serde::{Deserialize, Serialize};
 
 use cms_core::{domain::vo::EditorLoadVO, enums::ViewModeEnum};
 
 use crate::domain::entity::app::Model;
+
+fn custom_type() -> OneOf {
+    // OneOf::new().schema_type(SchemaType::Basic(BasicType::Null))
+    // .item(Schema::Array(Array::new().items(RefOr::Type(
+    //     Schema::Object(Object::new().property("element", RefOr::Ref(Ref::new("#/test")))),
+    // ))))
+    // .item(Schema::Array(Array::new().items(RefOr::Type(
+    //     Schema::Object(Object::new().property("foobar", RefOr::Ref(Ref::new("#/foobar")))),
+    // ))))
+
+    OneOf::new()
+        .item(Schema::Object(
+            Object::new().schema_type(SchemaType::Basic(BasicType::Null)),
+        ))
+        .item(Schema::Object(
+            Object::new().schema_type(SchemaType::Basic(BasicType::Null)),
+        ))
+        .item(Ref::from_schema_name("EditorLoadVO"))
+        .item(Schema::Object(
+            Object::new().property("foobar", RefOr::Ref(Ref::new("#/foobar"))),
+        ))
+        .item(Schema::Array(Array::new().items(RefOr::Type(
+            Schema::Object(Object::new().name("EditorLoadVO".to_string())),
+        ))))
+}
 
 /// App 主 VO
 #[derive(
@@ -88,12 +115,19 @@ pub struct AppMasterVO {
 
     /// 更新时间
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[salvo(schema(required = false, nullable = true, value_type = String, format = "yyyy-mm-dd HH:MM:SS", example = "2023-08-10 10:00:00"))]
+    #[salvo(schema(
+        required = false,
+        nullable = true,
+        inline = true,
+        value_type = EditorLoadVO,
+        format = "yyyy-mm-dd HH:MM:SS",
+        example = "2023-08-10 10:00:00"
+    ))]
     pub updated_time: Option<String>,
 
     /// 编辑用户
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[salvo(schema(required = false, nullable = true, value_type = EditorLoadVO))]
+    #[salvo(schema(required = false, nullable = true, default = "SchemaType::any", schema_with = custom_type))]
     pub editor: Option<EditorLoadVO>,
 }
 

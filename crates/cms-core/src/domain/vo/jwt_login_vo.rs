@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 // JWT 登录或刷新 Token VO
 // ------------------------------------
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
+#[salvo(schema(name = "Core/Auth/JwtLoginVO"))]
 pub struct JwtLoginVO {
     /// Access Token
     pub access_token: String,

@@ -6,7 +6,7 @@ use serde::Serialize;
 
 // 统一响应结构(失败)
 #[derive(Debug, Serialize, ToSchema)]
-#[salvo(schema(name = "App Response Error"))]
+#[salvo(schema(name = "Core/Base/AppResponseError"))]
 pub struct ResponseError {
     /// 状态码
     #[salvo(schema(required = true, value_type = u32))]
