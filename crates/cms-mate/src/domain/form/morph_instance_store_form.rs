@@ -14,7 +14,7 @@ fn validate_big_integer_present(num: i64) -> Result<(), ValidationError> {
 
 /// Mprph Store Form
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
-#[salvo(schema(name = "Mate模块/Morph/Morph表单"))]
+#[salvo(schema(name = "Mate/Morph/MorphInstanceStoreForm"))]
 pub struct MorphInstanceStoreForm {
     /// 名称
     #[serde(

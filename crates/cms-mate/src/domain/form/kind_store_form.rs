@@ -37,7 +37,7 @@ fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
 
 /// Kind Store Form
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
-#[salvo(schema(name = "Mate模块/Kind/Kind表单"))]
+#[salvo(schema(name = "Mate/Kind/KindStoreForm"))]
 pub struct KindStoreForm {
     /// 模块ID
     #[serde(default, deserialize_with = "deserializer_utils::string_to_option_i64")]
@@ -49,7 +49,10 @@ pub struct KindStoreForm {
     pub app_id: Option<i64>,
 
     /// 名称
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_trimmed")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_trimmed"
+    )]
     #[validate(
         required(message = "名称不能为空"),
         custom(function = "validate_field_name", message = "名称长度为5-20位")
@@ -58,7 +61,10 @@ pub struct KindStoreForm {
     pub name: Option<String>,
 
     /// 标题
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_trimmed")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_trimmed"
+    )]
     #[validate(
         required(message = "标题不能为空"),
         custom(function = "validate_field_title", message = "标题长度为2-30位")
@@ -76,7 +82,10 @@ pub struct KindStoreForm {
     pub max_level: Option<i8>,
 
     /// 描述
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_trimmed")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_trimmed"
+    )]
     #[validate(custom(
         function = "validate_field_description",
         message = "描述长度不能超过200个字符"
@@ -85,13 +94,19 @@ pub struct KindStoreForm {
     pub description: Option<String>,
 
     /// 图标
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_trimmed")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_trimmed"
+    )]
     #[validate(custom(function = "validate_field_icon", message = "图标长度不能超过30个字符"))]
     #[salvo(schema(required = false, nullable = false, value_type = String, max_length = 30, pattern = r"^[a-zA-Z0-9_-]+$", example = "icon-product"))]
     pub icon: Option<String>,
 
     /// 是否多选
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_bool")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_bool"
+    )]
     #[salvo(schema(required = false, nullable = false, value_type = bool, example = true, default = false))]
     pub is_multiple: Option<bool>,
 
@@ -107,7 +122,10 @@ pub struct KindStoreForm {
     pub sort: Option<i16>,
 
     /// 是否启用
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_bool")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_bool"
+    )]
     #[salvo(schema(required = false, nullable = false, value_type = bool, example = true, default = true))]
     pub is_enabled: Option<bool>,
 }

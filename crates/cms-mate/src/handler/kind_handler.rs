@@ -26,13 +26,13 @@ use crate::{
     service::KindService,
 };
 
-/// 分页列表
+/// Paginate
 ///
-/// 管理端分页查询
+/// Paginate Kind
 #[endpoint(
     operation_id = "mate_kind_manager_paginate",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/Kind管理"),
+    tags("Mate/Manager/Kind"),
     status_codes(200, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<PaginateResultVO<KindMasterVO>>)
@@ -52,13 +52,13 @@ pub async fn manager_paginate(
     result_ok(vo)
 }
 
-/// 创建类型
+/// Create kind
 ///
-/// 管理端创建类型
+/// Create kind
 #[endpoint(
     operation_id = "mate_kind_manager_create",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/Kind管理"),
+    tags("Mate/Manager/Kind"),
     status_codes(200, 400, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<bool>)
@@ -76,13 +76,13 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<KindStoreForm>) ->
     result_ok(true)
 }
 
-/// 更新类型
+/// Update kind
 ///
-/// 管理端更新类型
+/// Update kind
 #[endpoint(
     operation_id = "mate_kind_manager_update",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/Kind管理"),
+    tags("Mate/Manager/Kind"),
     status_codes(200, 400, 401, 404),
     responses(
         (status_code = 200, body = ResponseSuccess<bool>)
@@ -105,13 +105,13 @@ pub async fn manager_update(
     result_ok(true)
 }
 
-/// 删除类型
+/// Delete kind
 ///
-/// 管理端删除类型
+/// Delete kind by id
 #[endpoint(
     operation_id = "mate_kind_manager_delete",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/Kind管理"),
+    tags("Mate/Manager/Kind"),
     status_codes(200, 400, 401, 404),
     responses(
         (status_code = 200, body = ResponseSuccess<bool>)
@@ -130,13 +130,13 @@ pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<
     result_ok(true)
 }
 
-/// 表单选项
+/// Form Options
 ///
-/// 管理端表单选项
+/// Store form options
 #[endpoint(
     operation_id = "mate_kind_manager_form",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/Kind管理"),
+    tags("Mate/Manager/Kind"),
     status_codes(200, 400, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<KindFormOptionVO>)
@@ -148,13 +148,13 @@ pub async fn manager_form(depot: &mut Depot) -> AppResult<KindFormOptionVO> {
     result_ok(vo)
 }
 
-/// 查询选项
+/// Query Options
 ///
-/// 管理端查询选项
+/// Paginate Query Options
 #[endpoint(
     operation_id = "mate_kind_manager_query",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/Kind管理"),
+    tags("Mate/Manager/Kind"),
     status_codes(200, 400, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<KindQueryOptionVO>)
@@ -166,13 +166,13 @@ pub async fn manager_query(depot: &mut Depot) -> AppResult<KindQueryOptionVO> {
     result_ok(vo)
 }
 
-/// 唯一性校验
+/// Field Unique
 ///
-/// 管理端字段值唯一性校验
+/// Field unique check
 #[endpoint(
     operation_id = "mate_app_check_field_unique",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/Kind管理"),
+    tags("Mate/Manager/Kind"),
     status_codes(200, 400, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<bool>)
@@ -190,13 +190,13 @@ pub async fn check_field_unique(
     result_ok(value)
 }
 
-/// 更新Bool字段值
+/// Update Bool Field
 ///
-/// 管理端更新Bool字段值
+/// Update Bool Field
 #[endpoint(
     operation_id = "mate_app_update_bool_field",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/Kind管理"),
+    tags("Mate/Manager/Kind"),
     status_codes(200, 400, 401, 404),
     responses(
         (status_code = 200, body = ResponseSuccess<bool>)
@@ -219,13 +219,13 @@ pub async fn update_bool_field(
     result_ok(value)
 }
 
-/// 查看详情
+/// View kind
 ///
-/// 管理端查看详情
+/// View kind by id
 #[endpoint(
     operation_id = "mate_kind_manager_view",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/Kind管理"),
+    tags("Mate/Manager/Kind"),
     status_codes(200, 401, 404),
     responses(
         (status_code = 200, body = ResponseSuccess<KindMasterVO>)

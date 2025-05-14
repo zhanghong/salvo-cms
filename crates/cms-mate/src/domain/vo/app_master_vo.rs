@@ -37,7 +37,7 @@ fn custom_type() -> OneOf {
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
-#[salvo(schema(name = "Mate模块/App/App主VO"))]
+#[salvo(schema(name = "Mate/App/AppMasterVO"))]
 pub struct AppMasterVO {
     /// 主键
     #[salvo(parameter(required = true, nullable = false, minimum = 1, example = 1))]

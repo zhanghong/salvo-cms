@@ -10,7 +10,7 @@ use super::AppLoadVO;
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
-#[salvo(schema(name = "Mate模块/Kind/Kind关联VO"))]
+#[salvo(schema(name = "Mate/Kind/KindLoadVO"))]
 pub struct KindLoadVO {
     /// 主键
     pub id: i64,

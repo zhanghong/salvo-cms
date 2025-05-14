@@ -5,7 +5,7 @@ use cms_core::domain::model::SelectOptionModel;
 
 /// Kind 表单选项 VO
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
-#[salvo(schema(name = "Mate模块/Kind/Kind表单选项VO"))]
+#[salvo(schema(name = "Mate/Kind/KindFormOptionVO"))]
 pub struct KindFormOptionVO {
     /// App 选项
     pub apps: Vec<SelectOptionModel>,

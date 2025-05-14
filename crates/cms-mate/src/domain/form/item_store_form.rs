@@ -43,7 +43,7 @@ fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
 
 /// Item 表单
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
-#[salvo(schema(name = "Mate模块/Item/Item表单"))]
+#[salvo(schema(name = "Mate/Item/ItemStoreForm"))]
 pub struct ItemStoreForm {
     /// 模块ID
     #[serde(default, deserialize_with = "deserializer_utils::string_to_option_i64")]

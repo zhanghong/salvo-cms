@@ -15,12 +15,12 @@ use crate::{
     service::LoginService,
 };
 
-/// 密码登录
+/// Login By Password
 ///
-/// 管理端密码登录
+/// Login by name and password
 #[endpoint(
     operation_id = "auth_app_manager_login_by_password",
-    tags("权鉴模块/管理端/登录"),
+    tags("Auth/Manager/Login"),
     status_codes(200, 400),
     responses(
         (status_code = 200, body = ResponseSuccess<LoginTokenCreateVO>)
@@ -51,13 +51,13 @@ pub async fn manager_create(
     result_ok(token)
 }
 
-/// 刷新 AccessToken
+/// Refresh AccessToken
 ///
-/// 管理端刷新 AccessToken
+/// Refresh auth access_token
 #[endpoint(
     operation_id = "auth_app_manager_update_token",
     security(["bearer" = ["bearer"]]),
-    tags("权鉴模块/管理端/登录"),
+    tags("Auth/Manager/Login"),
     status_codes(200, 400, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<LoginTokenUpdateVO>)
@@ -78,13 +78,13 @@ pub async fn manager_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> 
     result_ok(vo)
 }
 
-/// 退出登录
+/// Logout
 ///
-/// 管理端删除 AccessToken
+/// Delete auth access_token
 #[endpoint(
     operation_id = "auth_app_manager_delete_token",
     security(["bearer" = ["bearer"]]),
-    tags("权鉴模块/管理端/登录"),
+    tags("Auth/Manager/Login"),
     status_codes(200, 400, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<bool>)
@@ -105,12 +105,12 @@ pub async fn manager_delete(depot: &mut Depot) -> AppResult<bool> {
     result_ok(true)
 }
 
-/// 密码登录
+/// Login By Password
 ///
-/// 用户端密码登录
+/// login by name and password
 #[endpoint(
     operation_id = "auth_app_open_login_by_password",
-    tags("权鉴模块/用户端/登录"),
+    tags("Auth/Open/Login"),
     status_codes(200, 400),
     responses(
         (status_code = 200, body = ResponseSuccess<LoginTokenCreateVO>)
@@ -141,13 +141,13 @@ pub async fn open_create(
     result_ok(token)
 }
 
-/// 刷新 AccessToken
+/// Refresh AccessToken
 ///
-/// 用户端刷新 AccessToken
+/// user refresh auth access_token
 #[endpoint(
     operation_id = "auth_app_open_update_token",
     security(["bearer" = ["bearer"]]),
-    tags("权鉴模块/用户端/登录"),
+    tags("Auth/Open/Login"),
     status_codes(200, 400, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<LoginTokenUpdateVO>)
@@ -168,13 +168,13 @@ pub async fn open_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> {
     result_ok(vo)
 }
 
-/// 退出登录
+/// Logout
 ///
-/// 用户端删除 AccessToken
+/// user logout delete auth access_token
 #[endpoint(
     operation_id = "auth_app_open_delete_token",
     security(["bearer" = ["bearer"]]),
-    tags("权鉴模块/用户端/登录"),
+    tags("Auth/Open/Login"),
     status_codes(200, 400, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<bool>)

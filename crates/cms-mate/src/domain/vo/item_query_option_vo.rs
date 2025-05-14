@@ -5,7 +5,7 @@ use cms_core::domain::model::SelectOptionModel;
 
 /// Item 查询表单选项 VO
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToSchema)]
-#[salvo(schema(name = "Mate模块/Item/Item查询选项VO"))]
+#[salvo(schema(name = "Mate/Item/ItemQueryOptionVO"))]
 pub struct ItemQueryOptionVO {
     /// App 选项
     #[serde(skip_serializing_if = "Option::is_none")]

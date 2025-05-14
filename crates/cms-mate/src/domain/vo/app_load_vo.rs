@@ -8,7 +8,7 @@ use crate::domain::entity::app::Model;
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
-#[salvo(schema(name = "Mate模块/App/App关联VO"))]
+#[salvo(schema(name = "Mate/App/AppLoadVO"))]
 pub struct AppLoadVO {
     /// 主键
     pub id: i64,

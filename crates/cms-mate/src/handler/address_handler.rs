@@ -9,11 +9,13 @@ use crate::service::AddressService;
 
 /// Redis Store
 ///
-/// 管理端 redis store demo
+/// redis store demo
 #[endpoint(
-  tags("Mate模块/管理端/应用管理"),
+  operation_id = "mate_redis_store",
+  tags("Mate/Manager/Address"),
+  status_codes(200, 400),
   responses(
-      (status_code = 200, description = "success response")
+    (status_code = 200, description = "success response")
   )
 )]
 pub async fn redis_store(depot: &mut Depot) -> AppResult<()> {
@@ -24,13 +26,15 @@ pub async fn redis_store(depot: &mut Depot) -> AppResult<()> {
 
 /// Redis Read
 ///
-/// 管理端 redis read demo
+/// redis read demo
 #[endpoint(
-  tags("Mate模块/管理端/应用管理"),
-  responses(
+    operation_id = "mate_redis_read",
+    tags("Mate/Manager/Address"),
+    status_codes(200, 400),
+    responses(
       (status_code = 200, description = "success response")
-  )
-)]
+    )
+  )]
 pub async fn redis_load(depot: &mut Depot) -> AppResult<()> {
     //   let state = depot.obtain::<AppState>().unwrap();
     //   let vo: AppMasterVO = AddressService::redis_load(state).await?;

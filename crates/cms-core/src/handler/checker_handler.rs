@@ -3,11 +3,13 @@ use salvo::prelude::*;
 use crate::config::AppState;
 use crate::domain::{AppResult, result_ok};
 
-/// 服务状态
+/// Service Status
 ///
-/// 检查服务健康状态
+/// Check service status
 #[endpoint(
+    operation_id = "auth_service_health_checker",
     tags("Core/Checker"),
+    status_codes(200, 400),
     responses(
         (status_code = 200, description = "success response")
     )
@@ -16,11 +18,13 @@ pub async fn health() -> AppResult<String> {
     result_ok("oK".to_string())
 }
 
-/// 数据库状态
+/// Database Status
 ///
-///  检查数据库连接
+///  Check database status
 #[endpoint(
+    operation_id = "auth_database_health_checker",
     tags("Core/Checker"),
+    status_codes(200, 400),
     responses(
         (status_code = 200, description = "success response")
     )

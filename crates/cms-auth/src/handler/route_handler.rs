@@ -2,11 +2,13 @@ use salvo::prelude::*;
 
 use cms_core::domain::{AppResult, result_ok};
 
-/// 动态路由列表
+/// Async Route List
 ///
-/// 管理端动态路由列表
+/// Manager route list
 #[endpoint(
-  tags("权鉴模块/管理端/路由"),
+  operation_id = "auth_route_manager_list",
+  tags("Auth/Manager/Route"),
+  status_codes(200, 400),
   responses(
       (status_code = 200, description = "success response")
   )

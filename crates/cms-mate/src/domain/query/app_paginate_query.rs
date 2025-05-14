@@ -7,7 +7,7 @@ use cms_core::utils::{deserializer_utils, parameter_utils};
 /// App 查询条件
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToParameters, ToSchema)]
 #[salvo(parameters(default_parameter_in = Query))]
-#[salvo(schema(name = "Mate模块/App/App查询条件"))]
+#[salvo(schema(name = "Mate/App/AppPaginateQuery"))]
 pub struct AppPaginateQuery {
     /// 页码
     #[serde(

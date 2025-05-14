@@ -1,13 +1,21 @@
 use salvo::prelude::*;
 
-use cms_core::domain::{AppResult, result_ok};
+use cms_core::domain::{AppResult, ResponseSuccess, result_ok};
 
 use crate::domain::query::MorphInstanceQuery;
 
-/// 关联Item列表
+/// List By Instance
 ///
-/// 管理端查询 Instance 关联Item列表
-#[endpoint(parameters(MorphInstanceQuery), tags("Mate模块/管理端/Morph管理"))]
+/// Get list by instance    
+#[endpoint(
+    operation_id = "mate_morph_manager_list_by_instance",
+    security(["bearer" = ["bearer"]]),
+    tags("Mate/Manager/Morph"),
+    status_codes(200, 401, 404),
+    responses(
+        (status_code = 200, body = ResponseSuccess<bool>)
+    )
+)]
 pub async fn manager_list(_depot: &mut Depot, query: MorphInstanceQuery) -> AppResult<bool> {
     print!("=======================================");
     println!("{:#?}", query);

@@ -29,10 +29,13 @@ fn validate_field_sort(num: i16) -> Result<(), ValidationError> {
 
 /// App 表单
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema)]
-#[salvo(schema(name = "Mate模块/App/App表单"))]
+#[salvo(schema(name = "Mate/App/AppStoreForm"))]
 pub struct AppStoreForm {
     /// 名称
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_trimmed")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_trimmed"
+    )]
     #[validate(
         required(message = "模块名称不能为空"),
         custom(function = "validate_field_name", message = "模块标题长度为2-30位")
@@ -41,7 +44,10 @@ pub struct AppStoreForm {
     pub name: Option<String>,
 
     /// 标题
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_trimmed")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_trimmed"
+    )]
     #[validate(
         required(message = "模块标题不能为空"),
         custom(function = "validate_field_title", message = "模块标题长度为2-30位")
@@ -50,7 +56,10 @@ pub struct AppStoreForm {
     pub title: Option<String>,
 
     /// 描述
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_trimmed")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_trimmed"
+    )]
     #[validate(custom(
         function = "validate_field_description",
         message = "模块简介长度不能超过200个字符"
@@ -59,7 +68,10 @@ pub struct AppStoreForm {
     pub description: Option<String>,
 
     /// 图标
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_trimmed")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_trimmed"
+    )]
     #[validate(custom(
         function = "validate_field_icon",
         message = "模块图标长度不能超过30个字符"
@@ -79,7 +91,10 @@ pub struct AppStoreForm {
     pub sort: Option<i16>,
 
     /// 是否启用
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_bool")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_bool"
+    )]
     #[salvo(schema(required = false, nullable = false, value_type = bool, example = true, default = true))]
     pub is_enabled: Option<bool>,
 }

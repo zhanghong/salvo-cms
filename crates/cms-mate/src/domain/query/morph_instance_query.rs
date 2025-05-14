@@ -6,10 +6,13 @@ use cms_core::utils::deserializer_utils;
 /// Morph分页查询条件
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToParameters)]
 #[salvo(parameters(default_parameter_in = Query))]
-#[salvo(schema(name = "Mate模块/Morph/Morph查询条件"))]
+#[salvo(schema(name = "Mate/Morph/MorphInstanceQuery"))]
 pub struct MorphInstanceQuery {
     /// 实例类型
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_trimmed")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_trimmed"
+    )]
     #[salvo(parameter(required = true, nullable = false, value_type = String, example = "admin"))]
     pub instance_type: Option<String>,
 

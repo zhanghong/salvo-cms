@@ -10,7 +10,7 @@ use crate::domain::entity::item::Model;
 #[derive(
     Debug, Clone, PartialEq, Default, Deserialize, Serialize, ToSchema, FromRedisValue, ToRedisArgs,
 )]
-#[salvo(schema(name = "Mate模块/Item/Item关联VO"))]
+#[salvo(schema(name = "Mate/Item/ItemLoadVO"))]
 pub struct ItemLoadVO {
     /// 主键
     pub id: i64,

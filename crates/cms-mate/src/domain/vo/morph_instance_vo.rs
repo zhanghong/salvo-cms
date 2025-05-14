@@ -7,7 +7,7 @@ use crate::domain::entity::morph::Model;
 
 /// Morph 实例关联 VO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
-#[salvo(schema(name = "Mate模块/Morph/Morph Instance VO"))]
+#[salvo(schema(name = "Mate/Morph/MorphInstanceVO"))]
 pub struct MorphInstanceVO {
     /// 主键
     pub id: i64,

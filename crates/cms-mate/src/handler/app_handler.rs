@@ -26,13 +26,13 @@ use crate::{
     service::AppService,
 };
 
-/// 分页列表
+/// Paginate List
 ///
-/// 管理端分页查询
+/// paginate query list
 #[endpoint(
     operation_id = "mate_app_manager_paginate",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/App管理"),
+    tags("Mate/Manager/App"),
     status_codes(200, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<PaginateResultVO<AppMasterVO>>, example = json!({
@@ -86,13 +86,13 @@ pub async fn manager_paginate(
     result_ok(vo)
 }
 
-/// 创建应用
+/// Create App
 ///
-/// 管理端创建应用
+/// Create app
 #[endpoint(
     operation_id = "mate_app_manager_create",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/App管理"),
+    tags("Mate/Manager/App"),
     status_codes(200, 400, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<bool>)
@@ -110,13 +110,13 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<AppStoreForm>) -> 
     result_ok(true)
 }
 
-/// 更新应用
+/// Update App
 ///
-/// 管理端更新应用
+/// update app
 #[endpoint(
     operation_id = "mate_app_manager_update",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/App管理"),
+    tags("Mate/Manager/App"),
     status_codes(200, 400, 401, 404),
     responses(
         (status_code = 200, body = ResponseSuccess<bool>)
@@ -139,13 +139,13 @@ pub async fn manager_update(
     result_ok(true)
 }
 
-/// 删除应用
+/// Delete App
 ///
-/// 管理端删除应用
+/// Delete app
 #[endpoint(
     operation_id = "mate_app_manager_delete",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/App管理"),
+    tags("Mate/Manager/App"),
     status_codes(200, 400, 401, 404),
     responses(
         (status_code = 200, body = ResponseSuccess<bool>)
@@ -164,13 +164,13 @@ pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<
     result_ok(true)
 }
 
-/// 表单选项
+/// Form Options
 ///
-/// 管理端表单选项
+/// store form options
 #[endpoint(
     operation_id = "mate_app_manager_form",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/App管理"),
+    tags("Mate/Manager/App"),
     status_codes(200, 400, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<AppFormOptionVO>)
@@ -182,13 +182,13 @@ pub async fn manager_form(depot: &mut Depot) -> AppResult<AppFormOptionVO> {
     result_ok(vo)
 }
 
-/// 查询选项
+/// Query Options
 ///
-/// 管理端查询选项
+/// Paginate query options
 #[endpoint(
     operation_id = "mate_app_manager_query",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/App管理"),
+    tags("Mate/Manager/App"),
     status_codes(200, 400, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<AppQueryOptionVO>)
@@ -200,13 +200,13 @@ pub async fn manager_query(depot: &mut Depot) -> AppResult<AppQueryOptionVO> {
     result_ok(vo)
 }
 
-/// 唯一性校验
+/// Field Unique
 ///
-/// 管理端字段值唯一性校验
+/// Field unique check
 #[endpoint(
     operation_id = "mate_app_check_field_unique",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/App管理"),
+    tags("Mate/Manager/App"),
     status_codes(200, 400, 401),
     responses(
         (status_code = 200, body = ResponseSuccess<bool>)
@@ -224,13 +224,13 @@ pub async fn check_field_unique(
     result_ok(value)
 }
 
-/// 更新Bool字段值
+/// Update Bool Field
 ///
-/// 管理端更新Bool字段值
+/// Update Bool Field
 #[endpoint(
     operation_id = "mate_app_update_bool_field",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/App管理"),
+    tags("Mate/Manager/App"),
     status_codes(200, 400, 401, 404),
     responses(
         (status_code = 200, body = ResponseSuccess<bool>)
@@ -254,13 +254,13 @@ pub async fn update_bool_field(
     result_ok(value)
 }
 
-/// 查看详情
+/// View App
 ///
-/// 管理端查看详情
+/// View app
 #[endpoint(
     operation_id = "mate_app_manager_view",
     security(["bearer" = ["bearer"]]),
-    tags("Mate模块/管理端/App管理"),
+    tags("Mate/Manager/App"),
     status_codes(200, 401, 404),
     responses(
         (status_code = 200, body = ResponseSuccess<AppMasterVO>)

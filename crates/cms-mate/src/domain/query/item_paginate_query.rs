@@ -7,7 +7,7 @@ use cms_core::utils::{deserializer_utils, parameter_utils};
 /// 分页查询 Item
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToParameters)]
 #[salvo(parameters(default_parameter_in = Query))]
-#[salvo(schema(name = "Mate模块/Item/Item查询条件"))]
+#[salvo(schema(name = "Mate/Item/ItemPaginateQuery"))]
 pub struct ItemPaginateQuery {
     /// 页码
     #[serde(
@@ -53,17 +53,26 @@ pub struct ItemPaginateQuery {
     pub parent_id: Option<i64>,
 
     /// 关键字
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_trimmed")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_trimmed"
+    )]
     #[salvo(parameter(required = false, nullable = false, value_type = String, example = "admin"))]
     pub keyword: Option<String>,
 
     /// 标题
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_trimmed")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_trimmed"
+    )]
     #[salvo(parameter(required = false, nullable = false, value_type = String, example = "文章"))]
     pub title: Option<String>,
 
     /// 启用状态
-    #[serde(default, deserialize_with = "deserializer_utils::string_to_option_bool")]
+    #[serde(
+        default,
+        deserialize_with = "deserializer_utils::string_to_option_bool"
+    )]
     #[salvo(parameter(required = false, nullable = false, value_type = bool, example = true))]
     pub is_enabled: Option<bool>,
 

@@ -7,7 +7,7 @@ use cms_core::utils::{deserializer_utils, parameter_utils};
 /// Kind 查询条件
 #[derive(Deserialize, Serialize, Debug, Clone, Default, ToParameters)]
 #[salvo(parameters(default_parameter_in = Query))]
-#[salvo(schema(name = "Mate模块/Kind/Kind查询条件"))]
+#[salvo(schema(name = "Mate/Kind/KindPaginateQuery"))]
 pub struct KindPaginateQuery {
     /// 页码
     #[serde(
