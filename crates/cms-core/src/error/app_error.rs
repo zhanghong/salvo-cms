@@ -7,7 +7,7 @@ use thiserror::Error;
 use tracing::error;
 use validator::ValidationErrors;
 
-use crate::domain::{AppResponse, ResponseError};
+use crate::domain::{AppResponse, schemas::ResponseError};
 
 // 自定义错误类型
 #[derive(Error, Debug, Serialize, Clone)]
@@ -125,8 +125,8 @@ impl EndpointOutRegister for AppError {
             // (StatusCode::CONTINUE, "Continue"),
             // (StatusCode::SWITCHING_PROTOCOLS, "Switching Protocols"),
             // (StatusCode::PROCESSING, "Processing"),
-            (StatusCode::OK, "OK"),
-            (StatusCode::CREATED, "Created"),
+            // (StatusCode::OK, "OK"),
+            // (StatusCode::CREATED, "Created"),
             // (StatusCode::ACCEPTED, "Accepted"),
             // (
             //     StatusCode::NON_AUTHORITATIVE_INFORMATION,

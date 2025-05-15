@@ -5,7 +5,7 @@ use validator::Validate;
 use cms_core::{
     config::AppState,
     domain::{
-        AppResult, ResponseError, ResponseSuccess,
+        AppResult,
         dto::{FieldBoolUpdateDTO, ModelLogicDeleteDTO, ModelViewDTO},
         form::{FieldBoolUpdateForm, FieldValueUniqueForm},
         result_ok,
@@ -32,45 +32,7 @@ use crate::{
 #[endpoint(
     operation_id = "mate_app_manager_paginate",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/App"),
-    status_codes(200, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<PaginateResultVO<AppMasterVO>>, example = json!({
-            "code": 200,
-            "data": {
-                "current_page": 1,
-                "page_size": 10,
-                "total": 1,
-                "list": [
-                    {
-                        "id": 1,
-                        "name": "product",
-                        "title": "商品",
-                        "description": "商品",
-                        "icon": "",
-                        "sort": 99,
-                        "is_enabled": true,
-                        "can_update": true,
-                        "can_delete": false,
-                        "created_time": "2025-04-29 11:10:15",
-                        "updated_time": "2025-04-29 11:10:21",
-                        "editor": {
-                            "id": 1,
-                            "no": "Administrator",
-                            "name": "zhanghong",
-                            "phone": "18302902891",
-                            "email": "zhanghong@test.com",
-                            "avatar_url": ""
-                        }
-                    }
-                ]
-            }
-        })),
-        (status_code = 401, body = ResponseError, example = json!({
-            "code": 401,
-            "message": "Unauthorized"
-        }))
-    )
+    tags("Mate/Manager/App")
 )]
 pub async fn manager_paginate(
     depot: &mut Depot,
@@ -92,11 +54,7 @@ pub async fn manager_paginate(
 #[endpoint(
     operation_id = "mate_app_manager_create",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/App"),
-    status_codes(200, 400, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<bool>)
-    )
+    tags("Mate/Manager/App")
 )]
 pub async fn manager_create(depot: &mut Depot, json: JsonBody<AppStoreForm>) -> AppResult<bool> {
     let form = json.into_inner();
@@ -116,11 +74,7 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<AppStoreForm>) -> 
 #[endpoint(
     operation_id = "mate_app_manager_update",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/App"),
-    status_codes(200, 400, 401, 404),
-    responses(
-        (status_code = 200, body = ResponseSuccess<bool>)
-    )
+    tags("Mate/Manager/App")
 )]
 pub async fn manager_update(
     depot: &mut Depot,
@@ -145,11 +99,7 @@ pub async fn manager_update(
 #[endpoint(
     operation_id = "mate_app_manager_delete",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/App"),
-    status_codes(200, 400, 401, 404),
-    responses(
-        (status_code = 200, body = ResponseSuccess<bool>)
-    )
+    tags("Mate/Manager/App")
 )]
 pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<bool> {
     let id = id.into_inner();
@@ -170,11 +120,7 @@ pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<
 #[endpoint(
     operation_id = "mate_app_manager_form",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/App"),
-    status_codes(200, 400, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<AppFormOptionVO>)
-    )
+    tags("Mate/Manager/App")
 )]
 pub async fn manager_form(depot: &mut Depot) -> AppResult<AppFormOptionVO> {
     let state = depot.obtain::<AppState>().unwrap();
@@ -188,11 +134,7 @@ pub async fn manager_form(depot: &mut Depot) -> AppResult<AppFormOptionVO> {
 #[endpoint(
     operation_id = "mate_app_manager_query",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/App"),
-    status_codes(200, 400, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<AppQueryOptionVO>)
-    )
+    tags("Mate/Manager/App")
 )]
 pub async fn manager_query(depot: &mut Depot) -> AppResult<AppQueryOptionVO> {
     let state = depot.obtain::<AppState>().unwrap();
@@ -206,11 +148,7 @@ pub async fn manager_query(depot: &mut Depot) -> AppResult<AppQueryOptionVO> {
 #[endpoint(
     operation_id = "mate_app_check_field_unique",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/App"),
-    status_codes(200, 400, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<bool>)
-    )
+    tags("Mate/Manager/App")
 )]
 pub async fn check_field_unique(
     depot: &mut Depot,
@@ -230,11 +168,7 @@ pub async fn check_field_unique(
 #[endpoint(
     operation_id = "mate_app_update_bool_field",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/App"),
-    status_codes(200, 400, 401, 404),
-    responses(
-        (status_code = 200, body = ResponseSuccess<bool>)
-    )
+    tags("Mate/Manager/App")
 )]
 pub async fn update_bool_field(
     depot: &mut Depot,
@@ -260,11 +194,7 @@ pub async fn update_bool_field(
 #[endpoint(
     operation_id = "mate_app_manager_view",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/App"),
-    status_codes(200, 401, 404),
-    responses(
-        (status_code = 200, body = ResponseSuccess<AppMasterVO>)
-    )
+    tags("Mate/Manager/App")
 )]
 pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<AppMasterVO> {
     let load_models: Vec<AppLoadEnum> = vec![];

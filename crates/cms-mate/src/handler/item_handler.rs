@@ -5,7 +5,7 @@ use validator::Validate;
 use cms_core::{
     config::AppState,
     domain::{
-        AppResult, ResponseSuccess,
+        AppResult,
         dto::{FieldBoolUpdateDTO, ModelLogicDeleteDTO, ModelViewDTO},
         form::{FieldBoolUpdateForm, FieldValueUniqueForm},
         result_ok,
@@ -32,11 +32,7 @@ use crate::{
 #[endpoint(
     operation_id = "mate_item_manager_paginate",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/Item"),
-    status_codes(200, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<PaginateResultVO<ItemMasterVO>>)
-    )
+    tags("Mate/Manager/Item")
 )]
 pub async fn manager_paginate(
     depot: &mut Depot,
@@ -58,11 +54,7 @@ pub async fn manager_paginate(
 #[endpoint(
     operation_id = "mate_item_manager_create",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/Item"),
-    status_codes(200, 400, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<bool>)
-    )
+    tags("Mate/Manager/Item")
 )]
 pub async fn manager_create(depot: &mut Depot, json: JsonBody<ItemStoreForm>) -> AppResult<bool> {
     let form = json.into_inner();
@@ -82,11 +74,7 @@ pub async fn manager_create(depot: &mut Depot, json: JsonBody<ItemStoreForm>) ->
 #[endpoint(
     operation_id = "mate_item_manager_update",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/Item"),
-    status_codes(200, 400, 401, 404),
-    responses(
-        (status_code = 200, body = ResponseSuccess<bool>)
-    )
+    tags("Mate/Manager/Item")
 )]
 pub async fn manager_update(
     depot: &mut Depot,
@@ -111,11 +99,7 @@ pub async fn manager_update(
 #[endpoint(
     operation_id = "mate_item_manager_delete",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/Item"),
-    status_codes(200, 400, 401, 404),
-    responses(
-        (status_code = 200, body = ResponseSuccess<bool>)
-    )
+    tags("Mate/Manager/Item")
 )]
 pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<bool> {
     let id = id.into_inner();
@@ -136,11 +120,7 @@ pub async fn manager_delete(depot: &mut Depot, id: PathParam<i64>) -> AppResult<
 #[endpoint(
     operation_id = "mate_item_manager_form",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/Item"),
-    status_codes(200, 400, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<ItemFormOptionVO>)
-    )
+    tags("Mate/Manager/Item")
 )]
 pub async fn manager_form(depot: &mut Depot) -> AppResult<ItemFormOptionVO> {
     let state = depot.obtain::<AppState>().unwrap();
@@ -154,11 +134,7 @@ pub async fn manager_form(depot: &mut Depot) -> AppResult<ItemFormOptionVO> {
 #[endpoint(
     operation_id = "mate_item_manager_query",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/Item"),
-    status_codes(200, 400, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<ItemQueryOptionVO>)
-    )
+    tags("Mate/Manager/Item")
 )]
 pub async fn manager_query(depot: &mut Depot) -> AppResult<ItemQueryOptionVO> {
     let state = depot.obtain::<AppState>().unwrap();
@@ -172,11 +148,7 @@ pub async fn manager_query(depot: &mut Depot) -> AppResult<ItemQueryOptionVO> {
 #[endpoint(
     operation_id = "mate_item_check_field_unique",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/Item"),
-    status_codes(200, 400, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<bool>)
-    )
+    tags("Mate/Manager/Item")
 )]
 pub async fn check_field_unique(
     depot: &mut Depot,
@@ -196,11 +168,7 @@ pub async fn check_field_unique(
 #[endpoint(
     operation_id = "mate_item_update_bool_field",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/Item"),
-    status_codes(200, 400, 401, 404),
-    responses(
-        (status_code = 200, body = ResponseSuccess<bool>)
-    )
+    tags("Mate/Manager/Item")
 )]
 pub async fn update_bool_field(
     depot: &mut Depot,
@@ -225,11 +193,7 @@ pub async fn update_bool_field(
 #[endpoint(
     operation_id = "mate_item_manager_view",
     security(["bearer" = ["bearer"]]),
-    tags("Mate/Manager/Item"),
-    status_codes(200, 401, 404),
-    responses(
-        (status_code = 200, body = ResponseSuccess<ItemMasterVO>)
-    )
+    tags("Mate/Manager/Item")
 )]
 pub async fn manager_view(depot: &mut Depot, id: PathParam<i64>) -> AppResult<ItemMasterVO> {
     let load_models: Vec<ItemLoadEnum> = vec![];

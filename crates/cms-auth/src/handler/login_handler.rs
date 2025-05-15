@@ -4,7 +4,7 @@ use validator::Validate;
 
 use cms_core::{
     config::AppState,
-    domain::{AppResult, ResponseSuccess, dto::JwtClaimsDTO, result_ok},
+    domain::{AppResult, dto::JwtClaimsDTO, result_ok},
     enums::PlatformEnum,
 };
 
@@ -20,11 +20,7 @@ use crate::{
 /// Login by name and password
 #[endpoint(
     operation_id = "auth_app_manager_login_by_password",
-    tags("Auth/Manager/Login"),
-    status_codes(200, 400),
-    responses(
-        (status_code = 200, body = ResponseSuccess<LoginTokenCreateVO>)
-    )
+    tags("Auth/Manager/Login")
 )]
 pub async fn manager_create(
     depot: &mut Depot,
@@ -57,11 +53,7 @@ pub async fn manager_create(
 #[endpoint(
     operation_id = "auth_app_manager_update_token",
     security(["bearer" = ["bearer"]]),
-    tags("Auth/Manager/Login"),
-    status_codes(200, 400, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<LoginTokenUpdateVO>)
-    )
+    tags("Auth/Manager/Login")
 )]
 pub async fn manager_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> {
     let state = depot.obtain::<AppState>().unwrap();
@@ -84,11 +76,7 @@ pub async fn manager_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> 
 #[endpoint(
     operation_id = "auth_app_manager_delete_token",
     security(["bearer" = ["bearer"]]),
-    tags("Auth/Manager/Login"),
-    status_codes(200, 400, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<bool>)
-    )
+    tags("Auth/Manager/Login")
 )]
 pub async fn manager_delete(depot: &mut Depot) -> AppResult<bool> {
     let state = depot.obtain::<AppState>().unwrap();
@@ -111,10 +99,7 @@ pub async fn manager_delete(depot: &mut Depot) -> AppResult<bool> {
 #[endpoint(
     operation_id = "auth_app_open_login_by_password",
     tags("Auth/Open/Login"),
-    status_codes(200, 400),
-    responses(
-        (status_code = 200, body = ResponseSuccess<LoginTokenCreateVO>)
-    )
+    status_codes(200, 400)
 )]
 pub async fn open_create(
     depot: &mut Depot,
@@ -147,11 +132,7 @@ pub async fn open_create(
 #[endpoint(
     operation_id = "auth_app_open_update_token",
     security(["bearer" = ["bearer"]]),
-    tags("Auth/Open/Login"),
-    status_codes(200, 400, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<LoginTokenUpdateVO>)
-    )
+    tags("Auth/Open/Login")
 )]
 pub async fn open_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> {
     let state = depot.obtain::<AppState>().unwrap();
@@ -174,11 +155,7 @@ pub async fn open_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> {
 #[endpoint(
     operation_id = "auth_app_open_delete_token",
     security(["bearer" = ["bearer"]]),
-    tags("Auth/Open/Login"),
-    status_codes(200, 400, 401),
-    responses(
-        (status_code = 200, body = ResponseSuccess<bool>)
-    )
+    tags("Auth/Open/Login")
 )]
 pub async fn open_delete(depot: &mut Depot) -> AppResult<bool> {
     let state = depot.obtain::<AppState>().unwrap();
