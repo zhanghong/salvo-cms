@@ -22,7 +22,7 @@ pub struct JwtService {}
 impl JwtService {
     /// 用户登录
     pub async fn create(
-        user_id: i64,
+        user_id: Uuid,
         user_type: &str,
         state: &AppState,
     ) -> HandleResult<CertificateModel> {
@@ -34,7 +34,7 @@ impl JwtService {
         let now = time_utils::current_time();
         let model = CertificateActiveModel {
             id: Set(uuid.to_owned()),
-            user_id: Set(user_id),
+            user_id: Set(user_id.to_owned()),
             user_type: Set(user_type.to_owned()),
             access_token: Set(access.token_value.to_owned()),
             access_expired_at: Set(time_utils::from_timestamp(access.expired_time)),
@@ -106,7 +106,7 @@ impl JwtService {
     /// 生成 Access Token
     fn generate_access_token(
         uuid: &String,
-        user_id: i64,
+        user_id: Uuid,
         user_type: &str,
     ) -> HandleResult<JwtTokenDTO> {
         let cfg = JwtConfig::from_env().expect("Failed to load jwt config");
@@ -117,7 +117,7 @@ impl JwtService {
 
         let claims = JwtClaimsDTO {
             uuid: uuid.to_owned(),
-            user_id,
+            user_id: user_id.to_string(),
             user_type: user_type.to_owned(),
             token_type: TokenTypeEnum::AccessToken.as_value(),
             exp: expired_time,
@@ -173,7 +173,7 @@ impl JwtService {
     /// 生成 Refresh Token
     fn generate_refresh_token(
         uuid: &String,
-        user_id: i64,
+        user_id: Uuid,
         user_type: &str,
     ) -> HandleResult<JwtTokenDTO> {
         let cfg = JwtConfig::from_env().expect("Failed to load jwt config");
@@ -184,7 +184,7 @@ impl JwtService {
 
         let claims = JwtClaimsDTO {
             uuid: uuid.to_owned(),
-            user_id,
+            user_id: user_id.to_string(),
             user_type: user_type.to_owned(),
             token_type: TokenTypeEnum::RefreshToken.as_value(),
             exp: expired_time,

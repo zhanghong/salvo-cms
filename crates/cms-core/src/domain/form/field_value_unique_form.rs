@@ -4,16 +4,11 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use validator::{Validate, ValidationError};
 
-use crate::utils::validate_utils::{
-    hash_map_max_length, numeric_greater_than_zero, string_present,
-};
+use crate::utils::validate_utils::{hash_map_max_length, string_present};
 
 // ------------------------------------
 // Field validate
 // ------------------------------------
-fn validate_skip_id_greater_than_zero(num: i64) -> Result<(), ValidationError> {
-    numeric_greater_than_zero(Some(num))
-}
 
 fn validate_extends_size(map: &&HashMap<String, String>) -> Result<(), ValidationError> {
     hash_map_max_length::<String, String>(Some(map), 5)
@@ -25,7 +20,7 @@ fn validate_extends_size(map: &&HashMap<String, String>) -> Result<(), Validatio
 #[derive(
     Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema, ToParameters,
 )]
-#[salvo(schema(name = "Core/Base/FieldValueUniqueForm"))]
+#[salvo(schema(name = "Core::Base::FieldValueUniqueForm"))]
 pub struct FieldValueUniqueForm {
     /// 字段名
     #[validate(custom(function = "string_present", message = "字段名不能为空"))]
@@ -38,12 +33,8 @@ pub struct FieldValueUniqueForm {
     pub field_value: Option<String>,
 
     /// Model id
-    #[validate(custom(
-        function = "validate_skip_id_greater_than_zero",
-        message = "Skip id 必须大于 0"
-    ))]
-    #[salvo(schema(required = false, nullable = false, value_type = i64, example = 31))]
-    pub skip_id: Option<i64>,
+    #[salvo(schema(required = false, nullable = false, value_type = KnownFormat::Uuid, example = "00000000-0000-0000-0000-000000000000"))]
+    pub skip_id: Option<String>,
 
     /// 扩展参数
     #[validate(custom(function = "validate_extends_size", message = "扩展参数必须小于等于 5"))]

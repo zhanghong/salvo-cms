@@ -8,7 +8,7 @@ use std::env;
 #[sea_orm(table_name = "users")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i64,
+    pub id: Uuid,
     pub no: String,
     pub name: String,
     pub phone: String,

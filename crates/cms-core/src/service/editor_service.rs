@@ -1,5 +1,6 @@
 use sea_orm::*;
 use std::collections::HashMap;
+use uuid::Uuid;
 
 use crate::{
     config::AppState,
@@ -15,9 +16,13 @@ pub struct EditorService {}
 
 impl EditorService {
     /// 查询关联的单个记录
-    pub async fn load_by_id(id: i64, state: &AppState) -> HandleResult<Option<EditorLoadVO>> {
+    pub async fn load_by_id(id: &str, state: &AppState) -> HandleResult<Option<EditorLoadVO>> {
         let db = &state.db;
-        let opt = EditorEntity::find_by_id(id).one(db).await?;
+        let id = Uuid::parse_str(id);
+        if id.is_err() {
+            return handle_ok(None);
+        }
+        let opt = EditorEntity::find_by_id(id.unwrap()).one(db).await?;
         if let Some(editor) = opt {
             handle_ok(Some(editor.into()))
         } else {
@@ -27,12 +32,16 @@ impl EditorService {
 
     /// 批量查询关联的记录
     pub async fn batch_load_by_ids(
-        ids: &Vec<i64>,
+        ids: &Vec<&str>,
         state: &AppState,
-    ) -> HandleResult<HashMap<i64, EditorLoadVO>> {
-        let filted_ids: Vec<i64> = ids.into_iter().filter(|&&id| id > 0).cloned().collect();
+    ) -> HandleResult<HashMap<String, EditorLoadVO>> {
+        let filted_ids: Vec<Uuid> = ids
+            .into_iter()
+            .map(|id| Uuid::parse_str(id).unwrap_or(Uuid::nil()))
+            .filter(|id| Uuid::nil() != *id)
+            .collect();
         if filted_ids.is_empty() {
-            return handle_ok(HashMap::<i64, EditorLoadVO>::new());
+            return handle_ok(HashMap::<String, EditorLoadVO>::new());
         }
 
         let db = &state.db;
@@ -41,9 +50,9 @@ impl EditorService {
             .all(db)
             .await?;
 
-        let map: HashMap<i64, EditorLoadVO> = models
+        let map: HashMap<String, EditorLoadVO> = models
             .into_iter()
-            .map(|model| (model.id, model.into()))
+            .map(|model| (model.id.to_string(), model.into()))
             .collect();
 
         handle_ok(map)

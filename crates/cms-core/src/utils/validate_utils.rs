@@ -65,6 +65,14 @@ pub fn string_length(
     Ok(())
 }
 
+pub fn string_uuid(str: &str) -> Result<(), ValidationError> {
+    let len = calculate_string_length(str);
+    if len != 36 {
+        return Err(ValidationError::new("length_invalid"));
+    }
+    Ok(())
+}
+
 pub fn numeric_greater_than_zero<T>(opt: Option<T>) -> Result<(), ValidationError>
 where
     T: Copy + PartialOrd + Debug + Bounded + NumCast + Zero,

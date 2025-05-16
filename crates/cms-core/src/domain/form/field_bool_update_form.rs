@@ -11,7 +11,7 @@ use crate::utils::validate_utils::string_present;
 #[derive(
     Deserialize, Serialize, Debug, Clone, PartialEq, Default, Validate, ToSchema, ToParameters,
 )]
-#[salvo(schema(name = "Core/Base/FieldBoolUpdateForm"))]
+#[salvo(schema(name = "Core::Base::FieldBoolUpdateForm"))]
 pub struct FieldBoolUpdateForm {
     /// 字段名
     #[validate(custom(function = "string_present", message = "字段名不能为空"))]

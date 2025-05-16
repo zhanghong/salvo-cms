@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use uuid::Uuid;
 
 use crate::domain::form::FieldValueUniqueForm;
 
@@ -16,7 +17,7 @@ pub struct FieldValueUniqueDTO {
     pub field_value: String,
 
     /// Model id
-    pub skip_id: i64,
+    pub skip_id: Option<Uuid>,
 
     /// 扩展参数
     pub extends: Option<HashMap<String, String>>,
@@ -24,8 +25,15 @@ pub struct FieldValueUniqueDTO {
 
 impl From<FieldValueUniqueForm> for FieldValueUniqueDTO {
     fn from(form: FieldValueUniqueForm) -> Self {
+        let skip_id = match form.skip_id {
+            Some(str) => match Uuid::parse_str(&str) {
+                Ok(uuid) => Some(uuid),
+                Err(_) => None,
+            },
+            None => None,
+        };
         Self {
-            skip_id: form.skip_id.unwrap_or_default(),
+            skip_id,
             field_name: form.field_name.unwrap_or_default(),
             field_value: form.field_value.unwrap_or_default(),
             extends: form.extends,
