@@ -13,16 +13,15 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(
                         ColumnDef::new(UserLogin::Id)
-                            .big_integer()
+                            .uuid()
+                            .default(Expr::cust("gen_random_uuid()"))
                             .primary_key()
-                            .auto_increment()
                             .comment("ID"),
                     )
                     .col(
                         ColumnDef::new(UserLogin::UserId)
-                            .big_integer()
+                            .uuid()
                             .not_null()
-                            .default(0)
                             .comment("用户ID"),
                     )
                     .col(

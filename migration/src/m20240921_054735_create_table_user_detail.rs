@@ -13,9 +13,9 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(
                         ColumnDef::new(UserDetail::Id)
-                            .big_integer()
+                            .uuid()
+                            .default(Expr::cust("gen_random_uuid()"))
                             .primary_key()
-                            .auto_increment()
                             .comment("ID"),
                     )
                     .col(
@@ -27,16 +27,13 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(UserDetail::EditorId)
-                            .big_integer()
-                            .not_null()
-                            .default(0)
+                            .uuid()
                             .comment("编辑ID"),
                     )
                     .col(
                         ColumnDef::new(UserDetail::UserId)
-                            .big_integer()
+                            .uuid()
                             .not_null()
-                            .default(0)
                             .unique_key()
                             .comment("用户ID"),
                     )
@@ -49,23 +46,17 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(UserDetail::ProvinceID)
-                            .big_integer()
-                            .not_null()
-                            .default(0)
+                            .uuid()
                             .comment("所在省份ID"),
                     )
                     .col(
                         ColumnDef::new(UserDetail::CityID)
-                            .big_integer()
-                            .not_null()
-                            .default(0)
+                            .uuid()
                             .comment("所在城市ID"),
                     )
                     .col(
                         ColumnDef::new(UserDetail::DistrictID)
-                            .big_integer()
-                            .not_null()
-                            .default(0)
+                            .uuid()
                             .comment("所在区县ID"),
                     )
                     .col(

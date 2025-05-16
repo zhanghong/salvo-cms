@@ -3,7 +3,6 @@
 pub mod prelude;
 
 pub mod auth_certificates;
-pub mod category_items;
 pub mod mate_apps;
 pub mod mate_items;
 pub mod mate_kinds;
