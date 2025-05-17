@@ -15,8 +15,8 @@ use crate::domain::entity::login::{ActiveModel as LoginActiveModel, Model as Log
 use crate::domain::entity::user::{
     ActiveModel as UserActiveModel, Column as UserColumn, Entity as UserEntity,
 };
-use crate::domain::vo::LoginTokenCreateVO;
-use crate::domain::{dto::LoginStoreDTO, vo::LoginTokenUpdateVO};
+use crate::domain::vo::TokenCreateVO;
+use crate::domain::{dto::LoginStoreDTO, vo::TokenUpdateVO};
 
 pub struct LoginService {}
 
@@ -25,7 +25,7 @@ impl LoginService {
         platform: &PlatformEnum,
         dto: &LoginStoreDTO,
         state: &AppState,
-    ) -> HandleResult<LoginTokenCreateVO> {
+    ) -> HandleResult<TokenCreateVO> {
         let username = match dto.username.as_ref() {
             Some(username) => username.trim().to_lowercase(),
             None => return Err(AppError::BadRequest(String::from("登录名不能为空"))),
@@ -51,6 +51,7 @@ impl LoginService {
         }
 
         let md5_password = encrypt_password(user.salt.as_str(), password);
+        println!("md5_password: {}", md5_password);
         if md5_password.ne(&user.password) {
             return Err(AppError::BadRequest(String::from("密码错误")));
         }
@@ -68,7 +69,7 @@ impl LoginService {
         let roles: Vec<String> = vec![login_type.to_string()];
         let permissions: Vec<String> = vec![];
 
-        let vo = LoginTokenCreateVO {
+        let vo = TokenCreateVO {
             user_id: user.id,
             username: user.name.to_owned(),
             nickname: user.nickname.to_owned(),
@@ -96,7 +97,7 @@ impl LoginService {
         // 更新用户表里的最后记录信息
         let mut user: UserActiveModel = user.into();
         user.last_login_at = Set(Some(now));
-        user.last_login_id = Set(login.id);
+        user.last_login_id = Set(Some(login.id));
         user.updated_at = Set(now);
         user.update(&state.db).await?;
 
@@ -106,10 +107,10 @@ impl LoginService {
     pub async fn update(
         claims: Option<JwtClaimsDTO>,
         state: &AppState,
-    ) -> HandleResult<LoginTokenUpdateVO> {
+    ) -> HandleResult<TokenUpdateVO> {
         let cert = JwtService::update_by_claims(claims, state).await?;
 
-        let vo = LoginTokenUpdateVO {
+        let vo = TokenUpdateVO {
             access_token: cert.access_token.to_owned(),
             access_expired: time_utils::to_db_time(&cert.access_expired_at),
             refresh_token: cert.refresh_token.to_owned(),

@@ -4,14 +4,18 @@ use validator::Validate;
 
 use cms_core::{
     config::AppState,
-    domain::{AppResult, dto::JwtClaimsDTO, result_ok},
+    domain::{AppResult, dto::JwtClaimsDTO, response::BaseBooleanResponse, result_ok},
     enums::PlatformEnum,
 };
 
 use crate::domain::dto::LoginStoreDTO;
-use crate::domain::vo::LoginTokenUpdateVO;
+use crate::domain::vo::TokenUpdateVO;
 use crate::{
-    domain::{form::PasswordLoginForm, vo::LoginTokenCreateVO},
+    domain::{
+        form::PasswordLoginForm,
+        response::{TokenCreateResponse, TokenUpdateResponse},
+        vo::TokenCreateVO,
+    },
     service::LoginService,
 };
 
@@ -20,13 +24,17 @@ use crate::{
 /// Login by name and password
 #[endpoint(
     operation_id = "auth_app_manager_login_by_password",
-    tags("Auth/Manager/Login")
+    tags("Auth/Manager/Login"),
+    status_codes(200, 500),
+    responses(
+        (status_code = 200, body = TokenCreateResponse)
+    )
 )]
 pub async fn manager_create(
     depot: &mut Depot,
     req: &mut Request,
     json: JsonBody<PasswordLoginForm>,
-) -> AppResult<LoginTokenCreateVO> {
+) -> AppResult<TokenCreateVO> {
     let form = json.into_inner();
     form.validate()?;
     let state = depot.obtain::<AppState>().unwrap();
@@ -53,9 +61,13 @@ pub async fn manager_create(
 #[endpoint(
     operation_id = "auth_app_manager_update_token",
     security(["bearer" = ["bearer"]]),
-    tags("Auth/Manager/Login")
+    tags("Auth/Manager/Login"),
+    status_codes(200, 500),
+    responses(
+        (status_code = 200, body = TokenUpdateResponse)
+    )
 )]
-pub async fn manager_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> {
+pub async fn manager_update(depot: &mut Depot) -> AppResult<TokenUpdateVO> {
     let state = depot.obtain::<AppState>().unwrap();
     let claims: Option<JwtClaimsDTO> = match depot.jwt_auth_state() {
         JwtAuthState::Authorized => {
@@ -65,6 +77,7 @@ pub async fn manager_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> 
         }
         _ => None,
     };
+    println!("claims: {:?}", claims); // Add this line to print claims
 
     let vo = LoginService::update(claims, state).await?;
     result_ok(vo)
@@ -76,7 +89,10 @@ pub async fn manager_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> 
 #[endpoint(
     operation_id = "auth_app_manager_delete_token",
     security(["bearer" = ["bearer"]]),
-    tags("Auth/Manager/Login")
+    tags("Auth/Manager/Login"),
+    responses(
+        (status_code = 200, body = BaseBooleanResponse)
+    )
 )]
 pub async fn manager_delete(depot: &mut Depot) -> AppResult<bool> {
     let state = depot.obtain::<AppState>().unwrap();
@@ -99,13 +115,16 @@ pub async fn manager_delete(depot: &mut Depot) -> AppResult<bool> {
 #[endpoint(
     operation_id = "auth_app_open_login_by_password",
     tags("Auth/Open/Login"),
-    status_codes(200, 400)
+    status_codes(200, 500),
+    responses(
+        (status_code = 200, body = TokenCreateResponse)
+    )
 )]
 pub async fn open_create(
     depot: &mut Depot,
     req: &mut Request,
     json: JsonBody<PasswordLoginForm>,
-) -> AppResult<LoginTokenCreateVO> {
+) -> AppResult<TokenCreateVO> {
     let form = json.into_inner();
     form.validate()?;
     let state = depot.obtain::<AppState>().unwrap();
@@ -132,9 +151,13 @@ pub async fn open_create(
 #[endpoint(
     operation_id = "auth_app_open_update_token",
     security(["bearer" = ["bearer"]]),
-    tags("Auth/Open/Login")
+    tags("Auth/Open/Login"),
+    status_codes(200, 500),
+    responses(
+        (status_code = 200, body = TokenUpdateResponse)
+    )
 )]
-pub async fn open_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> {
+pub async fn open_update(depot: &mut Depot) -> AppResult<TokenUpdateVO> {
     let state = depot.obtain::<AppState>().unwrap();
     let claims: Option<JwtClaimsDTO> = match depot.jwt_auth_state() {
         JwtAuthState::Authorized => {
@@ -155,7 +178,11 @@ pub async fn open_update(depot: &mut Depot) -> AppResult<LoginTokenUpdateVO> {
 #[endpoint(
     operation_id = "auth_app_open_delete_token",
     security(["bearer" = ["bearer"]]),
-    tags("Auth/Open/Login")
+    tags("Auth/Open/Login"),
+    status_codes(200, 500),
+    responses(
+        (status_code = 200, body = BaseBooleanResponse)
+    )
 )]
 pub async fn open_delete(depot: &mut Depot) -> AppResult<bool> {
     let state = depot.obtain::<AppState>().unwrap();

@@ -1,13 +1,14 @@
 use salvo::oapi::ToSchema;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 /// 登录 Token VO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default, ToSchema)]
-#[salvo(schema(name = "权鉴模块/登录/登录 Token VO"))]
-pub struct LoginTokenCreateVO {
+#[salvo(schema(name = "Auth::Token::TokenCreateVO"))]
+pub struct TokenCreateVO {
     /// 用户ID
-    #[salvo(schema(required = true, nullable = false, value_type = i64, example = 1))]
-    pub user_id: i64,
+    #[salvo(schema(required = true, nullable = false, value_type = KnownFormat::Uuid, example = "00000000-0000-0000-0000-000000000000"))]
+    pub user_id: Uuid,
 
     /// 用户名
     #[salvo(schema(required = true, nullable = false, value_type = String, max_length=30, example = "zhangsan"))]
@@ -18,7 +19,7 @@ pub struct LoginTokenCreateVO {
     pub nickname: String,
 
     /// 用户头像
-    #[salvo(schema(required = true, nullable = false, value_type = String, max_length=100, example = "http://www.test.com/logo.png"))]
+    #[salvo(schema(required = true, nullable = false, value_type = KnownFormat::Url, example = "https://www.baidu.com/logo.png"))]
     pub avatar: String,
 
     /// 用户角色
@@ -34,7 +35,7 @@ pub struct LoginTokenCreateVO {
     pub access_token: String,
 
     /// Access Token 过期时间
-    #[salvo(schema(required = true, nullable = false, value_type = String, example = "2022-01-01 00:00:00", format = "yyyy-MM-dd HH:mm:ss"))]
+    #[salvo(schema(required = true, nullable = false, value_type = KnownFormat::DateTime, example = "2022-01-01 00:00:00"))]
     pub access_expired: String,
 
     /// Refresh Token
@@ -42,6 +43,6 @@ pub struct LoginTokenCreateVO {
     pub refresh_token: String,
 
     /// Refresh Token 过期时间
-    #[salvo(schema(required = true, nullable = false, value_type = String, example = "2022-01-01 00:00:00", format = "yyyy-MM-dd HH:mm:ss"))]
+    #[salvo(schema(required = true, nullable = false, value_type = KnownFormat::DateTime, example = "2022-01-01 00:00:00", format = "yyyy-MM-dd HH:mm:ss"))]
     pub refresh_expired: String,
 }

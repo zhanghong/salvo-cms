@@ -1,5 +1,5 @@
-mod login_token_create_vo;
-mod login_token_update_vo;
+mod token_create_vo;
+mod token_update_vo;
 
-pub use login_token_create_vo::LoginTokenCreateVO;
-pub use login_token_update_vo::LoginTokenUpdateVO;
+pub use token_create_vo::TokenCreateVO;
+pub use token_update_vo::TokenUpdateVO;
