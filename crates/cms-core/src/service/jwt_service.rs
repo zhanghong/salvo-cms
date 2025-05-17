@@ -68,10 +68,11 @@ impl JwtService {
                 return Err(err);
             }
         }
-        let uuid = dto.uuid.to_owned();
+        let claim_user_id = dto.uuid.to_owned();
+        let user_id = Uuid::parse_str(&dto.uuid).unwrap();
         let db = &state.db;
         let model = CertificateEntity::find()
-            .filter(CertificateColummn::Id.eq(&uuid))
+            .filter(CertificateColummn::Id.eq(user_id))
             .one(db)
             .await?
             .unwrap();
@@ -83,22 +84,21 @@ impl JwtService {
             return Err(err);
         }
 
-        let user_id = model.user_id;
         let user_type = model.user_type.to_owned();
         let user_type = user_type.as_str();
         let mut model: CertificateActiveModel = model.into();
-        let access = Self::generate_access_token(&uuid, user_id, user_type).unwrap();
+        let access = Self::generate_access_token(&claim_user_id, user_id, user_type).unwrap();
         model.access_token = Set(access.token_value.to_owned());
         model.access_expired_at = Set(time_utils::from_timestamp(access.expired_time));
 
         if current_timestamp + (3 * 24 * 60 * 60) > refresh_expired_time {
-            let refresh = Self::generate_refresh_token(&uuid, user_id, user_type).unwrap();
+            let refresh = Self::generate_refresh_token(&claim_user_id, user_id, user_type).unwrap();
             model.refresh_token = Set(refresh.token_value.to_owned());
             model.refresh_expired_at = Set(time_utils::from_timestamp(refresh.expired_time));
         }
         model.updated_at = Set(time_utils::current_time());
         let model: CertificateModel = model.update(db).await?;
-        RedisService::set_jwt_key(&state.redis, &uuid, access.expired_time);
+        RedisService::set_jwt_key(&state.redis, &claim_user_id, access.expired_time);
 
         handle_ok(model)
     }

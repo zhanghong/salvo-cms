@@ -15,7 +15,7 @@ use crate::domain::{
     tags("Core/Checker"),
     status_codes(200, 500),
     responses(
-        (status_code = 200, body = BaseStringResponse)
+        (status_code = 200, body = inline(BaseStringResponse))
     )
 )]
 pub async fn health() -> AppResult<String> {
@@ -30,7 +30,7 @@ pub async fn health() -> AppResult<String> {
     tags("Core/Checker"),
     status_codes(200, 500),
     responses(
-        (status_code = 200, body = BaseBooleanResponse)
+        (status_code = 200, body = inline(BaseBooleanResponse))
     )
 )]
 pub async fn database(depot: &mut Depot) -> AppResult<bool> {

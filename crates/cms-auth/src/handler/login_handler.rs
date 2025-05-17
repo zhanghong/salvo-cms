@@ -27,7 +27,7 @@ use crate::{
     tags("Auth/Manager/Login"),
     status_codes(200, 500),
     responses(
-        (status_code = 200, body = TokenCreateResponse)
+        (status_code = 200, body = inline(TokenCreateResponse))
     )
 )]
 pub async fn manager_create(
@@ -64,7 +64,7 @@ pub async fn manager_create(
     tags("Auth/Manager/Login"),
     status_codes(200, 500),
     responses(
-        (status_code = 200, body = TokenUpdateResponse)
+        (status_code = 200, body = inline(TokenUpdateResponse))
     )
 )]
 pub async fn manager_update(depot: &mut Depot) -> AppResult<TokenUpdateVO> {
@@ -91,7 +91,7 @@ pub async fn manager_update(depot: &mut Depot) -> AppResult<TokenUpdateVO> {
     security(["bearer" = ["bearer"]]),
     tags("Auth/Manager/Login"),
     responses(
-        (status_code = 200, body = BaseBooleanResponse)
+        (status_code = 200, body = inline(BaseBooleanResponse))
     )
 )]
 pub async fn manager_delete(depot: &mut Depot) -> AppResult<bool> {
@@ -117,7 +117,7 @@ pub async fn manager_delete(depot: &mut Depot) -> AppResult<bool> {
     tags("Auth/Open/Login"),
     status_codes(200, 500),
     responses(
-        (status_code = 200, body = TokenCreateResponse)
+        (status_code = 200, body = inline(TokenCreateResponse))
     )
 )]
 pub async fn open_create(
@@ -154,7 +154,7 @@ pub async fn open_create(
     tags("Auth/Open/Login"),
     status_codes(200, 500),
     responses(
-        (status_code = 200, body = TokenUpdateResponse)
+        (status_code = 200, body = inline(TokenUpdateResponse))
     )
 )]
 pub async fn open_update(depot: &mut Depot) -> AppResult<TokenUpdateVO> {
@@ -181,7 +181,7 @@ pub async fn open_update(depot: &mut Depot) -> AppResult<TokenUpdateVO> {
     tags("Auth/Open/Login"),
     status_codes(200, 500),
     responses(
-        (status_code = 200, body = BaseBooleanResponse)
+        (status_code = 200, body = inline(BaseBooleanResponse))
     )
 )]
 pub async fn open_delete(depot: &mut Depot) -> AppResult<bool> {
