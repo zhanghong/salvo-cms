@@ -376,3 +376,113 @@ where
         _ => Ok(None),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::NaiveDateTime;
+    use serde_json::json;
+
+    // -----------------------------
+    // string_to_option_trimmed 测试
+    // -----------------------------
+    #[test]
+    fn test_string_to_option_trimmed() {
+        assert_eq!(
+            string_to_option_trimmed(json!(" hello ")).unwrap(),
+            Some("hello".to_string())
+        );
+
+        assert_eq!(string_to_option_trimmed(json!("")).unwrap(), None);
+
+        assert_eq!(string_to_option_trimmed(json!(123)).unwrap(), None);
+    }
+
+    // -----------------------------
+    // string_to_option_string_vec 测试
+    // -----------------------------
+    #[test]
+    fn test_string_to_option_string_vec() {
+        assert_eq!(
+            string_to_option_string_vec(json!("a, b, c")).unwrap(),
+            Some(vec!["a".to_string(), "b".to_string(), "c".to_string()])
+        );
+
+        assert_eq!(
+            string_to_option_string_vec(json!(["a", " b ", 123])).unwrap(),
+            Some(vec!["a".to_string(), "b".to_string()])
+        );
+
+        assert_eq!(string_to_option_string_vec(json!(123)).unwrap(), None);
+    }
+
+    // -----------------------------
+    // string_to_option_number 测试
+    // -----------------------------
+    #[test]
+    fn test_string_to_option_number() {
+        assert_eq!(
+            string_to_option_number::<_, i32>(json!("123")).unwrap(),
+            Some(123)
+        );
+
+        assert_eq!(
+            string_to_option_number::<_, i32>(json!(123)).unwrap(),
+            Some(123)
+        );
+
+        assert_eq!(
+            string_to_option_number::<_, i32>(json!("abc")).unwrap(),
+            None
+        );
+    }
+
+    // -----------------------------
+    // string_to_number 测试
+    // -----------------------------
+    #[test]
+    fn test_string_to_number() {
+        assert_eq!(string_to_number::<_, i32>(json!("456")).unwrap(), 456);
+
+        assert_eq!(string_to_number::<_, i32>(json!(456)).unwrap(), 456);
+
+        assert_eq!(string_to_number::<_, i32>(json!("abc")).unwrap(), 0); // 默认值
+    }
+
+    // -----------------------------
+    // string_to_option_bool 测试
+    // -----------------------------
+    #[test]
+    fn test_string_to_option_bool() {
+        assert_eq!(string_to_option_bool(json!("true")).unwrap(), Some(true));
+
+        assert_eq!(string_to_option_bool(json!("1")).unwrap(), Some(true));
+
+        assert_eq!(string_to_option_bool(json!(0)).unwrap(), Some(false));
+
+        assert_eq!(string_to_option_bool(json!("invalid")).unwrap(), None);
+    }
+
+    // -----------------------------
+    // string_to_option_naive_datetime 测试
+    // -----------------------------
+    #[test]
+    fn test_string_to_option_naive_datetime() {
+        let dt = NaiveDateTime::parse_from_str("2023-09-15 12:34:56", "%Y-%m-%d %H:%M:%S").unwrap();
+        assert_eq!(
+            string_to_option_naive_datetime(json!("2023-09-15 12:34:56")).unwrap(),
+            Some(dt)
+        );
+
+        let dt = NaiveDateTime::parse_from_str("2023-09-15T12:34:56", "%Y-%m-%dT%H:%M:%S").unwrap();
+        assert_eq!(
+            string_to_option_naive_datetime(json!("2023-09-15T12:34:56")).unwrap(),
+            Some(dt)
+        );
+
+        assert_eq!(
+            string_to_option_naive_datetime(json!("invalid")).unwrap(),
+            None
+        );
+    }
+}

@@ -3,6 +3,7 @@ use num_traits::{Bounded, NumCast, Zero};
 use regex::Regex;
 use std::collections::HashMap;
 use std::fmt::Debug;
+use uuid::Uuid;
 use validator::ValidationError;
 
 // 提取公共函数：计算字符串长度
@@ -69,6 +70,10 @@ pub fn string_uuid(str: &str) -> Result<(), ValidationError> {
     let len = calculate_string_length(str);
     if len != 36 {
         return Err(ValidationError::new("length_invalid"));
+    }
+    let uuid = Uuid::parse_str(str);
+    if uuid.is_err() {
+        return Err(ValidationError::new("uuid_invalid"));
     }
     Ok(())
 }
@@ -204,5 +209,130 @@ pub fn hash_map_max_length<T, N>(
         }
     } else {
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+
+    #[test]
+    fn test_calculate_string_length() {
+        assert_eq!(calculate_string_length(""), 0);
+        assert_eq!(calculate_string_length("abc"), 3);
+        assert_eq!(calculate_string_length("你好"), 2); // Unicode chars
+    }
+
+    #[test]
+    fn test_string_present() {
+        assert!(string_present("").is_err());
+        assert!(string_present("abc").is_ok());
+    }
+
+    #[test]
+    fn test_string_min_length() {
+        assert!(string_min_length("a", 2).is_err());
+        assert!(string_min_length("abc", 2).is_ok());
+    }
+
+    #[test]
+    fn test_string_max_length() {
+        assert!(string_max_length("abcd", 3).is_err());
+        assert!(string_max_length("ab", 3).is_ok());
+    }
+
+    #[test]
+    fn test_string_length() {
+        assert!(string_length("", true, 1, 5).is_err());
+        assert!(string_length("", false, 1, 5).is_ok());
+        assert!(string_length("a", true, 2, 5).is_err());
+        assert!(string_length("abcdef", true, 2, 5).is_err());
+        assert!(string_length("abc", true, 1, 5).is_ok());
+        assert!(string_length("abc", true, 5, 3).is_err()); // min > max
+    }
+
+    #[test]
+    fn test_string_uuid() {
+        assert!(string_uuid("abc").is_err());
+        assert!(string_uuid("111111111111111111111111111111111111").is_err());
+        assert!(string_uuid("f904857e-706f-44a7-b917-998c28ec9ca8").is_ok());
+    }
+
+    #[test]
+    fn test_numeric_greater_than_zero() {
+        assert!(numeric_greater_than_zero::<i32>(Some(-1)).is_err());
+        assert!(numeric_greater_than_zero(Some(0)).is_err());
+        assert!(numeric_greater_than_zero(Some(1)).is_ok());
+        assert!(numeric_greater_than_zero::<i32>(None).is_ok());
+    }
+
+    #[test]
+    fn test_numeric_equal_or_greater_than() {
+        assert!(numeric_equal_or_greater_than(Some(1), 2).is_err());
+        assert!(numeric_equal_or_greater_than(Some(3), 2).is_ok());
+        assert!(numeric_equal_or_greater_than::<i32>(None, 2).is_err());
+    }
+
+    #[test]
+    fn test_numeric_equal_or_less_than() {
+        assert!(numeric_equal_or_less_than(Some(5), 3).is_err());
+        assert!(numeric_equal_or_less_than(Some(2), 3).is_ok());
+        assert!(numeric_equal_or_less_than::<i32>(None, 3).is_err());
+    }
+
+    #[test]
+    fn test_numeric_range() {
+        assert!(numeric_range::<i32>(None, true, 1, 5).is_err());
+        assert!(numeric_range(Some(0), true, 1, 5).is_err());
+        assert!(numeric_range(Some(3), true, 1, 5).is_ok());
+        assert!(numeric_range(Some(6), true, 1, 5).is_err());
+        assert!(numeric_range(None, false, 1, 5).is_ok());
+    }
+
+    #[test]
+    fn test_regex_string() {
+        let phone_re = Regex::new(r"^1[3-9]\d{9}$").unwrap();
+        assert!(regex_string("", &phone_re, false));
+        assert!(regex_string("13800000000", &phone_re, true));
+        assert!(!regex_string("12345", &phone_re, true));
+    }
+
+    #[test]
+    fn test_phone_number() {
+        assert!(phone_number("13800000000", true).is_ok());
+        assert!(phone_number("12345678901", true).is_err());
+        assert!(phone_number("", false).is_ok());
+    }
+
+    #[test]
+    fn test_url_address() {
+        assert!(url_address("http://example.com", true).is_ok());
+        assert!(url_address("https://example.com/path?query=1", true).is_ok());
+        assert!(url_address("example.com", true).is_err());
+    }
+
+    #[test]
+    fn test_email_address() {
+        assert!(email_address("user@example.com", true).is_ok());
+        assert!(email_address("user.name+tag@sub.domain.com", true).is_ok());
+        assert!(email_address("invalid-email@", true).is_err());
+    }
+
+    #[test]
+    fn test_is_allow_enum_value() {
+        assert!(is_allow_enum_value(true).is_ok());
+        assert!(is_allow_enum_value(false).is_err());
+    }
+
+    #[test]
+    fn test_hash_map_max_length() {
+        let mut map = HashMap::new();
+        map.insert(1, "a");
+        map.insert(2, "b");
+
+        assert!(hash_map_max_length(Some(&&map), 2).is_ok());
+        assert!(hash_map_max_length(Some(&&map), 1).is_err());
+        assert!(hash_map_max_length::<i32, &str>(None, 1).is_ok());
     }
 }

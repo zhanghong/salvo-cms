@@ -21,3 +21,63 @@ pub fn alpha_string(length: usize) -> String {
         .map(|_| rng.sample(Alphanumeric) as char)
         .collect() // 转换为字符串
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_alpha_string_with_zero_length() {
+        let result = alpha_string(0);
+        assert_eq!(result, "", "Length 0 should return an empty string");
+    }
+
+    #[test]
+    fn test_alpha_string_with_positive_length() {
+        let length = 5;
+        let result = alpha_string(length);
+        assert_eq!(
+            result.len(),
+            length,
+            "Generated string should have the correct length"
+        );
+
+        // Check that all characters are alphanumeric
+        for c in result.chars() {
+            assert!(
+                c.is_ascii_alphanumeric(),
+                "Character '{}' is not alphanumeric",
+                c
+            );
+        }
+    }
+
+    #[test]
+    fn test_alpha_string_with_length_one() {
+        let result = alpha_string(1);
+        assert_eq!(
+            result.len(),
+            1,
+            "Length 1 should return a single character string"
+        );
+
+        let c = result.chars().next().unwrap();
+        assert!(c.is_ascii_alphanumeric(), "Character '{}' is invalid", c);
+    }
+
+    #[test]
+    fn test_alpha_string_with_large_length() {
+        let length = 1000;
+        let result = alpha_string(length);
+        assert_eq!(
+            result.len(),
+            length,
+            "Generated string should have length {}",
+            length
+        );
+
+        for c in result.chars() {
+            assert!(c.is_ascii_alphanumeric(), "Character '{}' is invalid", c);
+        }
+    }
+}

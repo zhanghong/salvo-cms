@@ -1,11 +1,12 @@
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use super::JwtClaimsDTO;
 use crate::enums::EditorTypeEnum;
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct EditorCurrentDTO {
-    pub editor_id: Option<String>,
+    pub editor_id: Option<Uuid>,
     pub editor_type: EditorTypeEnum,
 }
 
@@ -18,8 +19,9 @@ impl EditorCurrentDTO {
             "open" => EditorTypeEnum::Member,
             _ => EditorTypeEnum::None,
         };
+        let uuid = Uuid::parse_str(&claims.user_id).unwrap();
         Self {
-            editor_id: Some(claims.user_type.to_owned()),
+            editor_id: Some(uuid),
             editor_type,
         }
     }

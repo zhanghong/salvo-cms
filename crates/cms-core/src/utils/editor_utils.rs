@@ -20,3 +20,55 @@ pub fn get_current(depot: &Depot) -> EditorCurrentDTO {
         editor
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use uuid::Uuid;
+
+    use crate::enums::EditorTypeEnum;
+
+    use super::*;
+
+    #[test]
+    fn test_get_current_when_not_present() {
+        // Arrange: 创建一个空的 Depot
+        let depot = Depot::new();
+
+        // Act
+        let result = get_current(&depot);
+
+        // Assert: 应该返回 empty 实例
+        assert_eq!(result, EditorCurrentDTO::empty())
+    }
+
+    #[test]
+    fn test_get_current_when_present() {
+        // Arrange: 创建一个带值的 Depot
+        let mut depot = Depot::new();
+        let uuid = Uuid::parse_str("f904857e-706f-44a7-b917-998c28ec9ca8").unwrap();
+        let editor = EditorCurrentDTO {
+            editor_id: Some(uuid),
+            editor_type: EditorTypeEnum::Admin,
+        };
+        depot.insert("current_editor", editor.clone());
+
+        // Act
+        let result = get_current(&depot);
+
+        // Assert: 返回的值应与插入的一致
+        assert_eq!(result, editor);
+    }
+
+    #[test]
+    fn test_get_current_when_error_occurs() {
+        // Arrange: 插入一个类型冲突的值，触发错误
+        let mut depot = Depot::new();
+        depot.insert("current_editor", "I am not an EditorCurrentDTO");
+
+        // Act
+        let result = get_current(&depot);
+
+        // Assert: 应该忽略错误并返回 empty
+        assert_eq!(result, EditorCurrentDTO::empty())
+    }
+}
