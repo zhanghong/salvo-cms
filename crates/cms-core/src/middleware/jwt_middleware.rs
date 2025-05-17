@@ -3,8 +3,8 @@ use salvo::prelude::*;
 use std::collections::HashMap;
 
 use crate::config::JwtConfig;
-use crate::domain::AppResponse;
 use crate::domain::dto::JwtClaimsDTO;
+use crate::domain::response::AppResponse;
 use crate::service::JwtService;
 
 pub fn jwt_authorizor_init() -> JwtAuth<JwtClaimsDTO, ConstDecoder> {

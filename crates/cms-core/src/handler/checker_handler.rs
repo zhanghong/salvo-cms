@@ -1,7 +1,11 @@
 use salvo::prelude::*;
 
 use crate::config::AppState;
-use crate::domain::{AppResult, result_ok, schemas::ResponseSuccessString};
+use crate::domain::{
+    AppResult,
+    response::{BaseBooleanResponse, BaseStringResponse},
+    result_ok,
+};
 
 /// Service Status
 ///
@@ -11,7 +15,7 @@ use crate::domain::{AppResult, result_ok, schemas::ResponseSuccessString};
     tags("Core/Checker"),
     status_codes(200, 500),
     responses(
-        (status_code = 200, body = ResponseSuccessString)
+        (status_code = 200, body = BaseStringResponse)
     )
 )]
 pub async fn health() -> AppResult<String> {
@@ -26,11 +30,11 @@ pub async fn health() -> AppResult<String> {
     tags("Core/Checker"),
     status_codes(200, 500),
     responses(
-        (status_code = 200, body = ResponseSuccessString)
+        (status_code = 200, body = BaseBooleanResponse)
     )
 )]
-pub async fn database(depot: &mut Depot) -> AppResult<String> {
+pub async fn database(depot: &mut Depot) -> AppResult<bool> {
     let state = depot.obtain::<AppState>().unwrap();
-    let _ = &state.db.ping().await?;
-    result_ok("OK".to_string())
+    let res = &state.db.ping().await;
+    result_ok(res.is_ok())
 }

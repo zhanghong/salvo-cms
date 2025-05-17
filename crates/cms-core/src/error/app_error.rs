@@ -7,7 +7,7 @@ use thiserror::Error;
 use tracing::error;
 use validator::ValidationErrors;
 
-use crate::domain::{AppResponse, schemas::ResponseError};
+use crate::domain::response::{AppResponse, BaseErrorResponse};
 
 // 自定义错误类型
 #[derive(Error, Debug, Serialize, Clone)]
@@ -182,7 +182,7 @@ impl EndpointOutRegister for AppError {
             operation.responses.insert(
                 code.as_str(),
                 oapi::Response::new(description)
-                    .add_content("application/json", ResponseError::to_schema(components)),
+                    .add_content("application/json", BaseErrorResponse::to_schema(components)),
             );
         }
     }
