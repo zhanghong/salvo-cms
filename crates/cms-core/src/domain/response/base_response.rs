@@ -1,10 +1,9 @@
-use std::fmt::Debug;
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 use salvo::oapi::ToSchema;
 use serde::Serialize;
 use uuid::Uuid;
-
 
 // 统一响应结构(失败)
 #[derive(Debug, Serialize, ToSchema)]
@@ -15,7 +14,12 @@ pub struct BaseErrorResponse {
     code: u32,
 
     /// 错误信息
-    #[salvo(schema(required = true, nullable = false, max_length = 200, example = "Internal Server Error"))]
+    #[salvo(schema(
+        required = true,
+        nullable = false,
+        max_length = 200,
+        example = "Internal Server Error"
+    ))]
     message: String,
 
     /// 返回数据

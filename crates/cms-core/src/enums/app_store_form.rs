@@ -98,3 +98,112 @@ pub struct AppStoreForm {
     #[salvo(schema(required = false, nullable = false, value_type = bool, example = true, default = true))]
     pub is_enabled: Option<bool>,
 }
+
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_app_store_form_valid() {
+        let form = AppStoreForm {
+            name: Some("product".to_string()),
+            title: Some("商品".to_string()),
+            description: Some("这是一个商品模块".to_string()),
+            icon: Some("icon-product".to_string()),
+            version_no: Some(3),
+            sort: Some(80),
+            is_enabled: Some(true),
+        };
+
+        assert!(form.validate().is_ok());
+    }
+
+    #[test]
+    fn test_app_store_form_missing_required_fields() {
+        let form = AppStoreForm::default();
+        let result = form.validate();
+        assert!(result.is_err());
+        let errors = result.unwrap_err().field_errors();
+
+        assert!(errors.contains_key("name"));
+        assert!(errors.contains_key("title"));
+    }
+
+    #[test]
+    fn test_app_store_form_invalid_name_length() {
+        let mut form = AppStoreForm::default();
+        form.name = Some("a".to_string());
+        form.title = Some("商品".to_string());
+
+        let result = form.validate();
+        assert!(result.is_err());
+        let errors = result.unwrap_err().field_errors();
+        assert_eq!(
+            errors.get("name").unwrap()[0].message.as_ref().unwrap(),
+            "模块标题长度为2-30位"
+        );
+    }
+
+    #[test]
+    fn test_app_store_form_invalid_title_length() {
+        let mut form = AppStoreForm::default();
+        form.name = Some("product".to_string());
+        form.title = Some("太长了太长了太长了太长了太长了".to_string());
+
+        let result = form.validate();
+        assert!(result.is_err());
+        let errors = result.unwrap_err().field_errors();
+        assert_eq!(
+            errors.get("title").unwrap()[0].message.as_ref().unwrap(),
+            "模块标题长度为2-30位"
+        );
+    }
+
+    #[test]
+    fn test_app_store_form_invalid_description_length() {
+        let mut form = AppStoreForm::default();
+        form.name = Some("product".to_string());
+        form.title = Some("商品".to_string());
+        form.description = Some("x".repeat(201));
+
+        let result = form.validate();
+        assert!(result.is_err());
+        let errors = result.unwrap_err().field_errors();
+        assert_eq!(
+            errors.get("description").unwrap()[0].message.as_ref().unwrap(),
+            "模块简介长度不能超过200个字符"
+        );
+    }
+
+    #[test]
+    fn test_app_store_form_invalid_icon_length() {
+        let mut form = AppStoreForm::default();
+        form.name = Some("product".to_string());
+        form.title = Some("商品".to_string());
+        form.icon = Some("x".repeat(31));
+
+        let result = form.validate();
+        assert!(result.is_err());
+        let errors = result.unwrap_err().field_errors();
+        assert_eq!(
+            errors.get("icon").unwrap()[0].message.as_ref().unwrap(),
+            "模块图标长度不能超过30个字符"
+        );
+    }
+
+    #[test]
+    fn test_app_store_form_invalid_sort_range() {
+        let mut form = AppStoreForm::default();
+        form.name = Some("product".to_string());
+        form.title = Some("商品".to_string());
+        form.sort = Some(10000);
+
+        let result = form.validate();
+        assert!(result.is_err());
+        let errors = result.unwrap_err().field_errors();
+        assert_eq!(
+            errors.get("sort").unwrap()[0].message.as_ref().unwrap(),
+            "排序编号必须在0-9999之间"
+        );
+    }
+}

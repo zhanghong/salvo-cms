@@ -56,3 +56,65 @@ impl Into<AppError> for ErrorEnum {
         self.into_app_error()
     }
 }
+
+mod tests {
+    use super::*;
+    use crate::error::AppError;
+
+    // ----------------------------
+    // 测试 ErrorEnum::message()
+    // ----------------------------
+    #[test]
+    fn test_message_returns_correct_strings() {
+        assert_eq!(ErrorEnum::VersionNoInvalid.message(), "版本号错误");
+        assert_eq!(ErrorEnum::NameExists.message(), "名称已存在");
+        assert_eq!(ErrorEnum::TitleExists.message(), "标题已存在");
+        assert_eq!(ErrorEnum::FieldInvalid.message(), "无效的字段");
+        assert_eq!(ErrorEnum::ParamIdInvalid.message(), "参数ID错误");
+        assert_eq!(ErrorEnum::UpdateFieldInvalid.message(), "更新字段错误");
+        assert_eq!(ErrorEnum::RecordNotFound.message(), "访问记录不存在");
+        assert_eq!(ErrorEnum::NoPermissionDelete.message(), "无权限删除");
+    }
+
+    // ----------------------------
+    // 测试 ErrorEnum::into_app_error()
+    // ----------------------------
+    #[test]
+    fn test_into_app_error_for_record_not_found() {
+        let err = ErrorEnum::RecordNotFound.into_app_error();
+        if let AppError::NotFound(msg) = err {
+            assert_eq!(msg, "访问记录不存在");
+        } else {
+            panic!("Expected AppError::NotFound");
+        }
+    }
+
+    #[test]
+    fn test_into_app_error_for_no_permission_delete() {
+        let err = ErrorEnum::NoPermissionDelete.into_app_error();
+        assert_eq!(err, AppError::Forbidden);
+    }
+
+    #[test]
+    fn test_into_app_error_for_other_errors() {
+        let err = ErrorEnum::NameExists.into_app_error();
+        if let AppError::BadRequest(msg) = err {
+            assert_eq!(msg, "名称已存在");
+        } else {
+            panic!("Expected AppError::BadRequest");
+        }
+    }
+
+    // ----------------------------
+    // 测试 Into<AppError> trait
+    // ----------------------------
+    #[test]
+    fn test_into_app_error_trait() {
+        let err: AppError = ErrorEnum::TitleExists.into();
+        if let AppError::BadRequest(msg) = err {
+            assert_eq!(msg, "标题已存在");
+        } else {
+            panic!("Expected AppError::BadRequest");
+        }
+    }
+}

@@ -26,3 +26,44 @@ impl ViewModeEnum {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::domain::enums::{PlatformEnum, ViewModeEnum};
+
+    #[test]
+    fn test_platform_to_list_mode_open() {
+        let result = ViewModeEnum::platform_to_list_mode(&PlatformEnum::Open);
+        assert_eq!(result, ViewModeEnum::OpenList);
+    }
+
+    #[test]
+    fn test_platform_to_list_mode_manager() {
+        let result = ViewModeEnum::platform_to_list_mode(&PlatformEnum::Manager);
+        assert_eq!(result, ViewModeEnum::ManagerList);
+    }
+
+    #[test]
+    fn test_platform_to_list_mode_admin() {
+        let result = ViewModeEnum::platform_to_list_mode(&PlatformEnum::Admin);
+        assert_eq!(result, ViewModeEnum::ManagerList);
+    }
+
+    #[test]
+    fn test_platform_to_detail_mode_open() {
+        let result = ViewModeEnum::platform_to_detail_mode(&PlatformEnum::Open);
+        assert_eq!(result, ViewModeEnum::OpenDetail);
+    }
+
+    #[test]
+    fn test_platform_to_detail_mode_manager() {
+        let result = ViewModeEnum::platform_to_detail_mode(&PlatformEnum::Manager);
+        assert_eq!(result, ViewModeEnum::ManagerDetail);
+    }
+
+    #[test]
+    fn test_platform_to_detail_mode_admin() {
+        let result = ViewModeEnum::platform_to_detail_mode(&PlatformEnum::Admin);
+        assert_eq!(result, ViewModeEnum::ManagerDetail);
+    }
+}

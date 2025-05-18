@@ -38,3 +38,66 @@ impl TokenTypeEnum {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::TokenTypeEnum;
+
+    #[test]
+    fn test_as_value() {
+        assert_eq!(TokenTypeEnum::AccessToken.as_value(), "access_token");
+        assert_eq!(TokenTypeEnum::RefreshToken.as_value(), "refresh_token");
+        assert_eq!(TokenTypeEnum::None.as_value(), "none");
+    }
+
+    #[test]
+    fn test_as_title() {
+        assert_eq!(TokenTypeEnum::AccessToken.as_title(), "Access Token");
+        assert_eq!(TokenTypeEnum::RefreshToken.as_title(), "Refresh Token");
+        assert_eq!(TokenTypeEnum::None.as_title(), "Refresh Token");
+    }
+
+    #[test]
+    fn test_form_string() {
+        assert_eq!(
+            TokenTypeEnum::form_string("access_token".to_string()),
+            TokenTypeEnum::AccessToken
+        );
+        assert_eq!(
+            TokenTypeEnum::form_string("ACCESS_TOKEN".to_string()),
+            TokenTypeEnum::AccessToken
+        );
+        assert_eq!(
+            TokenTypeEnum::form_string("refresh_token".to_string()),
+            TokenTypeEnum::RefreshToken
+        );
+        assert_eq!(
+            TokenTypeEnum::form_string("REFRESH_TOKEN".to_string()),
+            TokenTypeEnum::RefreshToken
+        );
+        assert_eq!(
+            TokenTypeEnum::form_string("invalid".to_string()),
+            TokenTypeEnum::None
+        );
+        assert_eq!(
+            TokenTypeEnum::form_string("".to_string()),
+            TokenTypeEnum::None
+        );
+    }
+
+    #[test]
+    fn test_serde_serialize_deserialize() {
+        use serde_json;
+
+        let token = TokenTypeEnum::AccessToken;
+        let serialized = serde_json::to_string(&token).unwrap();
+        assert_eq!(serialized, "\"access_token\"");
+
+        let deserialized: TokenTypeEnum = serde_json::from_str("\"access_token\"").unwrap();
+        assert_eq!(deserialized, TokenTypeEnum::AccessToken);
+
+        let deserialized_invalid: TokenTypeEnum =
+            serde_json::from_str("\"invalid\"").unwrap_or(TokenTypeEnum::None);
+        assert_eq!(deserialized_invalid, TokenTypeEnum::None);
+    }
+}

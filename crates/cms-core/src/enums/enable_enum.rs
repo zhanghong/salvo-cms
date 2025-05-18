@@ -63,3 +63,72 @@ impl Into<SelectOptionModel> for EnableEnum {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // 测试 as_value 方法
+    #[test]
+    fn test_as_value() {
+        assert!(EnableEnum::Yes.as_value());
+        assert!(!EnableEnum::No.as_value());
+    }
+
+    // 测试 option_value 方法
+    #[test]
+    fn test_option_value() {
+        assert_eq!(EnableEnum::Yes.option_value(), 1);
+        assert_eq!(EnableEnum::No.option_value(), 0);
+    }
+
+    // 测试 as_title 方法
+    #[test]
+    fn test_as_title() {
+        assert_eq!(EnableEnum::Yes.as_title(), "启用");
+        assert_eq!(EnableEnum::No.as_title(), "禁用");
+    }
+
+    // 测试 to_option_list 方法
+    #[test]
+    fn test_to_option_list() {
+        let options = EnableEnum::to_option_list();
+        assert_eq!(options.len(), 2);
+
+        let yes = &options[0];
+        assert_eq!(yes.label, "启用");
+        if let SelectValueEnum::Number(v) = yes.value {
+            assert_eq!(v, 1);
+        } else {
+            panic!("Expected Number variant for Yes");
+        }
+
+        let no = &options[1];
+        assert_eq!(no.label, "禁用");
+        if let SelectValueEnum::Number(v) = no.value {
+            assert_eq!(v, 0);
+        } else {
+            panic!("Expected Number variant for No");
+        }
+    }
+
+    // 测试 Into<SelectOptionModel> 的转换
+    #[test]
+    fn test_into_select_option_model() {
+        let yes: SelectOptionModel = EnableEnum::Yes.into();
+        assert_eq!(yes.label, "启用");
+        if let SelectValueEnum::Number(v) = yes.value {
+            assert_eq!(v, 1);
+        } else {
+            panic!("Expected Number variant for Yes");
+        }
+
+        let no: SelectOptionModel = EnableEnum::No.into();
+        assert_eq!(no.label, "禁用");
+        if let SelectValueEnum::Number(v) = no.value {
+            assert_eq!(v, 0);
+        } else {
+            panic!("Expected Number variant for No");
+        }
+    }
+}

@@ -65,3 +65,88 @@ impl<'de> Deserialize<'de> for SelectValueEnum {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::SelectValueEnum;
+    use serde::{Deserialize, Serialize};
+    use serde_json;
+
+    // 定义一个包装结构体用于测试序列化/反序列化
+    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    struct Wrapper {
+        value: SelectValueEnum,
+    }
+
+    #[test]
+    fn test_constructors() {
+        assert_eq!(SelectValueEnum::from_number(42), SelectValueEnum::Number(42));
+        assert_eq!(
+            SelectValueEnum::from_string("hello".to_string()),
+            SelectValueEnum::String("hello".to_string())
+        );
+        assert_eq!(
+            SelectValueEnum::from_static_str("static_str"),
+            SelectValueEnum::Str("static_str")
+        );
+    }
+
+    #[test]
+    fn test_serialize_number() {
+        let val = SelectValueEnum::Number(100);
+        let json = serde_json::to_value(&val).unwrap();
+        assert_eq!(json, serde_json::Value::Number(100.into()));
+    }
+
+    #[test]
+    fn test_serialize_string() {
+        let val = SelectValueEnum::String("hello".to_string());
+        let json = serde_json::to_value(&val).unwrap();
+        assert_eq!(json, serde_json::Value::String("hello".to_string()));
+    }
+
+    #[test]
+    fn test_serialize_static_str() {
+        let val = SelectValueEnum::Str("world");
+        let json = serde_json::to_value(&val).unwrap();
+        assert_eq!(json, serde_json::Value::String("world".to_string()));
+    }
+
+    #[test]
+    fn test_deserialize_string() {
+        let json = serde_json::Value::String("test".to_string());
+        let wrapper: Wrapper = serde_json::from_value(serde_json::json!({ "value": json })).unwrap();
+        assert_eq!(wrapper.value, SelectValueEnum::String("test".to_string()));
+    }
+
+    #[test]
+    fn test_deserialize_number() {
+        let json = serde_json::Value::Number(42.into());
+        let wrapper: Wrapper = serde_json::from_value(serde_json::json!({ "value": json })).unwrap();
+        assert_eq!(wrapper.value, SelectValueEnum::Number(42));
+    }
+
+    #[test]
+    fn test_deserialize_float_fails() {
+        let json = serde_json::Value::Number(123.45.into());
+        let result: Result<Wrapper, _> = serde_json::from_value(serde_json::json!({ "value": json }));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_deserialize_boolean_fails() {
+        let result: Result<Wrapper, _> = serde_json::from_value(serde_json::json!({ "value": true }));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_deserialize_null_fails() {
+        let result: Result<Wrapper, _> = serde_json::from_value(serde_json::json!({ "value": null }));
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_default() {
+        assert_eq!(SelectValueEnum::default(), SelectValueEnum::Number(0));
+    }
+}

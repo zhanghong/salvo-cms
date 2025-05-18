@@ -157,7 +157,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_build_client() {
+    async fn test_build_redis_client() {
         let config = RedisConfig {
             host: Some("127.0.0.1".to_string()),
             port: Some(6379),
@@ -171,7 +171,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_build_pool() {
+    async fn test_build_redis_pool() {
         let config = RedisConfig {
             host: Some("127.0.0.1".to_string()),
             port: Some(6379),
