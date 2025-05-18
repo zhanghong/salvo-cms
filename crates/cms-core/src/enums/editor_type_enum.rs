@@ -3,17 +3,8 @@ use serde::{Deserialize, Serialize};
 use tracing::warn;
 
 use super::SelectValueEnum;
+use crate::consts::enum_consts::*;
 use crate::domain::model::SelectOptionModel;
-
-// 定义常量字符串
-const ADMIN_TITLE: &str = "管理员";
-const MEMBER_TITLE: &str = "会员";
-const GUEST_TITLE: &str = "游客";
-const NONE_TITLE: &str = "无效值";
-const ADMIN_VALUE: &str = "admin";
-const MEMBER_VALUE: &str = "member";
-const GUEST_VALUE: &str = "guest";
-const NONE_VALUE: &str = "none";
 
 // 会员类型
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
@@ -35,10 +26,10 @@ impl EditorTypeEnum {
     // 将枚举值转换为字符串值
     pub fn as_value(&self) -> &'static str {
         match self {
-            EditorTypeEnum::Admin => ADMIN_VALUE,
-            EditorTypeEnum::Member => MEMBER_VALUE,
-            EditorTypeEnum::Guest => GUEST_VALUE,
-            EditorTypeEnum::None => NONE_VALUE,
+            EditorTypeEnum::Admin => EDITOR_TYPE_ADMIN_VALUE,
+            EditorTypeEnum::Member => EDITOR_TYPE_MEMBER_VALUE,
+            EditorTypeEnum::Guest => EDITOR_TYPE_GUEST_VALUE,
+            EditorTypeEnum::None => EDITOR_TYPE_NONE_VALUE,
         }
     }
 
@@ -50,10 +41,10 @@ impl EditorTypeEnum {
     // 将枚举值转换为标题字符串
     pub fn as_title(&self) -> &'static str {
         match self {
-            EditorTypeEnum::Admin => ADMIN_TITLE,
-            EditorTypeEnum::Member => MEMBER_TITLE,
-            EditorTypeEnum::Guest => GUEST_TITLE,
-            EditorTypeEnum::None => NONE_TITLE,
+            EditorTypeEnum::Admin => EDITOR_TYPE_ADMIN_TITLE,
+            EditorTypeEnum::Member => EDITOR_TYPE_MEMBER_TITLE,
+            EditorTypeEnum::Guest => EDITOR_TYPE_GUEST_TITLE,
+            EditorTypeEnum::None => EDITOR_TYPE_NONE_TITLE,
         }
     }
 
@@ -72,9 +63,9 @@ impl EditorTypeEnum {
     // 从字符串值转换为枚举值
     pub fn from_string(s: &str) -> Self {
         match s.to_lowercase().as_str() {
-            "admin" => EditorTypeEnum::Admin,
-            "member" => EditorTypeEnum::Member,
-            "guest" => EditorTypeEnum::Guest,
+            EDITOR_TYPE_ADMIN_VALUE => EditorTypeEnum::Admin,
+            EDITOR_TYPE_MEMBER_VALUE => EditorTypeEnum::Member,
+            EDITOR_TYPE_GUEST_VALUE => EditorTypeEnum::Guest,
             _ => {
                 warn!("Invalid input for EditorTypeEnum: {}", s); // 增加日志记录
                 EditorTypeEnum::None
@@ -90,9 +81,9 @@ impl EditorTypeEnum {
             .map(|s| {
                 let lower = s.to_lowercase(); // 提前转换为小写
                 match lower.as_str() {
-                    "admin" => EditorTypeEnum::Admin,
-                    "member" => EditorTypeEnum::Member,
-                    "guest" => EditorTypeEnum::Guest,
+                    EDITOR_TYPE_ADMIN_VALUE => EditorTypeEnum::Admin,
+                    EDITOR_TYPE_MEMBER_VALUE => EditorTypeEnum::Member,
+                    EDITOR_TYPE_GUEST_VALUE => EditorTypeEnum::Guest,
                     _ => {
                         warn!("Invalid item in comma-separated string: {}", s); // 增加日志记录
                         EditorTypeEnum::None
@@ -122,9 +113,9 @@ impl<'de> Deserialize<'de> for EditorTypeEnum {
     {
         let s = String::deserialize(deserializer)?;
         match s.to_lowercase().as_str() {
-            "admin" => Ok(EditorTypeEnum::Admin),
-            "member" => Ok(EditorTypeEnum::Member),
-            "guest" => Ok(EditorTypeEnum::Guest),
+            EDITOR_TYPE_ADMIN_VALUE => Ok(EditorTypeEnum::Admin),
+            EDITOR_TYPE_MEMBER_VALUE => Ok(EditorTypeEnum::Member),
+            EDITOR_TYPE_GUEST_VALUE => Ok(EditorTypeEnum::Guest),
             _ => {
                 warn!("Invalid value during deserialization: {}", s); // 增加日志记录
                 Ok(EditorTypeEnum::None)
@@ -151,46 +142,73 @@ mod tests {
 
     #[test]
     fn test_as_value() {
-        assert_eq!(EditorTypeEnum::Admin.as_value(), "admin");
-        assert_eq!(EditorTypeEnum::Member.as_value(), "member");
-        assert_eq!(EditorTypeEnum::Guest.as_value(), "guest");
-        assert_eq!(EditorTypeEnum::None.as_value(), "none");
+        assert_eq!(EditorTypeEnum::Admin.as_value(), EDITOR_TYPE_ADMIN_VALUE);
+        assert_eq!(EditorTypeEnum::Member.as_value(), EDITOR_TYPE_MEMBER_VALUE);
+        assert_eq!(EditorTypeEnum::Guest.as_value(), EDITOR_TYPE_GUEST_VALUE);
+        assert_eq!(EditorTypeEnum::None.as_value(), EDITOR_TYPE_NONE_VALUE);
     }
 
     #[test]
     fn test_string_value() {
-        assert_eq!(EditorTypeEnum::Admin.string_value(), "admin".to_string());
-        assert_eq!(EditorTypeEnum::Member.string_value(), "member".to_string());
-        assert_eq!(EditorTypeEnum::Guest.string_value(), "guest".to_string());
-        assert_eq!(EditorTypeEnum::None.string_value(), "none".to_string());
+        assert_eq!(
+            EditorTypeEnum::Admin.string_value(),
+            EDITOR_TYPE_ADMIN_VALUE.to_string()
+        );
+        assert_eq!(
+            EditorTypeEnum::Member.string_value(),
+            EDITOR_TYPE_MEMBER_VALUE.to_string()
+        );
+        assert_eq!(
+            EditorTypeEnum::Guest.string_value(),
+            EDITOR_TYPE_GUEST_VALUE.to_string()
+        );
+        assert_eq!(
+            EditorTypeEnum::None.string_value(),
+            EDITOR_TYPE_NONE_VALUE.to_string()
+        );
     }
 
     #[test]
     fn test_as_title() {
-        assert_eq!(EditorTypeEnum::Admin.as_title(), "管理员");
-        assert_eq!(EditorTypeEnum::Member.as_title(), "会员");
-        assert_eq!(EditorTypeEnum::Guest.as_title(), "游客");
-        assert_eq!(EditorTypeEnum::None.as_title(), "无效值");
+        assert_eq!(EditorTypeEnum::Admin.as_title(), EDITOR_TYPE_ADMIN_TITLE);
+        assert_eq!(EditorTypeEnum::Member.as_title(), EDITOR_TYPE_MEMBER_TITLE);
+        assert_eq!(EditorTypeEnum::Guest.as_title(), EDITOR_TYPE_GUEST_TITLE);
+        assert_eq!(EditorTypeEnum::None.as_title(), EDITOR_TYPE_NONE_TITLE);
     }
 
     #[test]
     fn test_to_option_list() {
         let options = EditorTypeEnum::to_option_list();
         assert_eq!(options.len(), 3);
-        assert_eq!(options[0].label, "管理员");
-        assert_eq!(options[0].value, SelectValueEnum::Str("admin"));
-        assert_eq!(options[1].label, "会员");
-        assert_eq!(options[1].value, SelectValueEnum::Str("member"));
-        assert_eq!(options[2].label, "游客");
-        assert_eq!(options[2].value, SelectValueEnum::Str("guest"));
+        assert_eq!(options[0].label, EDITOR_TYPE_ADMIN_TITLE);
+        assert_eq!(
+            options[0].value,
+            SelectValueEnum::Str(EDITOR_TYPE_ADMIN_VALUE)
+        );
+        assert_eq!(options[1].label, EDITOR_TYPE_MEMBER_TITLE);
+        assert_eq!(
+            options[1].value,
+            SelectValueEnum::Str(EDITOR_TYPE_MEMBER_VALUE)
+        );
+        assert_eq!(options[2].label, EDITOR_TYPE_GUEST_TITLE);
+        assert_eq!(
+            options[2].value,
+            SelectValueEnum::Str(EDITOR_TYPE_GUEST_VALUE)
+        );
     }
 
     #[test]
     fn test_from_string() {
         assert_eq!(EditorTypeEnum::from_string("admin"), EditorTypeEnum::Admin);
         assert_eq!(EditorTypeEnum::from_string("ADMIN"), EditorTypeEnum::Admin);
-        assert_eq!(EditorTypeEnum::from_string("member"), EditorTypeEnum::Member);
-        assert_eq!(EditorTypeEnum::from_string("MEMBER"), EditorTypeEnum::Member);
+        assert_eq!(
+            EditorTypeEnum::from_string("member"),
+            EditorTypeEnum::Member
+        );
+        assert_eq!(
+            EditorTypeEnum::from_string("MEMBER"),
+            EditorTypeEnum::Member
+        );
         assert_eq!(EditorTypeEnum::from_string("guest"), EditorTypeEnum::Guest);
         assert_eq!(EditorTypeEnum::from_string("GUEST"), EditorTypeEnum::Guest);
         assert_eq!(EditorTypeEnum::from_string("invalid"), EditorTypeEnum::None);
@@ -227,21 +245,27 @@ mod tests {
 
     #[test]
     fn test_to_comma_str() {
+        let string = format!(
+            "{},{},{}",
+            EDITOR_TYPE_ADMIN_VALUE, EDITOR_TYPE_MEMBER_VALUE, EDITOR_TYPE_GUEST_VALUE
+        );
         assert_eq!(
             EditorTypeEnum::to_comma_str(&vec![
                 EditorTypeEnum::Admin,
                 EditorTypeEnum::Member,
                 EditorTypeEnum::Guest
             ]),
-            "admin,member,guest"
+            string
         );
+
+        let string = format!("{},{}", EDITOR_TYPE_ADMIN_VALUE, EDITOR_TYPE_GUEST_VALUE);
         assert_eq!(
             EditorTypeEnum::to_comma_str(&vec![
                 EditorTypeEnum::Admin,
                 EditorTypeEnum::None,
                 EditorTypeEnum::Guest
             ]),
-            "admin,guest"
+            string
         );
         assert_eq!(EditorTypeEnum::to_comma_str(&vec![]), "");
     }
@@ -269,19 +293,19 @@ mod tests {
     #[test]
     fn test_into_select_option_model() {
         let option: SelectOptionModel = EditorTypeEnum::Admin.into();
-        assert_eq!(option.label, "管理员");
-        assert_eq!(option.value, SelectValueEnum::Str("admin"));
+        assert_eq!(option.label, EDITOR_TYPE_ADMIN_TITLE);
+        assert_eq!(option.value, SelectValueEnum::Str(EDITOR_TYPE_ADMIN_VALUE));
 
         let option: SelectOptionModel = EditorTypeEnum::Member.into();
-        assert_eq!(option.label, "会员");
-        assert_eq!(option.value, SelectValueEnum::Str("member"));
+        assert_eq!(option.label, EDITOR_TYPE_MEMBER_TITLE);
+        assert_eq!(option.value, SelectValueEnum::Str(EDITOR_TYPE_MEMBER_VALUE));
 
         let option: SelectOptionModel = EditorTypeEnum::Guest.into();
-        assert_eq!(option.label, "游客");
-        assert_eq!(option.value, SelectValueEnum::Str("guest"));
+        assert_eq!(option.label, EDITOR_TYPE_GUEST_TITLE);
+        assert_eq!(option.value, SelectValueEnum::Str(EDITOR_TYPE_GUEST_VALUE));
 
         let option: SelectOptionModel = EditorTypeEnum::None.into();
-        assert_eq!(option.label, "无效值");
-        assert_eq!(option.value, SelectValueEnum::Str("none"));
+        assert_eq!(option.label, EDITOR_TYPE_NONE_TITLE);
+        assert_eq!(option.value, SelectValueEnum::Str(EDITOR_TYPE_NONE_VALUE));
     }
 }

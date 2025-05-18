@@ -80,7 +80,10 @@ mod tests {
 
     #[test]
     fn test_constructors() {
-        assert_eq!(SelectValueEnum::from_number(42), SelectValueEnum::Number(42));
+        assert_eq!(
+            SelectValueEnum::from_number(42),
+            SelectValueEnum::Number(42)
+        );
         assert_eq!(
             SelectValueEnum::from_string("hello".to_string()),
             SelectValueEnum::String("hello".to_string())
@@ -115,33 +118,37 @@ mod tests {
     #[test]
     fn test_deserialize_string() {
         let json = serde_json::Value::String("test".to_string());
-        let wrapper: Wrapper = serde_json::from_value(serde_json::json!({ "value": json })).unwrap();
+        let wrapper: Wrapper =
+            serde_json::from_value(serde_json::json!({ "value": json })).unwrap();
         assert_eq!(wrapper.value, SelectValueEnum::String("test".to_string()));
     }
 
     #[test]
     fn test_deserialize_number() {
         let json = serde_json::Value::Number(42.into());
-        let wrapper: Wrapper = serde_json::from_value(serde_json::json!({ "value": json })).unwrap();
+        let wrapper: Wrapper =
+            serde_json::from_value(serde_json::json!({ "value": json })).unwrap();
         assert_eq!(wrapper.value, SelectValueEnum::Number(42));
     }
 
     #[test]
     fn test_deserialize_float_fails() {
-        let json = serde_json::Value::Number(123.45.into());
-        let result: Result<Wrapper, _> = serde_json::from_value(serde_json::json!({ "value": json }));
+        let result: Result<Wrapper, _> =
+            serde_json::from_value(serde_json::json!({ "value": serde_json::json!(123.45) }));
         assert!(result.is_err());
     }
 
     #[test]
     fn test_deserialize_boolean_fails() {
-        let result: Result<Wrapper, _> = serde_json::from_value(serde_json::json!({ "value": true }));
+        let result: Result<Wrapper, _> =
+            serde_json::from_value(serde_json::json!({ "value": true }));
         assert!(result.is_err());
     }
 
     #[test]
     fn test_deserialize_null_fails() {
-        let result: Result<Wrapper, _> = serde_json::from_value(serde_json::json!({ "value": null }));
+        let result: Result<Wrapper, _> =
+            serde_json::from_value(serde_json::json!({ "value": null }));
         assert!(result.is_err());
     }
 

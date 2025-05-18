@@ -10,7 +10,7 @@ use validator::ValidationErrors;
 use crate::domain::response::{AppResponse, BaseErrorResponse};
 
 // 自定义错误类型
-#[derive(Error, Debug, Serialize, Clone)]
+#[derive(Error, Debug, Serialize, Clone, PartialEq)]
 pub enum AppError {
     #[error("Internal server error")]
     Internal,

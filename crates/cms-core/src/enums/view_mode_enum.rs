@@ -29,7 +29,8 @@ impl ViewModeEnum {
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::enums::{PlatformEnum, ViewModeEnum};
+    use super::*;
+    use crate::enums::PlatformEnum;
 
     #[test]
     fn test_platform_to_list_mode_open() {
@@ -45,7 +46,7 @@ mod tests {
 
     #[test]
     fn test_platform_to_list_mode_admin() {
-        let result = ViewModeEnum::platform_to_list_mode(&PlatformEnum::Admin);
+        let result = ViewModeEnum::platform_to_list_mode(&PlatformEnum::System);
         assert_eq!(result, ViewModeEnum::ManagerList);
     }
 
@@ -63,7 +64,7 @@ mod tests {
 
     #[test]
     fn test_platform_to_detail_mode_admin() {
-        let result = ViewModeEnum::platform_to_detail_mode(&PlatformEnum::Admin);
+        let result = ViewModeEnum::platform_to_detail_mode(&PlatformEnum::System);
         assert_eq!(result, ViewModeEnum::ManagerDetail);
     }
 }

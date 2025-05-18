@@ -99,7 +99,6 @@ pub struct AppStoreForm {
     pub is_enabled: Option<bool>,
 }
 
-
 mod tests {
     use super::*;
 
@@ -170,7 +169,10 @@ mod tests {
         assert!(result.is_err());
         let errors = result.unwrap_err().field_errors();
         assert_eq!(
-            errors.get("description").unwrap()[0].message.as_ref().unwrap(),
+            errors.get("description").unwrap()[0]
+                .message
+                .as_ref()
+                .unwrap(),
             "模块简介长度不能超过200个字符"
         );
     }

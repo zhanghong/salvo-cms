@@ -4,11 +4,8 @@ use serde::{Deserialize, Serialize};
 
 // 引入领域模型中的相关类型
 use super::SelectValueEnum;
+use crate::consts::enum_consts::*;
 use crate::domain::model::SelectOptionModel;
-
-// 定义常量字符串
-const ENABLE_TITLE: &str = "启用";
-const DISABLE_TITLE: &str = "禁用";
 
 // 定义一个枚举类型EnableEnum，用于表示是否启用的状态
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, ToSchema)]
@@ -38,8 +35,8 @@ impl EnableEnum {
     // 根据枚举值返回对应的字符串描述
     pub fn as_title(&self) -> &'static str {
         match self {
-            EnableEnum::Yes => ENABLE_TITLE,
-            EnableEnum::No => DISABLE_TITLE,
+            EnableEnum::Yes => ENABLE_TRUE_TITLE,
+            EnableEnum::No => ENABLE_FALSE_TITLE,
         }
     }
 
@@ -85,8 +82,8 @@ mod tests {
     // 测试 as_title 方法
     #[test]
     fn test_as_title() {
-        assert_eq!(EnableEnum::Yes.as_title(), "启用");
-        assert_eq!(EnableEnum::No.as_title(), "禁用");
+        assert_eq!(EnableEnum::Yes.as_title(), ENABLE_TRUE_TITLE);
+        assert_eq!(EnableEnum::No.as_title(), ENABLE_FALSE_TITLE);
     }
 
     // 测试 to_option_list 方法
@@ -96,7 +93,7 @@ mod tests {
         assert_eq!(options.len(), 2);
 
         let yes = &options[0];
-        assert_eq!(yes.label, "启用");
+        assert_eq!(yes.label, ENABLE_TRUE_TITLE);
         if let SelectValueEnum::Number(v) = yes.value {
             assert_eq!(v, 1);
         } else {
@@ -104,7 +101,7 @@ mod tests {
         }
 
         let no = &options[1];
-        assert_eq!(no.label, "禁用");
+        assert_eq!(no.label, ENABLE_FALSE_TITLE);
         if let SelectValueEnum::Number(v) = no.value {
             assert_eq!(v, 0);
         } else {
@@ -116,7 +113,7 @@ mod tests {
     #[test]
     fn test_into_select_option_model() {
         let yes: SelectOptionModel = EnableEnum::Yes.into();
-        assert_eq!(yes.label, "启用");
+        assert_eq!(yes.label, ENABLE_TRUE_TITLE);
         if let SelectValueEnum::Number(v) = yes.value {
             assert_eq!(v, 1);
         } else {
@@ -124,7 +121,7 @@ mod tests {
         }
 
         let no: SelectOptionModel = EnableEnum::No.into();
-        assert_eq!(no.label, "禁用");
+        assert_eq!(no.label, ENABLE_FALSE_TITLE);
         if let SelectValueEnum::Number(v) = no.value {
             assert_eq!(v, 0);
         } else {
