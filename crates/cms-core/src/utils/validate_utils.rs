@@ -4,7 +4,7 @@ use regex::Regex;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use uuid::Uuid;
-use validator::ValidationError;
+use validator::{ValidationError, ValidationErrors};
 
 // 提取公共函数：计算字符串长度
 fn calculate_string_length(str: &str) -> usize {
@@ -212,8 +212,20 @@ pub fn hash_map_max_length<T, N>(
     }
 }
 
+pub fn validate_error_hash(err: &ValidationErrors) -> HashMap<String, String> {
+    let mut map = HashMap::new();
+    for (field, messages) in err.field_errors() {
+        if let Some(msg) = messages.first() {
+            map.insert(field.to_string(), msg.to_string());
+        }
+    }
+    map
+}
+
 #[cfg(test)]
 mod tests {
+    use validator::Validate;
+
     use super::*;
     use std::collections::HashMap;
 
@@ -334,5 +346,45 @@ mod tests {
         assert!(hash_map_max_length(Some(&&map), 2).is_ok());
         assert!(hash_map_max_length(Some(&&map), 1).is_err());
         assert!(hash_map_max_length::<i32, &str>(None, 1).is_ok());
+    }
+
+    #[derive(Debug, Clone, PartialEq, Default, Validate)]
+    struct ValidateForm {
+        #[validate(length(min = 5))]
+        name: String,
+        #[validate(range(min = 18, max = 60))]
+        age: i32,
+    }
+
+    #[test]
+    fn test_validate_error_hash_normal_case() {
+        let form = ValidateForm {
+            name: "1".to_string(),
+            age: 0,
+        };
+        let result = form.validate();
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        let map = validate_error_hash(&err);
+        assert_eq!(map.len(), 2);
+    }
+
+    #[test]
+    fn test_validate_error_hash_empty_errors() {
+        let err = ValidationErrors::new(); // 空错误对象
+
+        let result = validate_error_hash(&err);
+
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_validate_error_hash_field_with_no_messages() {
+        let form = ValidateForm {
+            name: "test user".to_string(),
+            age: 20,
+        };
+        let result = form.validate();
+        assert!(result.is_ok());
     }
 }

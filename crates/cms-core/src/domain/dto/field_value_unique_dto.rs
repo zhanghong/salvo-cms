@@ -34,8 +34,8 @@ impl From<FieldValueUniqueForm> for FieldValueUniqueDTO {
         };
         Self {
             skip_id,
-            field_name: form.field_name.unwrap_or_default(),
-            field_value: form.field_value.unwrap_or_default(),
+            field_name: form.field_name.to_owned(),
+            field_value: form.field_value.to_owned(),
             extends: form.extends,
         }
     }

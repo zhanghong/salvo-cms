@@ -24,7 +24,7 @@ pub struct FieldBoolUpdateDTO {
 impl From<FieldBoolUpdateForm> for FieldBoolUpdateDTO {
     fn from(form: FieldBoolUpdateForm) -> Self {
         Self {
-            field_name: form.field_name.unwrap_or_default(),
+            field_name: form.field_name.to_owned(),
             field_value: form.field_value.unwrap_or_default(),
             ..Default::default()
         }

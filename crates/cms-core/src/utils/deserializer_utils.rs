@@ -19,6 +19,9 @@ use super::parameter_utils;
 ///
 /// # Returns
 ///
+pub fn string_default_empty() -> String {
+    String::new()
+}
 /// * `Result<Option<String>, D::Error>`: 去除前后空格的字符串，如果字符串为空则返回None
 pub fn string_to_option_trimmed<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
 where
@@ -382,6 +385,11 @@ mod tests {
     use super::*;
     use chrono::NaiveDateTime;
     use serde_json::json;
+
+    #[test]
+    fn test_string_default_empty() {
+        assert_eq!("".to_string(), string_default_empty());
+    }
 
     // -----------------------------
     // string_to_option_trimmed 测试

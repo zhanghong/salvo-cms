@@ -8,6 +8,7 @@ use tracing::error;
 use validator::ValidationErrors;
 
 use crate::domain::response::{AppResponse, BaseErrorResponse};
+use crate::utils::validate_utils::validate_error_hash;
 
 // 自定义错误类型
 #[derive(Error, Debug, Serialize, Clone, PartialEq)]
@@ -85,12 +86,7 @@ impl Into<AppResponse<HashMap<String, String>>> for AppError {
             AppError::Validation(err) => {
                 code = 400;
                 message = String::from("Validation failed");
-                let mut map = HashMap::new();
-                for (field, messages) in err.field_errors() {
-                    if let Some(msg) = messages.first() {
-                        map.insert(field.to_string(), msg.to_string());
-                    }
-                }
+                let map = validate_error_hash(&err);
                 data = Some(map);
             }
             _ => {}
