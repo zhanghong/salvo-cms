@@ -47,7 +47,7 @@ mod tests {
         let mut depot = Depot::new();
         let uuid = Uuid::parse_str("f904857e-706f-44a7-b917-998c28ec9ca8").unwrap();
         let editor = EditorCurrentDTO {
-            editor_id: Some(uuid),
+            editor_id: uuid,
             editor_type: EditorTypeEnum::Admin,
         };
         depot.insert("current_editor", editor.clone());
