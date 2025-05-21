@@ -4,6 +4,7 @@ use uuid::Uuid;
 use super::JwtClaimsDTO;
 use crate::enums::EditorTypeEnum;
 
+/// Current Editor DTO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct EditorCurrentDTO {
     pub editor_id: Uuid,

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use validator::{Validate, ValidationError};
 
-use crate::utils::validate_utils::hash_map_max_length;
+use crate::{enums::PrimaryIdEnum, utils::validate_utils::hash_map_max_length};
 
 // ------------------------------------
 // Field validate
@@ -37,8 +37,8 @@ pub struct FieldValueUniqueForm {
     pub field_value: String,
 
     /// Model id
-    #[salvo(schema(required = false, nullable = false, value_type = KnownFormat::Uuid, default, example = "00000000-0000-0000-0000-000000000000"))]
-    pub skip_id: Option<String>,
+    #[salvo(schema(required = false, nullable = false, value_type = PrimaryIdEnum, default, example = "00000000-0000-0000-0000-000000000000"))]
+    pub skip_id: PrimaryIdEnum,
 
     /// 扩展参数
     #[validate(custom(function = "validate_extends_size", message = "扩展参数必须小于等于 5"))]
@@ -48,9 +48,12 @@ pub struct FieldValueUniqueForm {
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::{random_utils::alpha_string, validate_utils::validate_error_hash};
+    use uuid::Uuid;
 
     use super::*;
+
+    use crate::enums::PrimaryIdEnum;
+    use crate::utils::{random_utils::alpha_string, validate_utils::validate_error_hash};
 
     #[test]
     fn test_valid_form() {
@@ -60,7 +63,7 @@ mod tests {
         let form = FieldValueUniqueForm {
             field_name: "name".to_string(),
             field_value: "value".to_string(),
-            skip_id: None,
+            skip_id: PrimaryIdEnum::Nil,
             extends: Some(extends),
         };
 
@@ -72,7 +75,7 @@ mod tests {
         let mut form = FieldValueUniqueForm {
             field_name: "a".to_string(),
             field_value: "value".to_string(),
-            skip_id: None,
+            skip_id: PrimaryIdEnum::Nil,
             extends: None,
         };
 
@@ -93,7 +96,7 @@ mod tests {
         let form = FieldValueUniqueForm {
             field_name: "name".to_string(),
             field_value: "".to_string(),
-            skip_id: None,
+            skip_id: PrimaryIdEnum::Nil,
             extends: None,
         };
 
@@ -104,12 +107,28 @@ mod tests {
     }
 
     #[test]
+    fn test_form_skip_id() {
+        let mut form = FieldValueUniqueForm {
+            field_name: "name".to_string(),
+            field_value: "value".to_string(),
+            skip_id: PrimaryIdEnum::BigInt(5),
+            extends: None,
+        };
+
+        assert_eq!(form.skip_id, PrimaryIdEnum::BigInt(5));
+
+        let uuid = Uuid::nil();
+        form.skip_id = PrimaryIdEnum::Uuid(uuid);
+        assert_eq!(form.skip_id, PrimaryIdEnum::Uuid(uuid))
+    }
+
+    #[test]
     fn test_form_field_extends() {
         let mut extends = HashMap::new();
         let mut form = FieldValueUniqueForm {
             field_name: "name".to_string(),
             field_value: "value".to_string(),
-            skip_id: None,
+            skip_id: PrimaryIdEnum::Nil,
             extends: Some(extends.clone()),
         };
         assert!(form.validate().is_ok());

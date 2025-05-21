@@ -1,14 +1,14 @@
 use serde::{Deserialize, Serialize};
 
+use crate::enums::PrimaryIdEnum;
+
 use super::EditorCurrentDTO;
 
-// ------------------------------------
-// 查看
-// ------------------------------------
+/// Model View DTO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct ModelViewDTO<T> {
     /// 主键
-    pub id: i64,
+    pub id: PrimaryIdEnum,
 
     /// 编辑用户
     pub editor: EditorCurrentDTO,

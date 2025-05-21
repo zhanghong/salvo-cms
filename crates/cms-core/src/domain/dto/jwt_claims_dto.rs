@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+/// JWT Claims DTO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct JwtClaimsDTO {
     pub uuid: String,

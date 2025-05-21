@@ -9,6 +9,7 @@ use crate::domain::model::SelectOptionModel;
 
 // 定义一个枚举类型EnableEnum，用于表示是否启用的状态
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, ToSchema)]
+#[salvo(schema(name = "Core::Enum::EnableEnum"))]
 pub enum EnableEnum {
     Yes,
     No,

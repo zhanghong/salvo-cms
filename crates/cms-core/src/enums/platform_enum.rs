@@ -6,6 +6,7 @@ use crate::consts::enum_consts::*;
 use crate::domain::model::SelectOptionModel;
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, ToSchema)]
+#[salvo(schema(name = "Core::Enum::PlatformEnum"))]
 pub enum PlatformEnum {
     Open,
     Manager,

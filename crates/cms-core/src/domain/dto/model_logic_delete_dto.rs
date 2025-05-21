@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
 
+use crate::enums::PrimaryIdEnum;
+
 use super::EditorCurrentDTO;
 
-// ------------------------------------
-// 逻辑删除
-// ------------------------------------
+/// Model Logic Delete DTO
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
 pub struct ModelLogicDeleteDTO {
-    pub id: i64,
+    pub id: PrimaryIdEnum,
 
     /// 编辑用户
     pub editor: EditorCurrentDTO,

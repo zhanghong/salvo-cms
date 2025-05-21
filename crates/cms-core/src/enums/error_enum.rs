@@ -5,6 +5,7 @@ use crate::consts::enum_consts::*;
 use crate::error::AppError;
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, ToSchema)]
+#[salvo(schema(name = "Core::Enum::ErrorEnum"))]
 pub enum ErrorEnum {
     VersionNoInvalid,
     NameExists,

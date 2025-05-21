@@ -3,6 +3,7 @@ use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Debug, PartialEq, Clone, ToSchema)]
+#[salvo(schema(name = "Core::Enum::SelectValueEnum"))]
 pub enum SelectValueEnum {
     Number(i64),
     String(String),

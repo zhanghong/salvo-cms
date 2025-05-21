@@ -8,6 +8,7 @@ use crate::domain::model::SelectOptionModel;
 
 // 会员类型
 #[derive(Debug, Clone, PartialEq, Serialize, ToSchema)]
+#[salvo(schema(name = "Core::Enum::EditorTypeEnum"))]
 pub enum EditorTypeEnum {
     None, // 无效值
     Admin,

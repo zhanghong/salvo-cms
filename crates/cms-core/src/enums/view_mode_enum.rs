@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use super::PlatformEnum;
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, ToSchema)]
+#[salvo(schema(name = "Core::Enum::ViewModeEnum"))]
 pub enum ViewModeEnum {
     ManagerList,
     ManagerDetail,

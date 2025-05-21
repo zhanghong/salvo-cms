@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::consts::enum_consts::*;
 
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, ToSchema)]
+#[salvo(schema(name = "Core::Enum::TokenTypeEnum"))]
 pub enum TokenTypeEnum {
     None,
     AccessToken,
