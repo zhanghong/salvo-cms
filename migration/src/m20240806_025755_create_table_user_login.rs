@@ -22,6 +22,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(UserLogin::UserId)
                             .uuid()
                             .not_null()
+                            .default(Expr::cust("uuid_nil()"))
                             .comment("用户ID"),
                     )
                     .col(

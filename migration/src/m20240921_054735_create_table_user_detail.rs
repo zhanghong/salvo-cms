@@ -28,6 +28,8 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(UserDetail::EditorId)
                             .uuid()
+                            .not_null()
+                            .default(Expr::cust("uuid_nil()"))
                             .comment("编辑ID"),
                     )
                     .col(
@@ -47,16 +49,22 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(UserDetail::ProvinceID)
                             .uuid()
+                            .not_null()
+                            .default(Expr::cust("uuid_nil()"))
                             .comment("所在省份ID"),
                     )
                     .col(
                         ColumnDef::new(UserDetail::CityID)
                             .uuid()
+                            .not_null()
+                            .default(Expr::cust("uuid_nil()"))
                             .comment("所在城市ID"),
                     )
                     .col(
                         ColumnDef::new(UserDetail::DistrictID)
                             .uuid()
+                            .not_null()
+                            .default(Expr::cust("uuid_nil()"))
                             .comment("所在区县ID"),
                     )
                     .col(

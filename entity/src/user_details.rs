@@ -9,13 +9,13 @@ pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     pub editor_type: String,
-    pub editor_id: Option<Uuid>,
+    pub editor_id: Uuid,
     #[sea_orm(unique)]
     pub user_id: Uuid,
     pub identity_no: String,
-    pub province_id: Option<Uuid>,
-    pub city_id: Option<Uuid>,
-    pub district_id: Option<Uuid>,
+    pub province_id: Uuid,
+    pub city_id: Uuid,
+    pub district_id: Uuid,
     pub address: String,
     pub born_on: Option<Date>,
     pub emotional: String,

@@ -25,7 +25,13 @@ impl MigrationTrait for Migration {
                             .default("system")
                             .comment("编辑类型"),
                     )
-                    .col(ColumnDef::new(User::EditorId).uuid().comment("编辑ID"))
+                    .col(
+                        ColumnDef::new(User::EditorId)
+                            .uuid()
+                            .not_null()
+                            .default(Expr::cust("uuid_nil()"))
+                            .comment("编辑ID"),
+                    )
                     .col(
                         ColumnDef::new(User::No)
                             .string_len(15)
@@ -92,6 +98,8 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(User::DataSourceId)
                             .uuid()
+                            .not_null()
+                            .default(Expr::cust("uuid_nil()"))
                             .comment("注册来源"),
                     )
                     .col(
@@ -135,6 +143,8 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(User::LastLoginId)
                             .uuid()
+                            .not_null()
+                            .default(Expr::cust("uuid_nil()"))
                             .comment("最近一次登录ID"),
                     )
                     .col(

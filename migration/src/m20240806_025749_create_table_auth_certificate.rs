@@ -29,6 +29,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(AuthCertificate::UserId)
                             .uuid()
                             .not_null()
+                            .default(Expr::cust("uuid_nil()"))
                             .comment("用户ID"),
                     )
                     .col(
