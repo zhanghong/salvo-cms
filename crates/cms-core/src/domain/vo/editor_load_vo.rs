@@ -5,9 +5,7 @@ use uuid::Uuid;
 
 use crate::domain::entity::editor::Model;
 
-// ------------------------------------
-// 分页查询 VO
-// ------------------------------------
+/// Editor Load VO
 #[derive(
     Deserialize, Serialize, FromRedisValue, ToRedisArgs, Debug, Clone, PartialEq, Default, ToSchema,
 )]
@@ -62,5 +60,57 @@ impl From<Model> for EditorLoadVO {
 impl From<&Model> for EditorLoadVO {
     fn from(model: &Model) -> Self {
         Self::from_model_inner(model)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::convert::From;
+    use uuid::Uuid;
+
+    fn mock_model() -> Model {
+        let id = Uuid::new_v4();
+        Model {
+            id,
+            no: "admin123".to_string(),
+            name: "张三".to_string(),
+            phone: "18021548794".to_string(),
+            email: "zhangsan@example.com".to_string(),
+            avatar_path: "https://www.baidu.com/logo.png".to_string(),
+        }
+    }
+
+    #[test]
+    fn test_from_model_all_fields_filled() {
+        let model = mock_model();
+
+        let vo: EditorLoadVO = EditorLoadVO::from(&model);
+
+        assert_eq!(vo.id, model.id);
+        assert_eq!(vo.no, "admin123");
+        assert_eq!(vo.name, "张三");
+        assert_eq!(vo.phone, "18021548794");
+        assert_eq!(vo.email, "zhangsan@example.com");
+        assert_eq!(vo.avatar_url, "https://www.baidu.com/logo.png");
+    }
+
+    #[test]
+    fn test_from_model_empty_avatar_url() {
+        let mut model = mock_model();
+        model.avatar_path = "".to_string();
+
+        let vo: EditorLoadVO = EditorLoadVO::from(model);
+        assert_eq!(vo.avatar_url, "");
+    }
+
+    #[test]
+    fn test_from_model_and_ref_are_consistent() {
+        let model = mock_model();
+
+        let vo1: EditorLoadVO = EditorLoadVO::from(model.clone());
+        let vo2: EditorLoadVO = EditorLoadVO::from(&model);
+
+        assert_eq!(vo1, vo2);
     }
 }
