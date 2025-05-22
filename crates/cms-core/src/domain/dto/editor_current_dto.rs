@@ -5,10 +5,19 @@ use super::JwtClaimsDTO;
 use crate::enums::EditorTypeEnum;
 
 /// Current Editor DTO
-#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Default)]
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq)]
 pub struct EditorCurrentDTO {
     pub editor_id: Uuid,
     pub editor_type: EditorTypeEnum,
+}
+
+impl Default for EditorCurrentDTO {
+    fn default() -> Self {
+        Self {
+            editor_id: Uuid::nil(),
+            editor_type: EditorTypeEnum::None,
+        }
+    }
 }
 
 impl EditorCurrentDTO {
@@ -32,10 +41,7 @@ impl EditorCurrentDTO {
     }
 
     pub fn empty() -> Self {
-        Self {
-            editor_id: Uuid::nil(),
-            editor_type: EditorTypeEnum::None,
-        }
+        Self::default()
     }
 }
 
@@ -161,5 +167,19 @@ mod tests {
         let dto = EditorCurrentDTO::from(&claims);
         assert_eq!(dto.editor_type, EditorTypeEnum::Admin);
         assert_eq!(dto.editor_id, Uuid::parse_str(&user_id).unwrap());
+    }
+
+    #[test]
+    fn test_default_initialization() {
+        let dto = EditorCurrentDTO::default();
+        assert_eq!(dto.editor_id, Uuid::nil());
+        assert_eq!(dto.editor_type, EditorTypeEnum::None);
+    }
+
+    #[test]
+    fn test_function_empty() {
+        let dto = EditorCurrentDTO::empty();
+        assert_eq!(dto.editor_id, Uuid::nil());
+        assert_eq!(dto.editor_type, EditorTypeEnum::None);
     }
 }
