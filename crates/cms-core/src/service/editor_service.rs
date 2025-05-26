@@ -80,3 +80,43 @@ impl EditorService {
         handle_ok(map)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{config::MockAppState, domain::entity::editor::Model as EditorModel};
+
+    #[tokio::test]
+    async fn test_load_by_uuid() {
+        let editor_uuid = Uuid::new_v4();
+        let editor = EditorModel {
+            id: editor_uuid.clone(),
+            no: "test_no".to_string(),
+            name: "test_name".to_string(),
+            phone: "test_phone".to_string(),
+            avatar_path: "test_avatar_path".to_string(),
+            email: "test_email".to_string(),
+        };
+        let mut state = MockAppState::init();
+        state.db = MockDatabase::new(DatabaseBackend::Postgres)
+            .append_query_results([
+                // nil uuid not query
+                Vec::<EditorModel>::new(),
+                vec![editor.clone()],
+            ])
+            .append_query_results([vec![editor.clone()]])
+            .into_connection();
+
+        let uuid = Uuid::nil();
+        let result = EditorService::load_by_uuid(&uuid, &state).await;
+        assert!(result.unwrap().is_none());
+
+        let uuid = Uuid::new_v4();
+        let result = EditorService::load_by_uuid(&uuid, &state).await;
+        assert!(result.unwrap().is_none());
+
+        let editor_vo: EditorLoadVO = editor.into();
+        let result = EditorService::load_by_uuid(&editor_uuid, &state).await;
+        assert_eq!(result.unwrap().unwrap(), editor_vo);
+    }
+}

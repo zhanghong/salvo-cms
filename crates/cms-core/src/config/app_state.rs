@@ -1,6 +1,8 @@
-use deadpool_lapin::Pool;
-use redis::Client;
+use deadpool_lapin::{Config as LapinConfig, Pool as LapinPool, Runtime as LapinRuntime};
+use redis::Client as RedisClient;
+use sea_orm::DatabaseBackend;
 use sea_orm::DatabaseConnection;
+use sea_orm::MockDatabase;
 
 use super::DatabaseConfig;
 use super::RabbitMQConfig;
@@ -9,8 +11,8 @@ use super::RedisConfig;
 #[derive(Debug)]
 pub struct AppState {
     pub db: DatabaseConnection,
-    pub redis: Client,
-    pub rabbitmq: Pool,
+    pub redis: RedisClient,
+    pub rabbitmq: LapinPool,
 }
 
 impl AppState {
@@ -26,6 +28,37 @@ impl AppState {
         let rabbitmq = rabbitmq_config.build_pool().await.unwrap();
 
         Self {
+            db,
+            redis,
+            rabbitmq,
+        }
+    }
+
+    pub fn test_init() -> Self {
+        let db = MockDatabase::new(DatabaseBackend::Postgres).into_connection();
+        let redis = RedisClient::open("redis://127.0.0.1:6379").unwrap();
+        let rabbitmq = LapinConfig::default()
+            .create_pool(Some(LapinRuntime::Tokio1))
+            .unwrap();
+
+        Self {
+            db,
+            redis,
+            rabbitmq,
+        }
+    }
+}
+
+pub struct MockAppState {}
+impl MockAppState {
+    pub fn init() -> AppState {
+        let db = MockDatabase::new(DatabaseBackend::Postgres).into_connection();
+        let redis = RedisClient::open("redis://127.0.0.1:6379").unwrap();
+        let rabbitmq = LapinConfig::default()
+            .create_pool(Some(LapinRuntime::Tokio1))
+            .unwrap();
+
+        AppState {
             db,
             redis,
             rabbitmq,
