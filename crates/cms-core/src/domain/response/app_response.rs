@@ -68,3 +68,51 @@ where
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde::Serialize;
+
+    // 辅助函数：检查 AppResponse 字段是否符合预期
+    fn check_app_response<T: Serialize + PartialEq + Debug>(
+        response: AppResponse<T>,
+        expected_code: u32,
+        expected_message: Option<&str>,
+        expected_data: Option<T>,
+    ) {
+        assert_eq!(response.code, expected_code);
+        match expected_message {
+            Some(msg) => assert_eq!(response.message.unwrap(), msg),
+            None => assert!(response.message.is_none()),
+        }
+        match expected_data {
+            Some(data) => assert_eq!(response.data.unwrap(), data),
+            None => assert!(response.data.is_none()),
+        }
+    }
+
+    #[test]
+    fn test_new_with_all_fields() {
+        let response = AppResponse::new(404, Some("Not Found".to_string()), Some("data"));
+        check_app_response(response, 404, Some("Not Found"), Some("data"));
+    }
+
+    #[test]
+    fn test_new_with_no_message_and_data() {
+        let response = AppResponse::new(200, None::<String>, None::<String>);
+        check_app_response(response, 200, None::<&str>, None::<String>);
+    }
+
+    #[test]
+    fn test_success_with_data() {
+        let response = AppResponse::success("Hello World");
+        check_app_response(response, 200, None::<&str>, Some("Hello World"));
+    }
+
+    #[test]
+    fn test_error_with_message() {
+        let response = AppResponse::error(500, "Internal Server Error");
+        check_app_response(response, 500, Some("Internal Server Error"), None::<String>);
+    }
+}

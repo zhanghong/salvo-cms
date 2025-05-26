@@ -30,7 +30,7 @@ envy = "0.4"
 
 # database
 chrono = { version = "0.4", features = ["serde"] }
-sea-orm = { version = "1", features = ["sqlx-postgres", "runtime-tokio-native-tls", "debug-print", "with-chrono", "macros", "with-json", "with-uuid", "with-rust_decimal"] }
+sea-orm = { version = "1", features = ["sqlx-postgres", "runtime-tokio-native-tls", "debug-print", "with-chrono", "macros", "with-json", "with-uuid", "with-rust_decimal", "mock"] }
 uuid = { version = "1.10", features = ["serde", "v4"] }
 
 # validator

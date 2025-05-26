@@ -15,14 +15,22 @@ use crate::{
 pub struct EditorService {}
 
 impl EditorService {
-    /// 查询关联的单个记录
-    pub async fn load_by_id(id: &str, state: &AppState) -> HandleResult<Option<EditorLoadVO>> {
-        let db = &state.db;
-        let id = Uuid::parse_str(id);
-        if id.is_err() {
+    /// Load By UUID str
+    pub async fn load_by_uuid_str(
+        str: &str,
+        state: &AppState,
+    ) -> HandleResult<Option<EditorLoadVO>> {
+        let uuid = Uuid::parse_str(str).unwrap_or(Uuid::nil());
+        Self::load_by_uuid(&uuid, state).await
+    }
+
+    /// Load by uuid
+    pub async fn load_by_uuid(uuid: &Uuid, state: &AppState) -> HandleResult<Option<EditorLoadVO>> {
+        if uuid.is_nil() {
             return handle_ok(None);
         }
-        let opt = EditorEntity::find_by_id(id.unwrap()).one(db).await?;
+        let db = &state.db;
+        let opt = EditorEntity::find_by_id(*uuid).one(db).await?;
         if let Some(editor) = opt {
             handle_ok(Some(editor.into()))
         } else {
@@ -30,7 +38,7 @@ impl EditorService {
         }
     }
 
-    /// 批量查询关联的记录
+    /// Batch load by uuid str vec
     pub async fn batch_load_by_ids(
         ids: &Vec<&str>,
         state: &AppState,
@@ -39,6 +47,20 @@ impl EditorService {
             .into_iter()
             .map(|id| Uuid::parse_str(id).unwrap_or(Uuid::nil()))
             .filter(|id| Uuid::nil() != *id)
+            .collect();
+
+        Self::batch_load_by_uuids(&filted_ids, state).await
+    }
+
+    /// Batch load by uuid vec
+    pub async fn batch_load_by_uuids(
+        uuids: &Vec<Uuid>,
+        state: &AppState,
+    ) -> HandleResult<HashMap<String, EditorLoadVO>> {
+        let filted_ids: Vec<Uuid> = uuids
+            .into_iter()
+            .filter(|id| Uuid::nil() != **id)
+            .map(|id| *id)
             .collect();
         if filted_ids.is_empty() {
             return handle_ok(HashMap::<String, EditorLoadVO>::new());
