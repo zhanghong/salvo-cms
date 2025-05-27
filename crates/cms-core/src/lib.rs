@@ -3,6 +3,7 @@ pub mod consts;
 pub mod domain;
 pub mod enums;
 pub mod error;
+pub mod fixture;
 pub mod handler;
 pub mod middleware;
 pub mod service;

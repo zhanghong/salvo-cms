@@ -39,7 +39,7 @@ impl EditorService {
     }
 
     /// Batch load by uuid str vec
-    pub async fn batch_load_by_ids(
+    pub async fn batch_load_by_uuids_str(
         ids: &Vec<&str>,
         state: &AppState,
     ) -> HandleResult<HashMap<String, EditorLoadVO>> {
@@ -84,39 +84,154 @@ impl EditorService {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::fixture::model::editors;
     use crate::{config::MockAppState, domain::entity::editor::Model as EditorModel};
 
     #[tokio::test]
-    async fn test_load_by_uuid() {
-        let editor_uuid = Uuid::new_v4();
-        let editor = EditorModel {
-            id: editor_uuid.clone(),
-            no: "test_no".to_string(),
-            name: "test_name".to_string(),
-            phone: "test_phone".to_string(),
-            avatar_path: "test_avatar_path".to_string(),
-            email: "test_email".to_string(),
-        };
+    async fn test_load_by_uuid_str() {
+        let editor_system = editors::faker_model_by_name(editors::EDITOR_NAME_SYSTEM);
+        let editor_admin = editors::faker_model_by_name(editors::EDITOR_NAME_ADMIN);
+
         let mut state = MockAppState::init();
         state.db = MockDatabase::new(DatabaseBackend::Postgres)
             .append_query_results([
                 // nil uuid not query
                 Vec::<EditorModel>::new(),
-                vec![editor.clone()],
+                vec![editor_admin.clone()],
             ])
-            .append_query_results([vec![editor.clone()]])
+            .append_query_results([vec![editor_system.clone()]])
+            .into_connection();
+
+        let uuid = Uuid::nil().to_string();
+        let result = EditorService::load_by_uuid_str(uuid.as_str(), &state).await;
+        assert!(result.unwrap().is_none());
+
+        let uuid = editor_system.id.clone().to_string();
+        let result = EditorService::load_by_uuid_str(uuid.as_str(), &state).await;
+        assert!(result.unwrap().is_none());
+
+        let uuid = Uuid::new_v4().to_string();
+        let result = EditorService::load_by_uuid_str(uuid.as_str(), &state).await;
+        assert!(result.unwrap().is_none());
+
+        let admin_uuid = editor_admin.id.clone().to_string();
+        let editor_vo: EditorLoadVO = editor_admin.into();
+        let result = EditorService::load_by_uuid_str(admin_uuid.as_str(), &state).await;
+        assert_eq!(result.unwrap().unwrap(), editor_vo);
+    }
+
+    #[tokio::test]
+    async fn test_load_by_uuid() {
+        let editor_system = editors::faker_model_by_name(editors::EDITOR_NAME_SYSTEM);
+        let editor_admin = editors::faker_model_by_name(editors::EDITOR_NAME_ADMIN);
+
+        let mut state = MockAppState::init();
+        state.db = MockDatabase::new(DatabaseBackend::Postgres)
+            .append_query_results([
+                // nil uuid not query
+                Vec::<EditorModel>::new(),
+                vec![editor_admin.clone()],
+            ])
+            .append_query_results([vec![editor_system.clone()]])
             .into_connection();
 
         let uuid = Uuid::nil();
         let result = EditorService::load_by_uuid(&uuid, &state).await;
         assert!(result.unwrap().is_none());
 
+        let result = EditorService::load_by_uuid(&(editor_system.id), &state).await;
+        assert!(result.unwrap().is_none());
+
         let uuid = Uuid::new_v4();
         let result = EditorService::load_by_uuid(&uuid, &state).await;
         assert!(result.unwrap().is_none());
 
-        let editor_vo: EditorLoadVO = editor.into();
-        let result = EditorService::load_by_uuid(&editor_uuid, &state).await;
+        let admin_uuid = editor_admin.id.clone();
+        let editor_vo: EditorLoadVO = editor_admin.into();
+        let result = EditorService::load_by_uuid(&admin_uuid, &state).await;
         assert_eq!(result.unwrap().unwrap(), editor_vo);
+    }
+
+    #[tokio::test]
+    async fn test_batch_load_by_uuids_str() {
+        let editor_system = editors::faker_model_by_name(editors::EDITOR_NAME_SYSTEM);
+        let editor_admin = editors::faker_model_by_name(editors::EDITOR_NAME_ADMIN);
+        let editor_guest = editors::faker_model_by_name(editors::EDITOR_NAME_GUEST);
+
+        let mut state = MockAppState::init();
+        state.db = MockDatabase::new(DatabaseBackend::Postgres)
+            .append_query_results([
+                // nil uuid not query
+                vec![editor_admin.clone(), editor_system.clone()],
+            ])
+            .into_connection();
+
+        let uuids = Vec::<&str>::new();
+        let result = EditorService::batch_load_by_uuids_str(&uuids, &state).await;
+        assert!(result.unwrap().is_empty());
+
+        let uuids: Vec<String> = vec![
+            Uuid::nil(),
+            editor_system.id.clone(),
+            editor_admin.id.clone(),
+            editor_guest.id.clone(),
+            Uuid::new_v4(),
+        ]
+        .iter()
+        .map(|uuid| uuid.to_string())
+        .collect();
+        let uuids: Vec<&str> = uuids.iter().map(|uuid| uuid.as_str()).collect();
+        let result = EditorService::batch_load_by_uuids_str(&uuids, &state).await;
+        assert!(result.is_ok());
+        let map = result.unwrap();
+        assert_eq!(map.len(), 2);
+        assert_eq!(
+            map.get(&editor_admin.id.to_string()).unwrap(),
+            &editor_admin.into()
+        );
+        assert_eq!(
+            map.get(&editor_system.id.to_string()).unwrap(),
+            &editor_system.into()
+        );
+    }
+
+    #[tokio::test]
+    async fn test_batch_load_by_uuids() {
+        let editor_system = editors::faker_model_by_name(editors::EDITOR_NAME_SYSTEM);
+        let editor_admin = editors::faker_model_by_name(editors::EDITOR_NAME_ADMIN);
+        let editor_guest = editors::faker_model_by_name(editors::EDITOR_NAME_GUEST);
+
+        let mut state = MockAppState::init();
+        state.db = MockDatabase::new(DatabaseBackend::Postgres)
+            .append_query_results([
+                // nil uuid not query
+                vec![editor_admin.clone(), editor_system.clone()],
+            ])
+            .into_connection();
+
+        let uuids = Vec::<Uuid>::new();
+        let result = EditorService::batch_load_by_uuids(&uuids, &state).await;
+        assert!(result.unwrap().is_empty());
+
+        let uuids = vec![
+            Uuid::nil(),
+            editor_system.id.clone(),
+            editor_admin.id.clone(),
+            editor_guest.id.clone(),
+            Uuid::new_v4(),
+        ];
+        let result = EditorService::batch_load_by_uuids(&uuids, &state).await;
+        assert!(result.is_ok());
+        let map = result.unwrap();
+        assert_eq!(map.len(), 2);
+        assert_eq!(
+            map.get(&editor_admin.id.to_string()).unwrap(),
+            &editor_admin.into()
+        );
+        assert_eq!(
+            map.get(&editor_system.id.to_string()).unwrap(),
+            &editor_system.into()
+        );
     }
 }
