@@ -30,7 +30,6 @@ impl JwtService {
         let uuid_string = uuid.to_string();
         let access = Self::generate_access_token(&uuid_string, user_id, user_type).unwrap();
         let refresh = Self::generate_refresh_token(&uuid_string, user_id, user_type).unwrap();
-
         let now = time_utils::current_time();
         let model = CertificateActiveModel {
             id: Set(uuid.to_owned()),
@@ -44,6 +43,7 @@ impl JwtService {
             updated_at: Set(now),
             ..Default::default()
         };
+
         let model: CertificateModel = model.insert(&state.db).await?;
         RedisService::set_jwt_key(&state.redis, &uuid_string, access.expired_time);
 
@@ -251,5 +251,48 @@ impl JwtService {
         }
 
         handle_ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::domain::entity::certificate::Model as CertificateModel;
+    use crate::enums::EditorTypeEnum;
+    use crate::fixture::config::app::FakerAppState;
+
+    #[tokio::test]
+    async fn test_create() {
+        let mut state = FakerAppState::init();
+        let user_id = Uuid::new_v4();
+        let type_str = EditorTypeEnum::Admin.string_value();
+        let user_type = type_str.as_str();
+        let mock_result = MockExecResult {
+            last_insert_id: 1,
+            rows_affected: 1,
+        };
+        let insert_uuid = Uuid::new_v4();
+        let cert_model = CertificateModel {
+            id: insert_uuid.clone(),
+            user_id: user_id.clone(),
+            user_type: user_type.to_owned(),
+            access_token: "".to_owned(),
+            access_expired_at: time_utils::current_time(),
+            refresh_token: "".to_owned(),
+            refresh_expired_at: time_utils::current_time(),
+            created_at: time_utils::current_time(),
+            updated_at: time_utils::current_time(),
+        };
+        state.db = MockDatabase::new(DatabaseBackend::Postgres)
+            .append_query_results([vec![cert_model]])
+            .append_exec_results([mock_result])
+            .into_connection();
+
+        let res = JwtService::create(user_id, user_type, &state).await;
+        assert!(res.is_ok());
+        let model = res.unwrap();
+        assert_eq!(model.id, insert_uuid);
+        assert_eq!(model.user_id, user_id.clone());
+        assert_eq!(model.user_type, user_type.to_owned());
     }
 }

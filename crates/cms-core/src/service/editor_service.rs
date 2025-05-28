@@ -85,15 +85,15 @@ impl EditorService {
 mod tests {
     use super::*;
 
-    use crate::fixture::model::editors;
-    use crate::{config::MockAppState, domain::entity::editor::Model as EditorModel};
+    use crate::domain::entity::editor::Model as EditorModel;
+    use crate::fixture::{config::app::FakerAppState, model::editors};
 
     #[tokio::test]
     async fn test_load_by_uuid_str() {
         let editor_system = editors::faker_model_by_name(editors::EDITOR_NAME_SYSTEM);
         let editor_admin = editors::faker_model_by_name(editors::EDITOR_NAME_ADMIN);
 
-        let mut state = MockAppState::init();
+        let mut state = FakerAppState::init();
         state.db = MockDatabase::new(DatabaseBackend::Postgres)
             .append_query_results([
                 // nil uuid not query
@@ -126,7 +126,7 @@ mod tests {
         let editor_system = editors::faker_model_by_name(editors::EDITOR_NAME_SYSTEM);
         let editor_admin = editors::faker_model_by_name(editors::EDITOR_NAME_ADMIN);
 
-        let mut state = MockAppState::init();
+        let mut state = FakerAppState::init();
         state.db = MockDatabase::new(DatabaseBackend::Postgres)
             .append_query_results([
                 // nil uuid not query
@@ -159,7 +159,7 @@ mod tests {
         let editor_admin = editors::faker_model_by_name(editors::EDITOR_NAME_ADMIN);
         let editor_guest = editors::faker_model_by_name(editors::EDITOR_NAME_GUEST);
 
-        let mut state = MockAppState::init();
+        let mut state = FakerAppState::init();
         state.db = MockDatabase::new(DatabaseBackend::Postgres)
             .append_query_results([
                 // nil uuid not query
@@ -202,7 +202,7 @@ mod tests {
         let editor_admin = editors::faker_model_by_name(editors::EDITOR_NAME_ADMIN);
         let editor_guest = editors::faker_model_by_name(editors::EDITOR_NAME_GUEST);
 
-        let mut state = MockAppState::init();
+        let mut state = FakerAppState::init();
         state.db = MockDatabase::new(DatabaseBackend::Postgres)
             .append_query_results([
                 // nil uuid not query

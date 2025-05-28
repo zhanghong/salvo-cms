@@ -5,7 +5,7 @@ mod rabbitmq_config;
 mod redis_config;
 mod web_config;
 
-pub use app_state::{AppState, MockAppState};
+pub use app_state::AppState;
 pub use database_config::DatabaseConfig;
 pub use jwt_config::JwtConfig;
 pub use rabbitmq_config::RabbitMQConfig;

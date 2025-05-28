@@ -1,7 +1,6 @@
-use dotenvy::dotenv;
 use redis::{Client, aio::ConnectionManager};
 use serde::Deserialize;
-use tracing::{error, warn};
+use tracing::error;
 
 use crate::domain::{HandleResult, handle_ok};
 
@@ -17,10 +16,6 @@ pub struct RedisConfig {
 impl RedisConfig {
     /// 从环境变量中加载 Redis 配置
     pub fn from_env() -> Result<Self, envy::Error> {
-        // 尝试加载 .env 文件，如果失败则记录警告日志
-        if let Err(err) = dotenv() {
-            warn!("Failed to load .env file: {}", err);
-        }
         match envy::prefixed("CMS_REDIS_").from_env::<RedisConfig>() {
             Ok(config) => Ok(config),
             Err(err) => {
@@ -52,6 +47,7 @@ impl RedisConfig {
 
     pub async fn build_client(&self) -> HandleResult<Client> {
         let url = self.url();
+        println!("redis url: {}", url);
         let client = Client::open(url).unwrap();
 
         handle_ok(client)
