@@ -1,6 +1,5 @@
-use dotenvy::dotenv;
 use serde::Deserialize;
-use tracing::{Level, info, warn};
+use tracing::{Level, warn};
 
 #[derive(Deserialize, Debug, Default)]
 pub struct WebConfig {
@@ -17,10 +16,6 @@ pub struct WebConfig {
 
 impl WebConfig {
     pub fn from_env() -> Result<Self, envy::Error> {
-        match dotenv() {
-            Ok(_) => info!("Loaded environment variables from .env file."),
-            Err(e) => warn!("Failed to load .env file: {}", e),
-        }
         let config = envy::prefixed("CMS_WEB_").from_env::<WebConfig>()?;
 
         // 验证关键字段

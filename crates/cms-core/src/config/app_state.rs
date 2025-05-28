@@ -33,18 +33,4 @@ impl AppState {
             rabbitmq,
         }
     }
-
-    pub fn test_init() -> Self {
-        let db = MockDatabase::new(DatabaseBackend::Postgres).into_connection();
-        let redis = RedisClient::open("redis://127.0.0.1:6379").unwrap();
-        let rabbitmq = LapinConfig::default()
-            .create_pool(Some(LapinRuntime::Tokio1))
-            .unwrap();
-
-        Self {
-            db,
-            redis,
-            rabbitmq,
-        }
-    }
 }

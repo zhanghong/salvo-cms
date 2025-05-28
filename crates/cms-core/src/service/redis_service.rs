@@ -91,11 +91,11 @@ mod tests {
     use std::time::Duration;
 
     use super::*;
-    use crate::fixture::config::app::FakerAppState;
+    use crate::fixture::config::FakerAppState;
 
     // 初始化 Redis 客户端
     async fn setup_redis() -> Client {
-        let state = FakerAppState::init();
+        let state = FakerAppState::init().await;
         state.redis.clone()
     }
 

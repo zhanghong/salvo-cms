@@ -259,11 +259,11 @@ mod tests {
     use super::*;
     use crate::domain::entity::certificate::Model as CertificateModel;
     use crate::enums::EditorTypeEnum;
-    use crate::fixture::config::app::FakerAppState;
+    use crate::fixture::config::FakerAppState;
 
     #[tokio::test]
     async fn test_create() {
-        let mut state = FakerAppState::init();
+        let mut state = FakerAppState::init().await;
         let user_id = Uuid::new_v4();
         let type_str = EditorTypeEnum::Admin.string_value();
         let user_type = type_str.as_str();
@@ -294,5 +294,15 @@ mod tests {
         assert_eq!(model.id, insert_uuid);
         assert_eq!(model.user_id, user_id.clone());
         assert_eq!(model.user_type, user_type.to_owned());
+    }
+
+    #[tokio::test]
+    async fn test_update_by_claims() {
+        let state = FakerAppState::init().await;
+        let dto: Option<JwtClaimsDTO> = None;
+        let res = JwtService::update_by_claims(dto, &state).await;
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(err, AppError::Unauthorized);
     }
 }

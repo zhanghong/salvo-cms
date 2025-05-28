@@ -1,6 +1,5 @@
 use deadpool_lapin::{Config, Pool, Runtime};
-use dotenvy::dotenv;
-use tracing::{error, info, warn};
+use tracing::{error, info};
 
 use crate::{
     domain::{HandleResult, handle_ok},
@@ -19,10 +18,6 @@ pub struct RabbitMQConfig {
 impl RabbitMQConfig {
     /// 从环境变量中加载 RabbitMQ 配置
     pub fn from_env() -> Result<Self, envy::Error> {
-        // 尝试加载 .env 文件，如果失败则记录警告日志
-        if let Err(err) = dotenv() {
-            warn!("Failed to load .env file: {}", err);
-        }
         match envy::prefixed("CMS_RABBITMQ_").from_env::<RabbitMQConfig>() {
             Ok(config) => Ok(config),
             Err(err) => {
