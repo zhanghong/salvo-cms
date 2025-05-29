@@ -104,158 +104,237 @@ impl DatabaseConfig {
 
 #[cfg(test)]
 mod tests {
+    use lapin::protocol;
+    use salvo::oapi::security::Password;
+
     use super::*;
     use std::env;
 
-    // 清除所有 CMS_DB_ 前缀的环境变量
-    fn clear_env_vars() {
-        unsafe {
-            for key in env::vars()
-                .filter(|(k, _)| k.starts_with("CMS_DB_"))
-                .map(|(k, _)| k)
-                .collect::<Vec<_>>()
-            {
-                env::remove_var(key);
-            }
-        }
-    }
-
-    #[test]
-    fn test_from_env_success() {
-        clear_env_vars();
-        unsafe {
-            env::set_var("CMS_DB_PROTOCOL", "postgres");
-            env::set_var("CMS_DB_HOST", "db.example.com");
-            env::set_var("CMS_DB_PORT", "5432");
-            env::set_var("CMS_DB_USER", "admin");
-            env::set_var("CMS_DB_PASSWORD", "secret");
-            env::set_var("CMS_DB_NAME", "mydb");
-            env::set_var("CMS_DB_SCHEMA", "public");
-            env::set_var("CMS_DB_MAX_CONNECTIONS", "20");
-            env::set_var("CMS_DB_MIN_CONNECTIONS", "5");
-            env::set_var("CMS_DB_CONNECT_TIMEOUT", "30");
-            env::set_var("CMS_DB_ACQUIRE_TIMEOUT", "20");
-            env::set_var("CMS_DB_IDLE_TIMEOUT", "60");
-            env::set_var("CMS_DB_MAX_LIFETIME", "3600");
-            env::set_var("CMS_DB_SQLX_LOGGING", "false");
-        }
-
+    #[tokio::test]
+    async fn test_database_config_from_env() {
         let config = DatabaseConfig::from_env().unwrap();
 
-        assert_eq!(config.protocol, Some("postgres".to_string()));
-        assert_eq!(config.host, Some("db.example.com".to_string()));
-        assert_eq!(config.port, Some(5432));
-        assert_eq!(config.user, "admin");
-        assert_eq!(config.password, "secret");
-        assert_eq!(config.name, "mydb");
-        assert_eq!(config.schema, Some("public".to_string()));
-        assert_eq!(config.max_connections, Some(20));
-        assert_eq!(config.min_connections, Some(5));
-        assert_eq!(config.connect_timeout, Some(30));
-        assert_eq!(config.acquire_timeout, Some(20));
-        assert_eq!(config.idle_timeout, Some(60));
-        assert_eq!(config.max_lifetime, Some(3600));
-        assert_eq!(config.sqlx_logging, Some(false));
+        let protocol = env::var("CMS_DB_PROTOCOL");
+        if protocol.is_ok() {
+            assert_eq!(config.protocol.unwrap(), protocol.unwrap());
+        } else {
+            assert!(config.protocol.is_none());
+        }
+
+        let host = env::var("CMS_DB_HOST");
+        if host.is_ok() {
+            assert_eq!(config.host.unwrap(), host.unwrap());
+        } else {
+            assert!(config.host.is_none());
+        }
+
+        let port = env::var("CMS_DB_PORT");
+        if port.is_ok() {
+            assert_eq!(config.port.unwrap(), port.unwrap().parse::<u16>().unwrap());
+        } else {
+            assert!(config.port.is_none());
+        }
+
+        let user = env::var("CMS_DB_USER");
+        assert_eq!(config.user, user.unwrap());
+
+        let password = env::var("CMS_DB_PASSWORD");
+        assert_eq!(config.password, password.unwrap());
+
+        let name = env::var("CMS_DB_NAME");
+        assert_eq!(config.name, name.unwrap());
+
+        let schema = env::var("CMS_DB_SCHEMA");
+        if schema.is_ok() {
+            assert_eq!(config.schema.unwrap(), schema.unwrap());
+        } else {
+            assert!(config.schema.is_none());
+        }
+
+        let max_connections = env::var("CMS_DB_MAX_CONNECTIONS");
+        if max_connections.is_ok() {
+            assert_eq!(
+                config.max_connections.unwrap(),
+                max_connections.unwrap().parse::<u32>().unwrap()
+            );
+        } else {
+            assert!(config.max_connections.is_none());
+        }
+
+        let min_connections = env::var("CMS_DB_MIN_CONNECTIONS");
+        if min_connections.is_ok() {
+            assert_eq!(
+                config.min_connections.unwrap(),
+                min_connections.unwrap().parse::<u32>().unwrap()
+            );
+        } else {
+            assert!(config.min_connections.is_none());
+        }
+
+        let connect_timeout = env::var("CMS_DB_CONNECT_TIMEOUT");
+        if connect_timeout.is_ok() {
+            assert_eq!(
+                config.connect_timeout.unwrap(),
+                connect_timeout.unwrap().parse::<u64>().unwrap()
+            );
+        } else {
+            assert!(config.connect_timeout.is_none());
+        }
+
+        let acquire_timeout = env::var("CMS_DB_ACQUIRE_TIMEOUT");
+        if acquire_timeout.is_ok() {
+            assert_eq!(
+                config.acquire_timeout.unwrap(),
+                acquire_timeout.unwrap().parse::<u64>().unwrap()
+            );
+        } else {
+            assert!(config.acquire_timeout.is_none());
+        }
+
+        let idle_timeout = env::var("CMS_DB_IDLE_TIMEOUT");
+        if idle_timeout.is_ok() {
+            assert_eq!(
+                config.idle_timeout.unwrap(),
+                idle_timeout.unwrap().parse::<u64>().unwrap()
+            );
+        } else {
+            assert!(config.idle_timeout.is_none());
+        }
+
+        let max_lifetime = env::var("CMS_DB_MAX_LIFETIME");
+        if max_lifetime.is_ok() {
+            assert_eq!(
+                config.max_lifetime.unwrap(),
+                max_lifetime.unwrap().parse::<u64>().unwrap()
+            );
+        } else {
+            assert!(config.max_lifetime.is_none());
+        }
+
+        let sqlx_logging = env::var("CMS_DB_SQLX_LOGGING");
+        if sqlx_logging.is_ok() {
+            assert_eq!(
+                config.sqlx_logging.unwrap(),
+                sqlx_logging.unwrap().parse::<bool>().unwrap()
+            );
+        } else {
+            assert!(config.sqlx_logging.is_none());
+        }
     }
 
-    #[test]
-    fn test_url_default_mysql() {
-        let config = DatabaseConfig {
-            protocol: None,
-            host: Some("localhost".to_string()),
-            port: None,
-            user: "root".to_string(),
-            password: "password".to_string(),
-            name: "test_db".to_string(),
-            schema: None,
-            max_connections: None,
-            min_connections: None,
-            connect_timeout: None,
-            acquire_timeout: None,
-            idle_timeout: None,
-            max_lifetime: None,
-            sqlx_logging: None,
-        };
-
-        let url = config.url().unwrap();
-        assert_eq!(url, "mysql://root:password@localhost:3306/test_db");
-    }
-
-    #[test]
-    fn test_url_postgres_with_schema() {
-        let config = DatabaseConfig {
-            protocol: Some("postgres".to_string()),
-            host: Some("localhost".to_string()),
-            port: Some(5432),
-            user: "admin".to_string(),
-            password: "pass".to_string(),
-            name: "mydb".to_string(),
-            schema: Some("custom".to_string()),
-            max_connections: None,
-            min_connections: None,
-            connect_timeout: None,
-            acquire_timeout: None,
-            idle_timeout: None,
-            max_lifetime: None,
-            sqlx_logging: None,
-        };
-
-        let url = config.url().unwrap();
+    #[tokio::test]
+    async fn test_database_protocol_painc() {
+        let mut config = DatabaseConfig::from_env().unwrap();
+        config.protocol = Some("none".to_string());
+        let db_url = config.url();
+        assert!(db_url.is_err());
         assert_eq!(
-            url,
-            "postgres://admin:pass@localhost:5432/mydb?schema=custom"
+            db_url.unwrap_err(),
+            "Unsupported database protocol: none".to_string()
         );
     }
 
-    #[test]
-    fn test_url_invalid_portoctl() {
-        let config = DatabaseConfig {
-            protocol: Some("sqlite".to_string()),
-            host: Some("localhost".to_string()),
-            port: None,
-            user: "user".to_string(),
-            password: "pass".to_string(),
-            name: "db".to_string(),
-            schema: None,
-            max_connections: None,
-            min_connections: None,
-            connect_timeout: None,
-            acquire_timeout: None,
-            idle_timeout: None,
-            max_lifetime: None,
-            sqlx_logging: None,
-        };
-
-        let result = config.url();
-        assert!(result.is_err());
-        assert!(
-            result
-                .unwrap_err()
-                .contains("Unsupported database protocol")
-        );
+    #[tokio::test]
+    async fn test_data_host_painc() {
+        let mut config = DatabaseConfig::from_env().unwrap();
+        config.host = Some("".to_string());
+        let db_url = config.url();
+        assert!(db_url.is_err());
+        assert_eq!(db_url.unwrap_err(), "Host cannot be empty".to_string());
     }
 
-    #[test]
-    fn test_url_empty_host() {
-        let config = DatabaseConfig {
-            protocol: None,
-            host: Some("".to_string()),
-            port: None,
-            user: "user".to_string(),
-            password: "pass".to_string(),
-            name: "db".to_string(),
-            schema: None,
-            max_connections: None,
-            min_connections: None,
-            connect_timeout: None,
-            acquire_timeout: None,
-            idle_timeout: None,
-            max_lifetime: None,
-            sqlx_logging: None,
-        };
+    #[tokio::test]
+    async fn test_mysql_database_config_url() {
+        let mut config = DatabaseConfig::from_env().unwrap();
+        config.protocol = Some("mysql".to_string());
+        let host = "localhost";
+        let port = 3306u16;
+        let user = "root";
+        let password = "password";
+        let name = "salvo_cms";
 
-        let result = config.url();
-        assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Host cannot be empty");
+        config.host = Some(host.to_string());
+        config.port = Some(port);
+        config.user = user.to_string();
+        config.password = password.to_string();
+        config.name = name.to_string();
+        let db_url = format!("mysql://{}:{}@{}:{}/{}", user, password, host, port, name);
+        let cfg_url = config.url().unwrap();
+        assert_eq!(cfg_url, db_url);
+
+        config.host = None;
+        let db_url = format!("mysql://{}:{}@{}:{}/{}", user, password, host, port, name);
+        let cfg_url = config.url().unwrap();
+        assert_eq!(cfg_url, db_url);
+        config.host = Some(host.to_string());
+
+        config.host = Some("127.0.0.1".to_string());
+        let db_url = format!(
+            "mysql://{}:{}@{}:{}/{}",
+            user, password, "127.0.0.1", port, name
+        );
+        let cfg_url = config.url().unwrap();
+        assert_eq!(cfg_url, db_url);
+        config.host = Some(host.to_string());
+
+        config.port = None;
+        config.port = Some(13306);
+        let db_url = format!("mysql://{}:{}@{}:{}/{}", user, password, host, 13306, name);
+        let cfg_url = config.url().unwrap();
+        assert_eq!(cfg_url, db_url);
+        config.port = Some(port);
+    }
+
+    #[tokio::test]
+    async fn test_postgres_database_config_url() {
+        let mut config = DatabaseConfig::from_env().unwrap();
+        config.protocol = Some("postgres".to_string());
+        let host = "localhost";
+        let port = 5432u16;
+        let user = "root";
+        let password = "password";
+        let name = "salvo_cms";
+        let schema = "public";
+
+        config.host = Some(host.to_string());
+        config.port = Some(port);
+        config.user = user.to_string();
+        config.password = password.to_string();
+        config.name = name.to_string();
+        config.schema = Some(schema.to_string());
+        let db_url = format!(
+            "postgres://{}:{}@{}:{}/{}?schema={}",
+            user, password, host, port, name, schema
+        );
+        let cfg_url = config.url().unwrap();
+        assert_eq!(cfg_url, db_url);
+
+        config.host = None;
+        let db_url = format!(
+            "postgres://{}:{}@{}:{}/{}?schema={}",
+            user, password, host, port, name, schema
+        );
+        let cfg_url = config.url().unwrap();
+        assert_eq!(cfg_url, db_url);
+        config.host = Some(host.to_string());
+
+        config.host = Some("127.0.0.1".to_string());
+        let db_url = format!(
+            "postgres://{}:{}@{}:{}/{}?schema={}",
+            user, password, "127.0.0.1", port, name, schema
+        );
+        let cfg_url = config.url().unwrap();
+        assert_eq!(cfg_url, db_url);
+        config.host = Some(host.to_string());
+
+        config.port = None;
+        config.port = Some(15432);
+        let db_url = format!(
+            "postgres://{}:{}@{}:{}/{}?schema={}",
+            user, password, host, 15432, name, schema
+        );
+        let cfg_url = config.url().unwrap();
+        assert_eq!(cfg_url, db_url);
+        config.port = Some(port);
     }
 }

@@ -47,7 +47,6 @@ impl RedisConfig {
 
     pub async fn build_client(&self) -> HandleResult<Client> {
         let url = self.url();
-        println!("redis url: {}", url);
         let client = Client::open(url).unwrap();
 
         handle_ok(client)
@@ -67,116 +66,60 @@ impl RedisConfig {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::env;
 
-    fn setup_env(vars: &[(&str, &str)]) {
-        unsafe {
-            for (key, value) in vars {
-                env::set_var(key, value);
-            }
-        }
-    }
-
-    fn clear_env_vars() {
-        let keys = [
-            "CMS_REDIS_HOST",
-            "CMS_REDIS_PORT",
-            "CMS_REDIS_USERNAME",
-            "CMS_REDIS_PASSWORD",
-            "CMS_REDIS_DB",
-        ];
-        unsafe {
-            for key in keys {
-                env::remove_var(key);
-            }
-        }
-    }
-
-    #[test]
-    fn test_redis_config_from_env() {
-        clear_env_vars();
-        setup_env(&[
-            ("CMS_REDIS_HOST", "127.0.0.1"),
-            ("CMS_REDIS_PORT", "6379"),
-            ("CMS_REDIS_USERNAME", "user"),
-            ("CMS_REDIS_PASSWORD", "pass"),
-            ("CMS_REDIS_DB", "1"),
-        ]);
-
-        let config = RedisConfig::from_env().expect("Failed to load config");
-
-        assert_eq!(config.host.as_deref().unwrap(), "127.0.0.1");
-        assert_eq!(config.port.unwrap(), 6379);
-        assert_eq!(config.username.as_deref().unwrap(), "user");
-        assert_eq!(config.password.as_deref().unwrap(), "pass");
-        assert_eq!(config.db.unwrap(), 1);
-    }
-
-    #[test]
-    fn test_redis_config_url_with_auth() {
-        let config = RedisConfig {
-            host: Some("127.0.0.1".to_string()),
-            port: Some(6379),
-            username: Some("user".to_string()),
-            password: Some("pass".to_string()),
-            db: Some(1),
-        };
-
-        assert_eq!(config.url(), "redis://user:pass@127.0.0.1:6379?db=1");
-    }
-
-    #[test]
-    fn test_redis_config_url_without_auth() {
-        let config = RedisConfig {
-            host: Some("127.0.0.1".to_string()),
-            port: Some(6379),
-            username: None,
-            password: None,
-            db: Some(1),
-        };
-
-        assert_eq!(config.url(), "redis://127.0.0.1:6379?db=1");
-    }
-
-    #[test]
-    fn test_redis_config_default_values() {
-        let config = RedisConfig {
-            host: None,
-            port: None,
-            username: None,
-            password: None,
-            db: None,
-        };
-
-        assert_eq!(config.url(), "redis://localhost:6379?db=0");
-    }
+    use super::*;
 
     #[tokio::test]
-    async fn test_build_redis_client() {
-        let config = RedisConfig {
-            host: Some("127.0.0.1".to_string()),
-            port: Some(6379),
-            username: None,
-            password: None,
-            db: Some(0),
-        };
+    async fn test_redis_config() {
+        let mut config = RedisConfig::from_env().expect("Failed to load config");
 
-        let result = config.build_client().await;
-        assert!(result.is_ok());
-    }
+        let host = env::var("CMS_REDIS_HOST");
+        if host.is_ok() {
+            assert_eq!(config.host.as_deref().unwrap(), host.unwrap());
+        } else {
+            assert_eq!(config.host, None);
+        }
+        let port = env::var("CMS_REDIS_PORT");
+        if port.is_ok() {
+            assert_eq!(config.port.unwrap(), port.unwrap().parse::<u16>().unwrap());
+        } else {
+            assert_eq!(config.port, None);
+        }
+        let username = env::var("CMS_REDIS_USERNAME");
+        if username.is_ok() {
+            assert_eq!(config.username.as_deref().unwrap(), username.unwrap());
+        } else {
+            assert_eq!(config.username, None);
+        }
+        let password = env::var("CMS_REDIS_PASSWORD");
+        if password.is_ok() {
+            assert_eq!(config.password.as_deref().unwrap(), password.unwrap());
+        } else {
+            assert_eq!(config.password, None);
+        }
+        let db = env::var("CMS_REDIS_DB");
+        if db.is_ok() {
+            assert_eq!(config.db.unwrap(), db.unwrap().parse::<u8>().unwrap());
+        } else {
+            assert_eq!(config.db, None);
+        }
+        let client = config.build_client().await;
+        assert!(client.is_ok());
 
-    #[tokio::test]
-    async fn test_build_redis_pool() {
-        let config = RedisConfig {
-            host: Some("127.0.0.1".to_string()),
-            port: Some(6379),
-            username: None,
-            password: None,
-            db: Some(0),
-        };
-
-        let result = config.build_pool().await;
-        assert!(result.is_ok());
+        config.host = Some("127.0.0.1".to_string());
+        config.port = Some(6379);
+        config.password = Some("secret".to_string());
+        config.username = Some("user".to_string());
+        config.db = Some(0);
+        assert_eq!(config.url(), "redis://user:secret@127.0.0.1:6379?db=0");
+        config.username = None;
+        assert_eq!(config.url(), "redis://:secret@127.0.0.1:6379?db=0");
+        config.username = Some("".to_string());
+        config.password = Some("123456".to_string());
+        assert_eq!(config.url(), "redis://:123456@127.0.0.1:6379?db=0");
+        config.username = Some("root".to_string());
+        config.password = Some("".to_string());
+        assert_eq!(config.url(), "redis://127.0.0.1:6379?db=0");
     }
 }

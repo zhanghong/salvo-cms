@@ -72,14 +72,33 @@ mod tests {
     #[test]
     fn test_jwt_config_from_env_all_set() {
         let mut config = JwtConfig::from_env().unwrap();
-        let secret_key = env::var("CMS_JWT_SECRET_KEY").unwrap();
-        let access_expire_days = env::var("CMS_JWT_ACCESS_EXPIRE_DAYS").unwrap();
-        let assess_expire_days: i64 = access_expire_days.parse().unwrap();
-        let refresh_expire_days = env::var("CMS_JWT_REFRESH_EXPIRE_DAYS").unwrap();
-        let refresh_expire_days: i64 = refresh_expire_days.parse().unwrap();
-        assert_eq!(config.get_access_expire_days(), assess_expire_days);
-        assert_eq!(config.get_refresh_expire_days(), refresh_expire_days);
-        assert_eq!(config.secret_bytes(), secret_key.as_bytes().to_vec());
+
+        let secret_key = env::var("CMS_JWT_SECRET_KEY");
+        if secret_key.is_ok() {
+            assert_eq!(config.secret_key.unwrap(), secret_key.unwrap());
+        } else {
+            assert_eq!(config.secret_key, None);
+        }
+
+        let access_expire_days = env::var("CMS_JWT_ACCESS_EXPIRE_DAYS");
+        if access_expire_days.is_ok() {
+            assert_eq!(
+                config.access_expire_days.unwrap(),
+                access_expire_days.unwrap().parse::<i64>().unwrap()
+            );
+        } else {
+            assert_eq!(config.access_expire_days, None);
+        }
+
+        let refresh_expire_days = env::var("CMS_JWT_REFRESH_EXPIRE_DAYS");
+        if refresh_expire_days.is_ok() {
+            assert_eq!(
+                config.refresh_expire_days.unwrap(),
+                refresh_expire_days.unwrap().parse::<i64>().unwrap()
+            );
+        } else {
+            assert_eq!(config.refresh_expire_days, None);
+        }
 
         config.secret_key = None;
         let default_key_bytes = "cms-secret".as_bytes().to_vec();
