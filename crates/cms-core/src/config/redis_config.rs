@@ -27,8 +27,8 @@ impl RedisConfig {
 
     /// 构建 Redis 连接 URL
     pub fn url(&self) -> String {
-        let username = self.username.as_deref().unwrap_or("");
-        let password = self.password.as_deref().unwrap_or("");
+        let username = self.username.as_deref().unwrap_or_default();
+        let password = self.password.as_deref().unwrap_or_default();
 
         let prefix = if password.is_empty() {
             "".to_string()

@@ -1,8 +1,6 @@
-use deadpool_lapin::{Config as LapinConfig, Pool as LapinPool, Runtime as LapinRuntime};
+use deadpool_lapin::Pool as LapinPool;
 use redis::Client as RedisClient;
-use sea_orm::DatabaseBackend;
 use sea_orm::DatabaseConnection;
-use sea_orm::MockDatabase;
 
 use super::DatabaseConfig;
 use super::RabbitMQConfig;

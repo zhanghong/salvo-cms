@@ -127,6 +127,8 @@ mod tests {
         let editor_admin = editors::faker_model_by_name(editors::EDITOR_NAME_ADMIN);
 
         let mut state = FakerAppState::init().await;
+        let mut exec_sqls = Vec::<Transaction>::with_capacity(2);
+        let sql_text = r#"SELECT "users"."id", "users"."no", "users"."name", "users"."phone", "users"."avatar_path", "users"."email" FROM "users" WHERE "users"."id" = $1 LIMIT $2"#;
         state.db = MockDatabase::new(DatabaseBackend::Postgres)
             .append_query_results([
                 // nil uuid not query
@@ -145,12 +147,30 @@ mod tests {
 
         let uuid = Uuid::new_v4();
         let result = EditorService::load_by_uuid(&uuid, &state).await;
+        let sql = Transaction::from_sql_and_values(
+            DatabaseBackend::Postgres,
+            sql_text,
+            [uuid.into(), 1u64.into()],
+        );
+        exec_sqls.push(sql);
         assert!(result.unwrap().is_none());
 
         let admin_uuid = editor_admin.id.clone();
         let editor_vo: EditorLoadVO = editor_admin.into();
         let result = EditorService::load_by_uuid(&admin_uuid, &state).await;
+        let sql = Transaction::from_sql_and_values(
+            DatabaseBackend::Postgres,
+            sql_text,
+            [admin_uuid.into(), 1u64.into()],
+        );
+        exec_sqls.push(sql);
         assert_eq!(result.unwrap().unwrap(), editor_vo);
+
+        // check transaction log
+        let logs = state.db.into_transaction_log();
+        assert_eq!(logs.len(), 2);
+        assert_eq!(logs[0], exec_sqls[0]);
+        assert_eq!(logs[1], exec_sqls[1]);
     }
 
     #[tokio::test]
@@ -214,12 +234,15 @@ mod tests {
         let result = EditorService::batch_load_by_uuids(&uuids, &state).await;
         assert!(result.unwrap().is_empty());
 
+        let empty_uuid = Uuid::new_v4();
+        let admin_uuid = editor_admin.id.clone();
+        let guest_uuid = editor_guest.id.clone();
         let uuids = vec![
             Uuid::nil(),
             editor_system.id.clone(),
-            editor_admin.id.clone(),
-            editor_guest.id.clone(),
-            Uuid::new_v4(),
+            admin_uuid.clone(),
+            guest_uuid.clone(),
+            empty_uuid.clone(),
         ];
         let result = EditorService::batch_load_by_uuids(&uuids, &state).await;
         assert!(result.is_ok());
@@ -233,5 +256,13 @@ mod tests {
             map.get(&editor_system.id.to_string()).unwrap(),
             &editor_system.into()
         );
+        let exec_sql = Transaction::from_sql_and_values(
+            DatabaseBackend::Postgres,
+            r#"SELECT "users"."id", "users"."no", "users"."name", "users"."phone", "users"."avatar_path", "users"."email" FROM "users" WHERE "users"."id" IN ($1, $2, $3)"#,
+            [admin_uuid.into(), guest_uuid.into(), empty_uuid.into()],
+        );
+        let logs = state.db.into_transaction_log();
+        assert_eq!(logs.len(), 1);
+        assert_eq!(logs[0], exec_sql);
     }
 }

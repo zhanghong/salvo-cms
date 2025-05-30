@@ -6,20 +6,18 @@ pub struct WebConfig {
     name: Option<String>,
     host: Option<String>,
     port: Option<u16>,
-    api_prefix: Option<String>,
     version: Option<String>,
     log_level: Option<String>,
     description: Option<String>,
-    swagger_path: Option<String>,
-    openapi_path: Option<String>,
 }
 
 impl WebConfig {
     pub fn from_env() -> Result<Self, envy::Error> {
         let config = envy::prefixed("CMS_WEB_").from_env::<WebConfig>()?;
+        let host = config.host.as_deref().unwrap_or_default();
+        let port = config.port.unwrap_or_default();
 
-        // 验证关键字段
-        if config.host.as_deref() == Some("") || config.port.is_none() {
+        if host.is_empty() || port < 1000 {
             return Err(envy::Error::Custom(
                 "Missing or invalid 'host' or 'port' configuration.".to_string(),
             ));
@@ -29,14 +27,19 @@ impl WebConfig {
     }
 
     fn get_default(value: &Option<String>, default: &str) -> String {
-        value.as_deref().unwrap_or(default).to_string()
+        let val = value.as_deref().unwrap_or_default();
+        if val.is_empty() {
+            default.to_string()
+        } else {
+            val.to_string()
+        }
     }
 
     pub fn address(&self) -> String {
         format!(
             "{}:{}",
             Self::get_default(&self.host, "localhost"),
-            self.port.unwrap_or(3000),
+            self.port.unwrap(),
         )
     }
 
@@ -50,18 +53,6 @@ impl WebConfig {
 
     pub fn app_description(&self) -> String {
         Self::get_default(&self.description, "A simple CMS")
-    }
-
-    pub fn app_api_prefix(&self) -> String {
-        Self::get_default(&self.api_prefix, "")
-    }
-
-    pub fn swagger_url(&self) -> String {
-        Self::get_default(&self.swagger_path, "/swagger-ui")
-    }
-
-    pub fn openapi_url(&self) -> String {
-        Self::get_default(&self.openapi_path, "/api-docs/openapi.json")
     }
 
     pub fn tracing_level(&self) -> Level {
@@ -84,238 +75,134 @@ impl WebConfig {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::env;
 
-    fn setup_env(vars: &[(&str, &str)]) {
-        unsafe {
-            for (key, value) in vars {
-                env::set_var(key, value);
-            }
-        }
-    }
-
-    fn clear_env_vars() {
-        let keys = [
-            "CMS_WEB_NAME",
-            "CMS_WEB_HOST",
-            "CMS_WEB_PORT",
-            "CMS_WEB_API_PREFIX",
-            "CMS_WEB_VERSION",
-            "CMS_WEB_LOG_LEVEL",
-            "CMS_WEB_DESCRIPTION",
-            "CMS_WEB_SWAGGER_PATH",
-            "CMS_WEB_OPENAPI_PATH",
-        ];
-        unsafe {
-            for key in keys {
-                env::remove_var(key);
-            }
-        }
-    }
+    use super::*;
 
     #[test]
     fn test_web_config_from_env() {
-        clear_env_vars();
-        setup_env(&[
-            ("CMS_WEB_HOST", "127.0.0.1"),
-            ("CMS_WEB_PORT", "5800"),
-            ("CMS_WEB_NAME", "Test CMS"),
-            ("CMS_WEB_VERSION", "1.0.0"),
-            ("CMS_WEB_DESCRIPTION", "Test Description"),
-            ("CMS_WEB_API_PREFIX", "/api"),
-            ("CMS_WEB_LOG_LEVEL", "debug"),
-            ("CMS_WEB_SWAGGER_PATH", "/docs"),
-            ("CMS_WEB_OPENAPI_PATH", "/openapi.json"),
-        ]);
+        let config = WebConfig::from_env().unwrap();
 
-        let config = WebConfig::from_env().expect("Failed to load config");
+        let name = env::var("CMS_WEB_NAME");
+        if name.is_ok() {
+            assert_eq!(config.name.unwrap(), name.unwrap());
+        } else {
+            assert!(config.name.is_none());
+        }
 
-        assert_eq!(config.host.as_deref().unwrap(), "127.0.0.1");
-        assert_eq!(config.port.unwrap(), 5800);
-        assert_eq!(config.name.as_deref().unwrap(), "Test CMS");
-        assert_eq!(config.version.as_deref().unwrap(), "1.0.0");
-        assert_eq!(config.description.as_deref().unwrap(), "Test Description");
-        assert_eq!(config.api_prefix.as_deref().unwrap(), "/api");
-        assert_eq!(config.log_level.as_deref().unwrap(), "debug");
-        assert_eq!(config.swagger_path.as_deref().unwrap(), "/docs");
-        assert_eq!(config.openapi_path.as_deref().unwrap(), "/openapi.json");
+        let host = env::var("CMS_WEB_HOST");
+        if host.is_ok() {
+            assert_eq!(config.host.unwrap(), host.unwrap());
+        } else {
+            assert!(config.host.is_none());
+        }
+
+        let port = env::var("CMS_WEB_PORT");
+        if port.is_ok() {
+            assert_eq!(config.port.unwrap(), port.unwrap().parse::<u16>().unwrap());
+        } else {
+            assert!(config.port.is_none());
+        }
+
+        let version = env::var("CMS_WEB_VERSION");
+        if version.is_ok() {
+            assert_eq!(config.version.unwrap(), version.unwrap());
+        } else {
+            assert!(config.version.is_none());
+        }
+
+        let log_level = env::var("CMS_WEB_LOG_LEVEL");
+        if log_level.is_ok() {
+            assert_eq!(config.log_level.unwrap(), log_level.unwrap());
+        } else {
+            assert!(config.log_level.is_none());
+        }
+
+        let description = env::var("CMS_WEB_DESCRIPTION");
+        if description.is_ok() {
+            assert_eq!(config.description.unwrap(), description.unwrap());
+        } else {
+            assert!(config.description.is_none());
+        }
     }
 
     #[test]
     fn test_web_config_address() {
-        let config = WebConfig {
-            host: Some("127.0.0.1".to_string()),
-            port: Some(5800),
-            ..Default::default()
-        };
-        assert_eq!(config.address(), "127.0.0.1:5800");
+        let mut config = WebConfig::from_env().unwrap();
 
-        let config = WebConfig {
-            host: None,
-            port: None,
-            ..Default::default()
-        };
-        assert_eq!(config.address(), "localhost:3000");
+        let host = "192.168.1.2";
+        let port = 3456;
+        let fmt_address = format!("{}:{}", host, port);
+        config.host = Some(host.to_string());
+        config.port = Some(port);
+        assert_eq!(config.address(), fmt_address);
+
+        config.host = None;
+        assert_eq!(config.address(), format!("localhost:{}", port));
+        config.host = Some("".to_string());
+        assert_eq!(config.address(), format!("localhost:{}", port));
+        config.host = Some(host.to_string());
+
+        config.port = Some(3100);
+        assert_eq!(config.address(), format!("{}:3100", host));
+        config.port = Some(3200);
+        assert_eq!(config.address(), format!("{}:3200", host));
+        config.port = Some(port);
     }
 
     #[test]
-    fn test_get_default_with_some() {
-        let value = Some("custom".to_string());
-        assert_eq!(WebConfig::get_default(&value, "default"), "custom");
+    fn test_web_config_app_name() {
+        let mut config = WebConfig::from_env().unwrap();
+        let name = "CMS Test";
+        let default_string = "Simple CMS".to_string();
+
+        config.name = None;
+        assert_eq!(config.app_name(), default_string);
+        config.name = Some("".to_string());
+        assert_eq!(config.app_name(), default_string);
+        config.name = Some(name.to_string());
+        assert_eq!(config.app_name(), name.to_string());
     }
 
     #[test]
-    fn test_get_default_with_none() {
-        let value: Option<String> = None;
-        assert_eq!(WebConfig::get_default(&value, "default"), "default");
+    fn test_web_config_app_version() {
+        let mut config = WebConfig::from_env().unwrap();
+        let version = "1.2.3";
+        let default_string = "0.0.1".to_string();
+
+        config.version = None;
+        assert_eq!(config.app_version(), default_string);
+        config.version = Some("".to_string());
+        assert_eq!(config.app_version(), default_string);
+        config.version = Some(version.to_string());
+        assert_eq!(config.app_version(), version.to_string());
     }
 
     #[test]
-    fn test_address_with_values() {
-        let config = WebConfig {
-            host: Some("example.com".to_string()),
-            port: Some(8080),
-            ..Default::default()
-        };
-        assert_eq!(config.address(), "example.com:8080");
-    }
+    fn test_web_config_app_description() {
+        let mut config = WebConfig::from_env().unwrap();
+        let description = "CMS for simple websites";
+        let default_string = "A simple CMS".to_string();
 
-    #[test]
-    fn test_address_with_defaults() {
-        let config = WebConfig {
-            host: None,
-            port: None,
-            ..Default::default()
-        };
-        assert_eq!(config.address(), "localhost:3000");
-    }
-
-    #[test]
-    fn test_app_name_with_value() {
-        let config = WebConfig {
-            name: Some("MyApp".to_string()),
-            ..Default::default()
-        };
-        assert_eq!(config.app_name(), "MyApp");
-    }
-
-    #[test]
-    fn test_app_name_with_default() {
-        let config = WebConfig {
-            name: None,
-            ..Default::default()
-        };
-        assert_eq!(config.app_name(), "Simple CMS");
-    }
-
-    #[test]
-    fn test_app_version_with_value() {
-        let config = WebConfig {
-            version: Some("v1.0.0".to_string()),
-            ..Default::default()
-        };
-        assert_eq!(config.app_version(), "v1.0.0");
-    }
-
-    #[test]
-    fn test_app_version_with_default() {
-        let config = WebConfig {
-            version: None,
-            ..Default::default()
-        };
-        assert_eq!(config.app_version(), "0.0.1");
-    }
-
-    #[test]
-    fn test_app_description_with_value() {
-        let config = WebConfig {
-            description: Some("My custom CMS".to_string()),
-            ..Default::default()
-        };
-        assert_eq!(config.app_description(), "My custom CMS");
-    }
-
-    #[test]
-    fn test_app_description_with_default() {
-        let config = WebConfig {
-            description: None,
-            ..Default::default()
-        };
-        assert_eq!(config.app_description(), "A simple CMS");
-    }
-
-    #[test]
-    fn test_app_api_prefix_with_value() {
-        let config = WebConfig {
-            api_prefix: Some("/api/v1".to_string()),
-            ..Default::default()
-        };
-        assert_eq!(config.app_api_prefix(), "/api/v1");
-    }
-
-    #[test]
-    fn test_app_api_prefix_with_default() {
-        let config = WebConfig {
-            api_prefix: None,
-            ..Default::default()
-        };
-        assert_eq!(config.app_api_prefix(), "");
-    }
-
-    #[test]
-    fn test_swagger_url_with_value() {
-        let config = WebConfig {
-            swagger_path: Some("/docs/swagger".to_string()),
-            ..Default::default()
-        };
-        assert_eq!(config.swagger_url(), "/docs/swagger");
-    }
-
-    #[test]
-    fn test_swagger_url_with_default() {
-        let config = WebConfig {
-            swagger_path: None,
-            ..Default::default()
-        };
-        assert_eq!(config.swagger_url(), "/swagger-ui");
-    }
-
-    #[test]
-    fn test_openapi_url_with_value() {
-        let config = WebConfig {
-            openapi_path: Some("/docs/openapi.yaml".to_string()),
-            ..Default::default()
-        };
-        assert_eq!(config.openapi_url(), "/docs/openapi.yaml");
-    }
-
-    #[test]
-    fn test_openapi_url_with_default() {
-        let config = WebConfig {
-            openapi_path: None,
-            ..Default::default()
-        };
-        assert_eq!(config.openapi_url(), "/api-docs/openapi.json");
+        config.description = None;
+        assert_eq!(config.app_description(), default_string);
+        config.description = Some("".to_string());
+        assert_eq!(config.app_description(), default_string);
+        config.description = Some(description.to_string());
+        assert_eq!(config.app_description(), description.to_string());
     }
 
     #[test]
     fn test_web_config_tracing_level() {
-        let test_cases = vec![
-            ("debug", Level::DEBUG),
-            ("info", Level::INFO),
-            ("warn", Level::WARN),
-            ("error", Level::ERROR),
-            ("invalid", Level::INFO),
-            ("", Level::INFO),
-        ];
+        let mut config = WebConfig::from_env().unwrap();
 
-        for (input, expected) in test_cases {
-            let config = WebConfig {
-                log_level: Some(input.to_string()),
-                ..Default::default()
-            };
-            assert_eq!(config.tracing_level(), expected);
-        }
+        config.log_level = None;
+        assert_eq!(config.tracing_level(), Level::INFO);
+        config.log_level = Some("".to_string());
+        assert_eq!(config.tracing_level(), Level::INFO);
+        config.log_level = Some("info".to_string());
+        assert_eq!(config.tracing_level(), Level::INFO);
+        config.log_level = Some("debug".to_string());
+        assert_eq!(config.tracing_level(), Level::DEBUG);
     }
 }

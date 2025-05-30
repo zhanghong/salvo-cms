@@ -104,9 +104,6 @@ impl DatabaseConfig {
 
 #[cfg(test)]
 mod tests {
-    use lapin::protocol;
-    use salvo::oapi::security::Password;
-
     use super::*;
     use std::env;
 
