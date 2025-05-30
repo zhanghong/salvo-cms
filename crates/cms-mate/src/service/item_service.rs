@@ -181,7 +181,7 @@ impl ItemService {
 
         let editor = dto.editor.clone();
         model.editor_type = Set(editor.editor_type.string_value());
-        model.editor_id = Set(editor.editor_id);
+        // model.editor_id = Set(editor.editor_id);
 
         let kind_ids = vec![old_kind_id, new_kind_id];
         let parent_ids = vec![old_parent_id, new_parent_id];
@@ -235,7 +235,7 @@ impl ItemService {
 
     /// 检查字段值是否唯一
     pub async fn field_unique(dto: &FieldValueUniqueDTO, state: &AppState) -> HandleResult<bool> {
-        let id = dto.skip_id;
+        let _id = dto.skip_id;
         let db = &state.db;
 
         let field_name = dto.field_name.to_owned();
@@ -255,7 +255,7 @@ impl ItemService {
             .extends
             .clone()
             .unwrap_or(HashMap::<String, String>::new());
-        let exist = Self::is_column_exist(id, column, value, &filter_extends, db).await?;
+        let exist = Self::is_column_exist(0, column, value, &filter_extends, db).await?;
         handle_ok(exist != true)
     }
 
@@ -337,7 +337,7 @@ impl ItemService {
 
         let editor = dto.editor.clone();
         model.editor_type = Set(editor.editor_type.string_value());
-        model.editor_id = Set(editor.editor_id);
+        // model.editor_id = Set(editor.editor_id);
 
         let _ = model.save(db).await?;
 
@@ -370,9 +370,9 @@ impl ItemService {
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
-                    ItemLoadEnum::Editor => {
-                        vo.editor = EditorService::load_by_id(vo.editor_id.clone(), state).await?;
-                    }
+                    // ItemLoadEnum::Editor => {
+                    //     vo.editor = EditorService::load_by_id(vo.editor_id.clone(), state).await?;
+                    // }
                     ItemLoadEnum::App => {
                         vo.app = AppService::load_by_id(vo.app_id.clone(), state).await?;
                     }
@@ -457,12 +457,12 @@ impl ItemService {
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
-                    ItemLoadEnum::Editor => {
-                        let map = EditorService::batch_load_by_ids(&editor_ids, state).await?;
-                        for vo in list.iter_mut() {
-                            vo.editor = map.get(&vo.editor_id).cloned();
-                        }
-                    }
+                    // ItemLoadEnum::Editor => {
+                    //     let map = EditorService::batch_load_by_ids(&editor_ids, state).await?;
+                    //     for vo in list.iter_mut() {
+                    //         vo.editor = map.get(&vo.editor_id).cloned();
+                    //     }
+                    // }
                     ItemLoadEnum::App => {
                         let map = AppService::batch_load_by_ids(&app_ids, state).await?;
                         for vo in list.iter_mut() {
@@ -581,7 +581,7 @@ impl ItemService {
         }
         let mut model: ItemActiveModel = model.into();
         model.editor_type = Set(editor.editor_type.string_value());
-        model.editor_id = Set(editor.editor_id);
+        // model.editor_id = Set(editor.editor_id);
         model.is_deleted = Set(Some(true));
         let now = time_utils::current_time();
         model.deleted_at = Set(Some(now));

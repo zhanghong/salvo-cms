@@ -117,7 +117,7 @@ impl AppService {
 
         let editor = dto.editor.clone();
         model.editor_type = Set(editor.editor_type.string_value());
-        model.editor_id = Set(editor.editor_id);
+        // model.editor_id = Set(editor.editor_id);
 
         let txn = db.begin().await?;
 
@@ -151,7 +151,7 @@ impl AppService {
 
     /// 检查字段值是否唯一
     pub async fn field_unique(dto: &FieldValueUniqueDTO, state: &AppState) -> HandleResult<bool> {
-        let id = dto.skip_id;
+        let _id = dto.skip_id;
         let db = &state.db;
 
         let column = match dto.field_name.to_lowercase().as_str() {
@@ -162,7 +162,7 @@ impl AppService {
 
         let value = sea_orm::Value::from(dto.field_value.clone());
         let filter_extends = dto.extends.clone().unwrap_or_default();
-        let exist = Self::is_column_exist(id, column, value, &filter_extends, db).await?;
+        let exist = Self::is_column_exist(0, column, value, &filter_extends, db).await?;
         handle_ok(!exist)
     }
 
@@ -223,7 +223,7 @@ impl AppService {
 
         let editor = dto.editor.clone();
         model.editor_type = Set(editor.editor_type.string_value());
-        model.editor_id = Set(editor.editor_id);
+        // model.editor_id = Set(editor.editor_id);
 
         let _ = model.save(db).await?;
 
@@ -252,9 +252,9 @@ impl AppService {
         if let Some(ref load_models) = dto.load_models {
             for enums in load_models {
                 match enums {
-                    AppLoadEnum::Editor => {
-                        vo.editor = EditorService::load_by_id(vo.editor_id.clone(), state).await?;
-                    }
+                    // AppLoadEnum::Editor => {
+                    //     vo.editor = EditorService::load_by_id(vo.editor_id.clone(), state).await?;
+                    // }
                     _ => {}
                 }
             }
@@ -319,12 +319,12 @@ impl AppService {
         if let Some(ref load_models) = dto.load_models {
             for enums in load_models {
                 match enums {
-                    AppLoadEnum::Editor => {
-                        let map = EditorService::batch_load_by_ids(&editor_ids, state).await?;
-                        for vo in list.iter_mut() {
-                            vo.editor = map.get(&vo.editor_id).cloned();
-                        }
-                    }
+                    // AppLoadEnum::Editor => {
+                    //     let map = EditorService::batch_load_by_ids(&editor_ids, state).await?;
+                    //     for vo in list.iter_mut() {
+                    //         vo.editor = map.get(&vo.editor_id).cloned();
+                    //     }
+                    // }
                     _ => {}
                 }
             }
@@ -411,7 +411,7 @@ impl AppService {
         }
         let mut model: AppActiveModel = model.into();
         model.editor_type = Set(editor.editor_type.string_value());
-        model.editor_id = Set(editor.editor_id);
+        // model.editor_id = Set(editor.editor_id);
         model.is_deleted = Set(Some(true));
         let now = time_utils::current_time();
         model.deleted_at = Set(Some(now));

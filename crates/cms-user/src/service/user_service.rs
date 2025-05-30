@@ -351,7 +351,7 @@ impl UserService {
 
     /// 检查字段值是否唯一
     pub async fn field_unique(dto: &FieldValueUniqueDTO, state: &AppState) -> HandleResult<bool> {
-        let id = dto.skip_id;
+        let _id = dto.skip_id;
         let db = &state.db;
 
         let field_name = dto.field_name.to_owned();
@@ -368,7 +368,7 @@ impl UserService {
         let field_value = dto.field_value.to_owned();
         let value = sea_orm::Value::from(field_value);
 
-        let exist = Self::is_column_exist(id, column, value, db).await?;
+        let exist = Self::is_column_exist(0, column, value, db).await?;
         handle_ok(exist != true)
     }
 
@@ -477,9 +477,9 @@ impl UserService {
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
-                    UserLoadEnum::Editor => {
-                        vo.editor = EditorService::load_by_id(vo.editor_id, state).await?;
-                    }
+                    // UserLoadEnum::Editor => {
+                    //     vo.editor = EditorService::load_by_id(vo.editor_id, state).await?;
+                    // }
                     UserLoadEnum::Detail => {
                         let detail = DetailEntity::find()
                             .filter(DetailColumn::UserId.eq(id))
@@ -531,13 +531,13 @@ impl UserService {
         if let Some(load_models) = dto.load_models.clone() {
             for enums in load_models {
                 match enums {
-                    UserLoadEnum::Editor => {
-                        let map = EditorService::batch_load_by_ids(&editor_ids, state).await?;
-                        for vo in list.iter_mut() {
-                            let editor = map.get(&vo.editor_id).cloned();
-                            vo.editor = editor;
-                        }
-                    }
+                    // UserLoadEnum::Editor => {
+                    //     let map = EditorService::batch_load_by_ids(&editor_ids, state).await?;
+                    //     for vo in list.iter_mut() {
+                    //         let editor = map.get(&vo.editor_id).cloned();
+                    //         vo.editor = editor;
+                    //     }
+                    // }
                     _ => {}
                 }
             }

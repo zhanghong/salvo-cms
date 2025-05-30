@@ -8,30 +8,30 @@ use cms_core::{domain::vo::EditorLoadVO, enums::ViewModeEnum};
 
 use crate::domain::entity::app::Model;
 
-fn custom_type() -> OneOf {
-    // OneOf::new().schema_type(SchemaType::Basic(BasicType::Null))
-    // .item(Schema::Array(Array::new().items(RefOr::Type(
-    //     Schema::Object(Object::new().property("element", RefOr::Ref(Ref::new("#/test")))),
-    // ))))
-    // .item(Schema::Array(Array::new().items(RefOr::Type(
-    //     Schema::Object(Object::new().property("foobar", RefOr::Ref(Ref::new("#/foobar")))),
-    // ))))
+// fn custom_type() -> OneOf {
+//     // OneOf::new().schema_type(SchemaType::Basic(BasicType::Null))
+//     // .item(Schema::Array(Array::new().items(RefOr::Type(
+//     //     Schema::Object(Object::new().property("element", RefOr::Ref(Ref::new("#/test")))),
+//     // ))))
+//     // .item(Schema::Array(Array::new().items(RefOr::Type(
+//     //     Schema::Object(Object::new().property("foobar", RefOr::Ref(Ref::new("#/foobar")))),
+//     // ))))
 
-    OneOf::new()
-        .item(Schema::Object(
-            Object::new().schema_type(SchemaType::Basic(BasicType::Null)),
-        ))
-        .item(Schema::Object(
-            Object::new().schema_type(SchemaType::Basic(BasicType::Null)),
-        ))
-        .item(Ref::from_schema_name("EditorLoadVO"))
-        .item(Schema::Object(
-            Object::new().property("foobar", RefOr::Ref(Ref::new("#/foobar"))),
-        ))
-        .item(Schema::Array(Array::new().items(RefOr::Type(
-            Schema::Object(Object::new().name("EditorLoadVO".to_string())),
-        ))))
-}
+//     OneOf::new()
+//         .item(Schema::Object(
+//             Object::new().schema_type(SchemaType::Basic(BasicType::Null)),
+//         ))
+//         .item(Schema::Object(
+//             Object::new().schema_type(SchemaType::Basic(BasicType::Null)),
+//         ))
+//         .item(Ref::from_schema_name("EditorLoadVO"))
+//         .item(Schema::Object(
+//             Object::new().property("foobar", RefOr::Ref(Ref::new("#/foobar"))),
+//         ))
+//         .item(Schema::Array(Array::new().items(RefOr::Type(
+//             Schema::Object(Object::new().name("EditorLoadVO".to_string())),
+//         ))))
+// }
 
 /// App 主 VO
 #[derive(
@@ -127,7 +127,7 @@ pub struct AppMasterVO {
 
     /// 编辑用户
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[salvo(schema(required = false, nullable = true, default = "SchemaType::any", schema_with = custom_type))]
+    #[salvo(schema(required = false, nullable = true, default = "SchemaType::any"))]
     pub editor: Option<EditorLoadVO>,
 }
 

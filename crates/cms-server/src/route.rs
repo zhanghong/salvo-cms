@@ -21,7 +21,7 @@ pub fn init_router(state: AppState) -> Router {
         .hoop(cors)
         .hoop(jwt_auth)
         .hoop(affix_state::inject(state))
-        // .push(Router::with_path("/auth").push(auth_router()))
+        .push(Router::with_path("/auth").push(auth_router()))
         .push(Router::with_path("/core").push(core_router()))
     // .push(Router::with_path("/mate").push(mate_router()))
     // .push(Router::with_path("/user").push(user_router()))
