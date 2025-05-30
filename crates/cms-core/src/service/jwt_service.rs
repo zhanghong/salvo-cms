@@ -256,6 +256,8 @@ impl JwtService {
 
 #[cfg(test)]
 mod tests {
+    use std::vec;
+
     use super::*;
     use crate::domain::entity::certificate::Model as CertificateModel;
     use crate::enums::EditorTypeEnum;
@@ -272,28 +274,44 @@ mod tests {
             rows_affected: 1,
         };
         let insert_uuid = Uuid::new_v4();
+        let current_time = time_utils::current_time();
         let cert_model = CertificateModel {
             id: insert_uuid.clone(),
             user_id: user_id.clone(),
             user_type: user_type.to_owned(),
-            access_token: "".to_owned(),
-            access_expired_at: time_utils::current_time(),
-            refresh_token: "".to_owned(),
-            refresh_expired_at: time_utils::current_time(),
-            created_at: time_utils::current_time(),
-            updated_at: time_utils::current_time(),
+            access_token: "access_token".to_owned(),
+            access_expired_at: current_time.clone(),
+            refresh_token: "refresh_token".to_owned(),
+            refresh_expired_at: current_time.clone(),
+            created_at: current_time.clone(),
+            updated_at: current_time.clone(),
         };
         state.db = MockDatabase::new(DatabaseBackend::Postgres)
-            .append_query_results([vec![cert_model]])
+            .append_query_results([vec![cert_model.clone()]])
             .append_exec_results([mock_result])
             .into_connection();
 
         let res = JwtService::create(user_id, user_type, &state).await;
         assert!(res.is_ok());
         let model = res.unwrap();
-        assert_eq!(model.id, insert_uuid);
-        assert_eq!(model.user_id, user_id.clone());
-        assert_eq!(model.user_type, user_type.to_owned());
+        assert_eq!(model.id, cert_model.id);
+        assert_eq!(model.user_id, cert_model.user_id);
+        assert_eq!(model.user_type, cert_model.user_type);
+        let logs = state.db.into_transaction_log();
+        let log = logs[0].clone();
+        let statements = log.statements();
+        assert_eq!(statements.len(), 1);
+        let statement = statements[0].clone();
+        let table_fields = r#""id", "user_type", "user_id", "access_token", "access_expired_at", "refresh_token", "refresh_expired_at", "created_at", "updated_at""#;
+        let sql_text = format!(
+            r#"INSERT INTO "auth_certificates" ({}) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING {}"#,
+            table_fields, table_fields
+        );
+        let model_values: Vec<Value> = vec![user_type.into(), user_id.into()];
+        let state_values = statement.values.unwrap().0;
+        let insert_values: Vec<Value> = vec![state_values[1].clone(), state_values[2].clone()];
+        assert_eq!(model_values, insert_values);
+        assert_eq!(statement.sql, sql_text);
     }
 
     #[tokio::test]
