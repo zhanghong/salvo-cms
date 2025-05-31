@@ -25,6 +25,12 @@ pub enum AppError {
     #[error("Unauthorized")]
     Unauthorized,
 
+    #[error("Unauthorized")]
+    TokenNotFound,
+
+    #[error("Unauthorized")]
+    TokenExpired,
+
     #[error("Forbidden")]
     Forbidden,
 

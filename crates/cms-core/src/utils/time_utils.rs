@@ -19,7 +19,7 @@ pub fn from_timestamp(seconds: i64) -> NaiveDateTime {
 ///
 /// # 返回值
 /// 返回一个i64整数，表示自1970年1月1日00:00:00 UTC以来的秒数。
-pub fn to_timestamp(date: NaiveDateTime) -> i64 {
+pub fn to_timestamp(date: &NaiveDateTime) -> i64 {
     date.and_utc().timestamp()
 }
 
@@ -37,7 +37,7 @@ pub fn current_time() -> NaiveDateTime {
 /// 返回一个i64整数，表示当前时间自1970年1月1日00:00:00 UTC以来的秒数。
 pub fn current_timestamp() -> i64 {
     let date = current_time();
-    to_timestamp(date)
+    to_timestamp(&date)
 }
 
 /// 将给定的NaiveDateTime格式化为数据库时间字符串。
@@ -108,7 +108,7 @@ mod tests {
             .unwrap()
             .and_hms_opt(0, 0, 0)
             .unwrap();
-        assert_eq!(to_timestamp(dt), 0);
+        assert_eq!(to_timestamp(&dt), 0);
 
         // Test with 2023-04-05 12:30:45
         let dt = NaiveDate::from_ymd_opt(2023, 4, 5)
@@ -116,7 +116,7 @@ mod tests {
             .and_hms_opt(12, 30, 45)
             .unwrap();
         let expected = ymdhms(2023, 4, 5, 12, 30, 45).timestamp();
-        assert_eq!(to_timestamp(dt), expected);
+        assert_eq!(to_timestamp(&dt), expected);
     }
 
     #[test]

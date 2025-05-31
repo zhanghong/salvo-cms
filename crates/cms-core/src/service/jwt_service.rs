@@ -52,7 +52,7 @@ impl JwtService {
 
     // 用户刷新 Token
     pub async fn update_by_claims(
-        dto: Option<JwtClaimsDTO>,
+        dto: Option<&JwtClaimsDTO>,
         state: &AppState,
     ) -> HandleResult<CertificateModel> {
         if dto.is_none() {
@@ -68,19 +68,24 @@ impl JwtService {
                 return Err(err);
             }
         }
-        let claim_user_id = dto.uuid.to_owned();
+        let claim_user_id = dto.user_id.to_owned();
         let user_id = Uuid::parse_str(&dto.uuid).unwrap();
         let db = &state.db;
-        let model = CertificateEntity::find()
+        let opt = CertificateEntity::find()
             .filter(CertificateColummn::Id.eq(user_id))
             .one(db)
-            .await?
-            .unwrap();
+            .await?;
+        if opt.is_none() {
+            let err = AppError::TokenNotFound;
+            return Err(err);
+        }
+        let model = opt.unwrap();
 
         let current_timestamp = time_utils::current_timestamp();
-        let refresh_expired_time = time_utils::to_timestamp(model.refresh_expired_at.clone());
+        let refresh_expired_time = time_utils::to_timestamp(&model.refresh_expired_at);
         if current_timestamp > refresh_expired_time {
-            let err = AppError::Unauthorized;
+            println!("current_time: {}, refresh expired time: {}", current_timestamp, refresh_expired_time);
+            let err = AppError::TokenExpired;
             return Err(err);
         }
 
@@ -263,6 +268,11 @@ mod tests {
     use crate::enums::EditorTypeEnum;
     use crate::fixture::config::FakerAppState;
 
+    
+    fn cert_table_field_str() -> &'static str {
+        r#""id", "user_type", "user_id", "access_token", "access_expired_at", "refresh_token", "refresh_expired_at", "created_at", "updated_at""#
+    }
+
     #[tokio::test]
     async fn test_create() {
         let mut state = FakerAppState::init().await;
@@ -302,7 +312,7 @@ mod tests {
         let statements = log.statements();
         assert_eq!(statements.len(), 1);
         let statement = statements[0].clone();
-        let table_fields = r#""id", "user_type", "user_id", "access_token", "access_expired_at", "refresh_token", "refresh_expired_at", "created_at", "updated_at""#;
+        let table_fields = cert_table_field_str();
         let sql_text = format!(
             r#"INSERT INTO "auth_certificates" ({}) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING {}"#,
             table_fields, table_fields
@@ -315,12 +325,109 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_update_by_claims() {
-        let state = FakerAppState::init().await;
-        let dto: Option<JwtClaimsDTO> = None;
-        let res = JwtService::update_by_claims(dto, &state).await;
+    async fn test_update_by_claims_fail() {
+        let mut state = FakerAppState::init().await;
+        let res = JwtService::update_by_claims(None, &state).await;
         assert!(res.is_err());
         let err = res.unwrap_err();
         assert_eq!(err, AppError::Unauthorized);
+
+        let dto_uuid = Uuid::new_v4();   
+        let dto_user_id =  Uuid::new_v4();
+        let current_timestamp = time_utils::current_timestamp();
+        let mut dto = JwtClaimsDTO{
+            uuid: dto_uuid.to_string(),
+             user_id: dto_user_id.to_string(),
+             user_type: EditorTypeEnum::Admin.string_value(),
+             token_type: TokenTypeEnum::None.as_value(),
+             exp: current_timestamp,
+        };
+        let res = JwtService::update_by_claims(Some(&dto), &state).await;
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(err, AppError::Unauthorized);
+
+        dto.token_type = TokenTypeEnum::AccessToken.as_value();
+        let res = JwtService::update_by_claims(Some(&dto), &state).await;
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(err, AppError::Unauthorized);
+
+        let cert_model = CertificateModel {
+            user_id: dto_user_id.clone(),
+            refresh_expired_at: time_utils::current_time() + Duration::hours(1),
+            ..Default::default()
+        };
+        dto.token_type = TokenTypeEnum::RefreshToken.as_value();
+        state.db = MockDatabase::new(DatabaseBackend::Postgres)
+            .append_query_results([
+                // uuid not exists in db
+                Vec::<CertificateModel>::new(),
+                vec![CertificateModel{
+                    refresh_expired_at: time_utils::current_time() - Duration::minutes(1),
+                    ..cert_model.clone()
+                }],
+                vec![CertificateModel{
+                    refresh_expired_at: time_utils::current_time() + Duration::minutes(3),
+                    ..cert_model.clone()
+                }]
+            ])
+            .into_connection();
+        // uuid not exists in db
+        let res = JwtService::update_by_claims(Some(&dto), &state).await;
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(err, AppError::TokenNotFound);
+        // refresh token expired
+        let res = JwtService::update_by_claims(Some(&dto), &state).await;
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(err, AppError::TokenExpired);
+    }
+
+    #[tokio::test]
+    async fn test_update_by_claims_ok() {
+        let mut state = FakerAppState::init().await;
+        let dto_uuid = Uuid::new_v4();   
+        let dto_user_id =  Uuid::new_v4();
+        let current_timestamp = time_utils::current_timestamp();
+        let dto = JwtClaimsDTO{
+            uuid: dto_uuid.to_string(),
+             user_id: dto_user_id.to_string(),
+             user_type: EditorTypeEnum::Admin.string_value(),
+             token_type: TokenTypeEnum::RefreshToken.as_value(),
+             exp: current_timestamp,
+        };
+        let cert_model = CertificateModel {
+            user_id: dto_user_id.clone(),
+            refresh_expired_at: time_utils::current_time() + Duration::minutes(1),
+            ..Default::default()
+        };
+        state.db = MockDatabase::new(DatabaseBackend::Postgres)
+            .append_query_results([
+                vec![cert_model.clone()],
+                vec![cert_model.clone()],
+            ])
+            .append_exec_results([
+                MockExecResult {
+                    last_insert_id: 1,
+                    rows_affected: 1,
+                },
+            ])
+            .into_connection();
+        // refresh token is ok
+        let res = JwtService::update_by_claims(Some(&dto), &state).await;
+        assert!(res.is_ok());
+        let logs = state.db.into_transaction_log();
+        let table_fields = cert_table_field_str();
+        let update_sql = format!(
+            r#"UPDATE "auth_certificates" SET "access_token" = $1, "access_expired_at" = $2, "refresh_token" = $3, "refresh_expired_at" = $4, "updated_at" = $5 WHERE "auth_certificates"."id" = $6 RETURNING {}"#,
+            table_fields
+        );
+        let update_log = logs[1].clone();
+        let statements = update_log.statements();
+        let update_statement = statements[0].clone();
+        assert_eq!(update_statement.sql, update_sql);
+        assert_eq!(logs.len(), 2);
     }
 }
