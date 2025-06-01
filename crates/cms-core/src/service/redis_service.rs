@@ -88,6 +88,10 @@ impl RedisService {
 
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
+    use uuid::Uuid;
+
     use super::*;
     use crate::fixture::config::FakerAppState;
 
@@ -119,50 +123,54 @@ mod tests {
         assert_eq!(result_after_del, None::<String>);
     }
 
-    // // 测试 set_ex
-    // #[tokio::test]
-    // async fn test_ex_set_and_get() {
-    //     let client = setup_redis().await;
-    //     let key = "test_ex_key";
-    //     let value = "ex_value";
+    // 测试 set_ex
+    #[tokio::test]
+    async fn test_ex_set_and_get() {
+        let client = setup_redis().await;
+        let key = "test_ex_key";
+        let value = "ex_value";
 
-    //     RedisService::set_ex(&client, key, value, 1); // 1秒过期
-    //     let result: Option<String> = RedisService::get(&client, key);
-    //     assert_eq!(result, Some(value.to_string()));
+        RedisService::set_ex(&client, key, value, 1); // 1秒过期
+        let result: Option<String> = RedisService::get(&client, key);
+        assert_eq!(result, Some(value.to_string()));
 
-    //     std::thread::sleep(Duration::from_secs(2));
-    //     let result_after_expire: Option<String> = RedisService::get(&client, key);
-    //     assert_eq!(result_after_expire, None);
-    // }
+        std::thread::sleep(Duration::from_secs(2));
+        let result_after_expire: Option<String> = RedisService::get(&client, key);
+        assert_eq!(result_after_expire, None);
+    }
 
-    // // 测试 JWT key 设置
-    // #[tokio::test]
-    // async fn test_set_has_del_jwt_key() {
-    //     let client = setup_redis().await;
-    //     let jwt_id = "abc123".to_string();
+    // 测试 JWT key 设置
+    #[tokio::test]
+    async fn test_set_has_del_jwt_key() {
+        let client = setup_redis().await;
+        let jwt_uuid = Uuid::new_v4();
+        let jwt_uuid = jwt_uuid.to_string();
+        let jwt_id = jwt_uuid.as_str();
 
-    //     // 当前时间 +5 秒过期
-    //     let current = time_utils::current_timestamp();
-    //     RedisService::set_jwt_key(&client, &jwt_id, current + 5);
+        // 当前时间 +5 秒过期
+        let current = time_utils::current_timestamp();
+        RedisService::set_jwt_key(&client, jwt_id, current + 5);
 
-    //     assert!(RedisService::has_jwt_key(&client, &jwt_id));
+        assert!(RedisService::has_jwt_key(&client, jwt_id));
 
-    //     RedisService::del_jwt_key(&client, &jwt_id);
-    //     assert!(!RedisService::has_jwt_key(&client, &jwt_id));
-    // }
+        RedisService::del_jwt_key(&client, jwt_id);
+        assert!(!RedisService::has_jwt_key(&client, &jwt_id));
+    }
 
-    // // 测试过期时间小于当前时间的情况
-    // #[tokio::test]
-    // async fn test_set_jwt_key_expired() {
-    //     let client = setup_redis().await;
-    //     let jwt_id = "expired_jwt".to_string();
+    // 测试过期时间小于当前时间的情况
+    #[tokio::test]
+    async fn test_set_jwt_key_expired() {
+        let client = setup_redis().await;
+        let jwt_uuid = Uuid::new_v4();
+        let jwt_uuid = jwt_uuid.to_string();
+        let jwt_id = jwt_uuid.as_str();
 
-    //     let past_time = time_utils::current_timestamp() - 10; // 已过期
-    //     RedisService::set_jwt_key(&client, &jwt_id, past_time);
+        let past_time = time_utils::current_timestamp() - 10; // 已过期
+        RedisService::set_jwt_key(&client, &jwt_id, past_time);
 
-    //     // 应该设置为 1 秒有效期
-    //     assert!(RedisService::has_jwt_key(&client, &jwt_id));
-    // }
+        // 应该设置为 1 秒有效期
+        assert!(RedisService::has_jwt_key(&client, &jwt_id));
+    }
 
     // // 测试 JSON 列表的异步写入和读取
     // #[tokio::test]
