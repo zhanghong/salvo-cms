@@ -38,3 +38,32 @@ pub async fn database(depot: &mut Depot) -> AppResult<bool> {
     let res = &state.db.ping().await;
     result_ok(res.is_ok())
 }
+
+
+#[cfg(test)]
+mod tests {
+    use salvo::prelude::*;
+    use salvo::test::TestClient;
+
+    use crate::handler;
+
+    #[tokio::test]
+    async fn test_service_health() {
+        let service = Service::new(handler::init_router());
+
+        let response = TestClient::get(format!("http://127.0.0.1:5800/checker/health"))
+            .send(&service)
+            .await;
+        assert_eq!(response.status_code.unwrap(), StatusCode::OK);
+    }
+
+    #[tokio::test]
+    async fn test_database_health() {
+        let service = Service::new(handler::init_router());
+
+        let response = TestClient::get(format!("http://127.0.0.1:5800/checker/database"))
+            .send(&service)
+            .await;
+        assert_eq!(response.status_code.unwrap(), StatusCode::OK);
+    }
+}
