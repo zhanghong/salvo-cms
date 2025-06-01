@@ -44,7 +44,7 @@ impl RedisService {
         let _: () = con.del(key).unwrap();
     }
 
-    pub fn set_jwt_key(client: &Client, jwt_id: &String, expired_time: i64) {
+    pub fn set_jwt_key(client: &Client, jwt_id: &str, expired_time: i64) {
         let current_timestamp = time_utils::current_timestamp();
         let mut seconds: i64 = expired_time - current_timestamp;
         if seconds < 0 {
@@ -53,16 +53,16 @@ impl RedisService {
         Self::set_ex(client, Self::to_jwt_key(jwt_id), true, seconds as u64);
     }
 
-    pub fn has_jwt_key(client: &Client, jwt_id: &String) -> bool {
+    pub fn has_jwt_key(client: &Client, jwt_id: &str) -> bool {
         let value: bool = Self::get(client, Self::to_jwt_key(jwt_id)).unwrap_or(false);
         value
     }
 
-    pub fn del_jwt_key(client: &Client, jwt_id: &String) {
+    pub fn del_jwt_key(client: &Client, jwt_id: &str) {
         Self::del(client, Self::to_jwt_key(jwt_id));
     }
 
-    fn to_jwt_key(id: &String) -> String {
+    fn to_jwt_key(id: &str) -> String {
         format!("jwt:{}", id)
     }
 

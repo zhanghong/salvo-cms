@@ -22,14 +22,14 @@ pub struct JwtService {}
 impl JwtService {
     /// 用户登录
     pub async fn create(
-        user_id: Uuid,
+        user_id: &Uuid,
         user_type: &str,
         state: &AppState,
     ) -> HandleResult<CertificateModel> {
         let uuid = uuid::Uuid::new_v4();
         let uuid_string = uuid.to_string();
-        let access = Self::generate_access_token(&uuid_string, user_id, user_type).unwrap();
-        let refresh = Self::generate_refresh_token(&uuid_string, user_id, user_type).unwrap();
+        let access = Self::generate_access_token(&uuid, &user_id, user_type).unwrap();
+        let refresh = Self::generate_refresh_token(&uuid, &user_id, user_type).unwrap();
         let now = time_utils::current_time();
         let model = CertificateActiveModel {
             id: Set(uuid.to_owned()),
@@ -69,6 +69,7 @@ impl JwtService {
             }
         }
         let claim_user_id = dto.user_id.to_owned();
+        let cert_id = Uuid::parse_str(&dto.uuid).unwrap();
         let user_id = Uuid::parse_str(&dto.uuid).unwrap();
         let db = &state.db;
         let opt = CertificateEntity::find()
@@ -92,12 +93,12 @@ impl JwtService {
         let user_type = model.user_type.to_owned();
         let user_type = user_type.as_str();
         let mut model: CertificateActiveModel = model.into();
-        let access = Self::generate_access_token(&claim_user_id, user_id, user_type).unwrap();
+        let access = Self::generate_access_token(&cert_id, &user_id, user_type).unwrap();
         model.access_token = Set(access.token_value.to_owned());
         model.access_expired_at = Set(time_utils::from_timestamp(access.expired_time));
 
         if current_timestamp + (3 * 24 * 60 * 60) > refresh_expired_time {
-            let refresh = Self::generate_refresh_token(&claim_user_id, user_id, user_type).unwrap();
+            let refresh = Self::generate_refresh_token(&cert_id, &user_id, user_type).unwrap();
             model.refresh_token = Set(refresh.token_value.to_owned());
             model.refresh_expired_at = Set(time_utils::from_timestamp(refresh.expired_time));
         }
@@ -110,8 +111,8 @@ impl JwtService {
 
     /// 生成 Access Token
     fn generate_access_token(
-        uuid: &String,
-        user_id: Uuid,
+        cert_id: &Uuid,
+        user_id: &Uuid,
         user_type: &str,
     ) -> HandleResult<JwtTokenDTO> {
         let cfg = JwtConfig::from_env().expect("Failed to load jwt config");
@@ -121,7 +122,7 @@ impl JwtService {
         let expired_time = (now + Duration::days(days)).and_utc().timestamp();
 
         let claims = JwtClaimsDTO {
-            uuid: uuid.to_owned(),
+            uuid: cert_id.to_string(),
             user_id: user_id.to_string(),
             user_type: user_type.to_owned(),
             token_type: TokenTypeEnum::AccessToken.as_value(),
@@ -177,8 +178,8 @@ impl JwtService {
 
     /// 生成 Refresh Token
     fn generate_refresh_token(
-        uuid: &String,
-        user_id: Uuid,
+        cert_id: &Uuid,
+        user_id: &Uuid,
         user_type: &str,
     ) -> HandleResult<JwtTokenDTO> {
         let cfg = JwtConfig::from_env().expect("Failed to load jwt config");
@@ -188,7 +189,7 @@ impl JwtService {
         let expired_time = (now + Duration::days(days)).and_utc().timestamp();
 
         let claims = JwtClaimsDTO {
-            uuid: uuid.to_owned(),
+            uuid: cert_id.to_string(),
             user_id: user_id.to_string(),
             user_type: user_type.to_owned(),
             token_type: TokenTypeEnum::RefreshToken.as_value(),
@@ -231,7 +232,7 @@ impl JwtService {
     }
 
     // 删除 Token
-    pub async fn delete_by_claims(dto: Option<JwtClaimsDTO>, state: &AppState) -> HandleResult<()> {
+    pub async fn delete_by_claims(dto: Option<&JwtClaimsDTO>, state: &AppState) -> HandleResult<()> {
         if dto.is_none() {
             return handle_ok(());
         }
@@ -245,14 +246,19 @@ impl JwtService {
             }
         }
         let uuid_string = dto.uuid.to_owned();
-        RedisService::del_jwt_key(&state.redis, &uuid_string);
-        match Uuid::parse_str(&uuid_string) {
+        let uuid_str = uuid_string.as_str();
+        RedisService::del_jwt_key(&state.redis, uuid_str);
+        println!("delete_by_claims:  kkkk {}", uuid_str);
+        match Uuid::parse_str(uuid_str) {
             Ok(uuid) => {
+                println!("uuid is valid and run .....");
                 let _ = CertificateEntity::delete_by_id(uuid)
                     .exec(&state.db)
                     .await?;
             }
-            Err(_) => {}
+            Err(_) => {
+                println!("delete_uuid invalid: {}", uuid_str);
+            }
         }
 
         handle_ok(())
@@ -267,6 +273,7 @@ mod tests {
     use crate::domain::entity::certificate::Model as CertificateModel;
     use crate::enums::EditorTypeEnum;
     use crate::fixture::config::FakerAppState;
+    use crate::utils::time_utils::current_timestamp;
 
     
     fn cert_table_field_str() -> &'static str {
@@ -301,7 +308,7 @@ mod tests {
             .append_exec_results([mock_result])
             .into_connection();
 
-        let res = JwtService::create(user_id, user_type, &state).await;
+        let res = JwtService::create(&user_id, user_type, &state).await;
         assert!(res.is_ok());
         let model = res.unwrap();
         assert_eq!(model.id, cert_model.id);
@@ -430,4 +437,82 @@ mod tests {
         assert_eq!(update_statement.sql, update_sql);
         assert_eq!(logs.len(), 2);
     }
+
+     #[test]
+     fn test_generate_access_token() {
+         let cert_id = Uuid::new_v4();
+         let user_id = Uuid::new_v4();
+         let user_type = EditorTypeEnum::Admin.string_value();
+
+         let res = JwtService::generate_access_token(&cert_id, &user_id, user_type.as_str());
+         assert!(res.is_ok());
+         let dto = res.unwrap();
+         assert_eq!(dto.token_type, TokenTypeEnum::AccessToken.as_value());
+     }
+
+     #[test]
+     fn test_generate_refresh_token() {
+         let cert_id = Uuid::new_v4();
+         let user_id = Uuid::new_v4();
+         let user_type = EditorTypeEnum::Admin.string_value();
+
+         let res = JwtService::generate_refresh_token(&cert_id, &user_id, user_type.as_str());
+         assert!(res.is_ok());
+     }
+
+     #[tokio::test]
+    async fn test_delete_by_claims() {
+        let mut state = FakerAppState::init().await;
+        let res = JwtService::delete_by_claims(None, &state).await;
+        assert!(res.is_ok());
+        
+        let dto_user_id =  Uuid::new_v4();
+        let mut dto = JwtClaimsDTO{
+            uuid: "".to_string(),
+            user_id: dto_user_id.to_string(),
+            user_type: EditorTypeEnum::Admin.string_value(),
+            token_type: TokenTypeEnum::None.as_value(),
+            exp: time_utils::current_timestamp() + 1000,
+        };
+        let res = JwtService::delete_by_claims(Some(&dto), &state).await;
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(err, AppError::Unauthorized);
+        dto.token_type = TokenTypeEnum::RefreshToken.as_value();
+        let res = JwtService::delete_by_claims(Some(&dto), &state).await;
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(err, AppError::Unauthorized);
+
+        // uuid is not uuid
+        dto.token_type = TokenTypeEnum::AccessToken.as_value();
+        let res = JwtService::delete_by_claims(Some(&dto), &state).await;
+        assert!(res.is_ok());
+
+        // uuid is real
+        let dto_uuid = Uuid::new_v4();
+        let dto_uuid_string = dto_uuid.to_string();
+        dto.uuid = dto_uuid_string.clone();
+        let dto_uuid_str= dto_uuid_string.as_str();
+        RedisService::set_jwt_key(&state.redis, dto_uuid_str, current_timestamp() + 1000);
+        assert!(RedisService::has_jwt_key(&state.redis, dto_uuid_str));
+        
+        println!("dto uuid: {}", dto.uuid);
+        state.db = MockDatabase::new(DatabaseBackend::Postgres)
+        .append_exec_results([MockExecResult {
+            last_insert_id: 1,
+            rows_affected: 1,
+        }])
+        .into_connection();
+        let res = JwtService::delete_by_claims(Some(&dto), &state).await;
+        assert_eq!(RedisService::has_jwt_key(&state.redis, dto_uuid_str), false);
+        assert!(res.is_ok());
+        assert_eq!(state.db.into_transaction_log(), [
+            Transaction::from_sql_and_values(
+                DatabaseBackend::Postgres, 
+                r#"DELETE FROM "auth_certificates" WHERE "auth_certificates"."id" = $1"#, 
+                [dto_uuid.into()]
+            )
+        ]);
+    } 
 }
