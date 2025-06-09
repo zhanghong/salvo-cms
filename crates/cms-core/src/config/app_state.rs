@@ -6,7 +6,7 @@ use super::DatabaseConfig;
 use super::RabbitMQConfig;
 use super::RedisConfig;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AppState {
     pub db: DatabaseConnection,
     pub redis: RedisClient,
